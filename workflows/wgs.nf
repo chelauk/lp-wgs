@@ -11,7 +11,13 @@ WorkflowWgs.initialise(params, log)
 
 // TODO nf-core: Add all file path parameters for the pipeline to the list below
 // Check input path parameters to see if they exist
-def checkPathParamList = [ params.input, params.multiqc_config, params.fasta ]
+def checkPathParamList = [
+    params.input,
+    params.multiqc_config,
+    params.bwa,
+    params.fasta,
+    params.fasta_fai
+    ]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
 // Check mandatory parameters
@@ -48,7 +54,10 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check'
 //
 // MODULE: Installed directly from nf-core/modules
 //
+
 include { FASTQC                      } from '../modules/nf-core/fastqc/main'
+include { FASTP                       } from '../modules/nf-core/fastp/main'
+include { BWA_MEM                     } from '../modules/nf-core/bwa/mem/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
@@ -62,7 +71,8 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoft
 def multiqc_report = []
 
 workflow WGS {
-
+    // To gather all QC reports for MultiQC
+    ch_reports  = Channel.empty()
     ch_versions = Channel.empty()
 
     //
@@ -74,12 +84,50 @@ workflow WGS {
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
     //
-    // MODULE: Run FastQC
+    // FASTQC
     //
-    FASTQC (
-        INPUT_CHECK.out.reads
-    )
-    ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+
+    if ( params.step == 'mapping' ) {
+        QC_TRIM_ALIGN ( INPUT_CHECK.out.reads)
+    }
+
+
+
+        ch_reports = ch_reports.mix(
+                                FASTP.out.json.collect{meta, json -> json},
+                                FASTP.out.html.collect{meta, html -> html}
+                                )
+
+        if (params.split_fastq){
+            ch_reads_to_map = FASTP.out.reads.map{ key, reads ->
+
+                    read_files = reads.sort{ a,b -> a.getName().tokenize('.')[0] <=> b.getName().tokenize('.')[0] }.collate(2)
+                    [[
+                        data_type:key.data_type,
+                        id:key.id,
+                        numLanes:key.numLanes,
+                        patient: key.patient,
+                        read_group:key.read_group,
+                        sample:key.sample,
+                        sex:key.sex,
+                        size:read_files.size(),
+                        status:key.status,
+                    ],
+                    read_files]
+                }.transpose()
+        }else{
+            ch_reads_to_map = FASTP.out.reads
+        }
+
+        ch_versions = ch_versions.mix(FASTP.out.versions)
+    } else {
+        ch_reads_to_map = ch_reads_fastp
+    }
+
+    //
+    // BWA mem
+    //
+    BWA_MEM(ch_reads_to_map)
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
