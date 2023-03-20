@@ -9,7 +9,6 @@ def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
 // Validate input parameters
 WorkflowWgs.initialise(params, log)
 
-// TODO nf-core: Add all file path parameters for the pipeline to the list below
 // Check input path parameters to see if they exist
 def checkPathParamList = [
     params.input,
@@ -55,11 +54,17 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check'
 // MODULE: Installed directly from nf-core/modules
 //
 
-include { FASTQC                      } from '../modules/nf-core/fastqc/main'
-include { FASTP                       } from '../modules/nf-core/fastp/main'
-include { BWA_MEM                     } from '../modules/nf-core/bwa/mem/main'
+include { QC_TRIM_ALIGN               } from '../subworkflows/local/qc_trim_align'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
+include { ACE                         } from '../modules/local/ace'
+
+//
+// gather prebuilt indices
+//
+    fasta                  = params.fasta              ? Channel.fromPath(params.fasta).collect()     : Channel.empty()
+    fasta_fai              = params.fasta_fai          ? Channel.fromPath(params.fasta_fai).collect() : Channel.empty()
+    bwa                    = params.bwa                ? Channel.fromPath(params.bwa).collect()       : Channel.empty()
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -74,6 +79,8 @@ workflow WGS {
     // To gather all QC reports for MultiQC
     ch_reports  = Channel.empty()
     ch_versions = Channel.empty()
+    ch_version_yaml = Channel.empty()
+
 
     //
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
@@ -84,55 +91,25 @@ workflow WGS {
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
     //
-    // FASTQC
+    // FASTQC, FASTP and BWA
     //
 
+    sort_bam = true
+    // Gather index for mapping given the chosen aligner
+    ch_map_index = bwa
     if ( params.step == 'mapping' ) {
-        QC_TRIM_ALIGN ( INPUT_CHECK.out.reads)
+        QC_TRIM_ALIGN ( INPUT_CHECK.out.reads, ch_map_index, sort_bam)
     }
+    ch_versions = ch_versions.mix(QC_TRIM_ALIGN.out.ch_versions)
+    ch_reports  = ch_reports.mix(QC_TRIM_ALIGN.out.ch_reports)
+    ch_versions.view()
+    // run ACE
 
+    ACE(QC_TRIM_ALIGN.out.bam)
+    ch_versions = ch_versions.mix(ACE.out.versions)
 
-
-        ch_reports = ch_reports.mix(
-                                FASTP.out.json.collect{meta, json -> json},
-                                FASTP.out.html.collect{meta, html -> html}
-                                )
-
-        if (params.split_fastq){
-            ch_reads_to_map = FASTP.out.reads.map{ key, reads ->
-
-                    read_files = reads.sort{ a,b -> a.getName().tokenize('.')[0] <=> b.getName().tokenize('.')[0] }.collate(2)
-                    [[
-                        data_type:key.data_type,
-                        id:key.id,
-                        numLanes:key.numLanes,
-                        patient: key.patient,
-                        read_group:key.read_group,
-                        sample:key.sample,
-                        sex:key.sex,
-                        size:read_files.size(),
-                        status:key.status,
-                    ],
-                    read_files]
-                }.transpose()
-        }else{
-            ch_reads_to_map = FASTP.out.reads
-        }
-
-        ch_versions = ch_versions.mix(FASTP.out.versions)
-    } else {
-        ch_reads_to_map = ch_reads_fastp
-    }
-
-    //
-    // BWA mem
-    //
-    BWA_MEM(ch_reads_to_map)
-
-    CUSTOM_DUMPSOFTWAREVERSIONS (
-        ch_versions.unique().collectFile(name: 'collated_versions.yml')
-    )
-
+    CUSTOM_DUMPSOFTWAREVERSIONS(ch_versions.unique().collectFile(name: 'collated_versions.yml'))
+    ch_version_yaml = CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect()
     //
     // MODULE: MultiQC
     //
@@ -146,7 +123,7 @@ workflow WGS {
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]}.ifEmpty([]))
+    //ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]}.ifEmpty([]))
 
     MULTIQC (
         ch_multiqc_files.collect(),

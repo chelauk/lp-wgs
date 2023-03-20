@@ -40,4 +40,26 @@ process BWA_MEM {
         samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
     END_VERSIONS
     """
+    stub:
+    def args = task.ext.args ?: ''
+    def args2 = task.ext.args2 ?: ''
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    def samtools_command = sort_bam ? 'sort' : 'view'
+    """
+    INDEX=`find -L ./ -name "*.amb" | sed 's/\\.amb\$//'`
+
+    echo -e "bwa mem \\
+            $args \\
+            -t $task.cpus \\
+            \$INDEX \\
+            $reads \\
+            | samtools $samtools_command $args2 --threads $task.cpus -o ${prefix}.bam - "
+    touch ${prefix}.bam
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        bwa: stub version
+        samtools:  stub_version
+    END_VERSIONS
+    """
 }
