@@ -44,6 +44,7 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 //
 
 include { QC_TRIM_ALIGN               } from '../subworkflows/local/qc_trim_align'
+include { MOSDEPTH                    } from '../modules/nf-core/mosdepth/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 include { ACE                         } from '../modules/local/ace'
@@ -88,6 +89,13 @@ workflow WGS {
         ch_ace_input = ch_input_sample
     }
 
+    ch_mos_input = ch_ace_input
+
+    MOSDEPTH(ch_mos_input)
+    ch_reports  = ch_reports.mix(MOSDEPTH.out.zip.collect{meta, logs -> logs})
+    ch_versions = ch_versions.mix(MOSDEPTH.out.versions.first())
+
+
     // run ACE
     ACE(ch_ace_input)
     ch_versions = ch_versions.mix(ACE.out.versions)
@@ -107,7 +115,9 @@ workflow WGS {
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
-    //ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]}.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]}.ifEmpty([]))
+    ch_multiqc_files - ch_multiqc_files.mix(MOSDEPTH.out.global.collect{it[1]}.ifEmpty([]))
+    ch_multiqc_files - ch_multiqc_files.mix(MOSDEPTH.out.summary_txt.collect{it[1]}.ifEmpty([]))
 
     MULTIQC (
         ch_multiqc_files.collect(),
@@ -140,18 +150,18 @@ workflow.onComplete {
 */
 // Function to extract information (meta data + file(s)) from csv file(s)
 def extract_csv(csv_file) {
-  Channel.from(csv_file).splitCsv(header: true)
+    Channel.from(csv_file).splitCsv(header: true)
     .map { row ->
         if (!(row.patient && row.sample)) log.warn "Missing or unknown field in csv file header"
         [[row.patient.toString(), row.sample.toString()], row]
     }
     .groupTuple()
-    .map { meta, rows -> 
+    .map { meta, rows ->
         size = rows.size()
         [rows, size]
-        }.transpose() 
-          //A Transpose Function takes a collection of columns and returns a collection of rows. 
-          //The first row consists of the first element from each column. Successive rows are constructed similarly. 
+        }.transpose()
+          //A Transpose Function takes a collection of columns and returns a collection of rows.
+          //The first row consists of the first element from each column. Successive rows are constructed similarly.
           //def result = [['a', 'b'], [1, 2], [3, 4]].transpose()
           //assert result == [['a', 1, 3], ['b', 2, 4]]
             .map{
