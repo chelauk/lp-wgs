@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript --slave
+
 library(ACE)
 args <- commandArgs(trailingOnly = TRUE)
 input_folder <- args[1]
