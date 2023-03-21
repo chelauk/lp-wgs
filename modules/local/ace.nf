@@ -25,7 +25,7 @@ process ACE {
     """
     prefix=$prefix
     mkdir \$prefix
-    Rscript --slave ace.R \$prefix
+    ace.R \$prefix
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
