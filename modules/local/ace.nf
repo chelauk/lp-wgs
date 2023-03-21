@@ -24,7 +24,14 @@ process ACE {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     prefix=$prefix
-    mkdir \$prefix
+    if [ -d \$prefix ]
+    then
+        echo "Directory /path/to/dir exists."
+    else
+        echo "Error: Directory /path/to/dir does not exist."
+        mkdir \$prefix
+    fi
+
     ace.R \$prefix
 
     cat <<-END_VERSIONS > versions.yml
