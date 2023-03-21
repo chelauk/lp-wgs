@@ -93,7 +93,6 @@ workflow WGS {
         ch_bam_input,
         fasta.map{ it -> [[id:it[0].baseName], it] }
         )
-    ch_reports  = ch_reports.mix(MOSDEPTH.out.zip.collect{meta, logs -> logs})
     ch_versions = ch_versions.mix(MOSDEPTH.out.versions.first())
 
 
