@@ -13,7 +13,7 @@ process BWA_MEM {
     val   sort_bam
 
     output:
-    tuple val(meta), path("*.bam"), emit: bam
+    tuple val(meta), path("*.bam"), path("*bai") emit: bam
     path  "versions.yml"          , emit: versions
 
     when:
@@ -33,6 +33,7 @@ process BWA_MEM {
         \$INDEX \\
         $reads \\
         | samtools $samtools_command $args2 --threads $task.cpus -o ${prefix}.bam -
+        samtools index ${prefix}.bam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
