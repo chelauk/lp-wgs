@@ -10,11 +10,11 @@ process ACE {
     container 'r-evoverse.sif'
 
     input:
-    tuple val(meta), path(bam)
+    tuple val(meta), path(bam), path(bai)
 
     output:
     tuple val(meta), path("${meta.id}"), emit: ace
-    path "versions.yml"            , emit: versions
+    path "versions.yml"                , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
