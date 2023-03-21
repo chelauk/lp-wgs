@@ -20,7 +20,7 @@ def checkPathParamList = [
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
 // Check mandatory parameters
-if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
+ch_input_sample = extract_csv(file(params.input, checkIfExists: true ))
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -32,17 +32,6 @@ ch_multiqc_config          = Channel.fromPath("$projectDir/assets/multiqc_config
 ch_multiqc_custom_config   = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
 ch_multiqc_logo            = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
 ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    IMPORT LOCAL MODULES/SUBWORKFLOWS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-//
-// SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
-//
-include { INPUT_CHECK } from '../subworkflows/local/input_check'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -81,15 +70,6 @@ workflow WGS {
     ch_versions = Channel.empty()
     ch_version_yaml = Channel.empty()
 
-
-    //
-    // SUBWORKFLOW: Read in samplesheet, validate and stage input files
-    //
-    INPUT_CHECK (
-        ch_input
-    )
-    ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
-
     //
     // FASTQC, FASTP and BWA
     //
@@ -98,14 +78,18 @@ workflow WGS {
     // Gather index for mapping given the chosen aligner
     ch_map_index = bwa
     if ( params.step == 'mapping' ) {
-        QC_TRIM_ALIGN ( INPUT_CHECK.out.reads, ch_map_index, sort_bam)
+        // Create input channel
+        fastq_input = ch_input_sample
+        QC_TRIM_ALIGN ( fastq_input, ch_map_index, sort_bam)
+        ch_versions = ch_versions.mix(QC_TRIM_ALIGN.out.ch_versions)
+        ch_reports  = ch_reports.mix(QC_TRIM_ALIGN.out.ch_reports)
+        ch_ace_input = QC_TRIM_ALIGN.out.bam
+    } else if ( params.step == 'ace' ) {
+        ch_ace_input = ch_input_sample
     }
-    ch_versions = ch_versions.mix(QC_TRIM_ALIGN.out.ch_versions)
-    ch_reports  = ch_reports.mix(QC_TRIM_ALIGN.out.ch_reports)
-    ch_versions.view()
-    // run ACE
 
-    ACE(QC_TRIM_ALIGN.out.bam)
+    // run ACE
+    ACE(ch_ace_input)
     ch_versions = ch_versions.mix(ACE.out.versions)
 
     CUSTOM_DUMPSOFTWAREVERSIONS(ch_versions.unique().collectFile(name: 'collated_versions.yml'))
@@ -149,7 +133,85 @@ workflow.onComplete {
         NfcoreTemplate.IM_notification(workflow, params, summary_params, projectDir, log)
     }
 }
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    FUNCTIONS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+// Function to extract information (meta data + file(s)) from csv file(s)
+def extract_csv(csv_file) {
+    Channel.from(csv_file).splitCsv(header: true)
+        //Retrieves number of lanes by grouping together by patient and sample and counting how many entries there are for this combination
+        .map{ row ->
+            if (!(row.patient && row.sample)) log.warn "Missing or unknown field in csv file header"
+            [[row.patient.toString(), row.sample.toString()], row]
+        }.groupTuple()
+        .map{ meta, rows ->
+            size = rows.size()
+            [rows, size]
+        }.transpose()
+        .map{ row, numLanes -> //from here do the usual thing for csv parsing
+        def meta = [:]
 
+        //TODO since it is mandatory: error/warning if not present?
+        // Meta data to identify samplesheet
+        // Both patient and sample are mandatory
+        // Several sample can belong to the same patient
+        // Sample should be unique for the patient
+        if (row.patient) meta.patient = row.patient.toString()
+        if (row.sample)  meta.sample  = row.sample.toString()
+
+        // If no gender specified, gender is not considered
+        // gender is only mandatory for somatic CNV
+        if (row.gender) meta.gender = row.gender.toString()
+        else meta.gender = "NA"
+
+        // If no status specified, sample is assumed normal
+        if (row.status) meta.status = row.status.toInteger()
+        else meta.status = 0
+
+        // mapping with fastq
+        if (row.fastq_1) {
+            meta.patient    = row.patient.toString()
+            meta.sample     = row.sample.toString()
+            if (row.lane){
+                meta.lane       = row.lane.toString()
+                meta.id         = "${row.patient}_${row.sample}_${row.lane}"}
+                else {
+                    meta.id     = "${row.patient}_${row.sample}"
+                }
+            def fastq_1     = file(row.fastq_1, checkIfExists: true)
+            def fastq_2     = file(row.fastq_2, checkIfExists: true)
+            def CN          = params.sequencing_center ? "CN:${params.sequencing_center}\\t" : ''
+            def read_group  = "\"@RG\\tID:${row.patient}_${row.sample}\\t${CN}PU:${row.lane}\\tSM:${row.patient}_${row.sample}\\tLB:${row.patient}_${row.sample}\\tPL:ILLUMINA\""
+            meta.numLanes   = numLanes.toInteger()
+            meta.read_group = read_group.toString()
+            meta.data_type  = 'fastq'
+
+            fqs = [] // list to fill with all arguments matching regex below
+            map_fqs = row.findAll{k,v -> k.matches(~/^fastq(_[0-9]+)?/)} // find fqs in row
+            map_fqs = map_fqs.sort{it -> (it.key.replaceAll(/fastq(_)?/, "") ?: 0).toInteger() } // sort matches
+            for (fq in map_fqs) {
+            fqs.add(file(fq.value, checkIfExists: true))
+            }
+
+            return [meta, fqs]
+
+        // start from BAM
+        } else if (row.patient && row.bam) {
+            meta.patient    = row.patient.toString()
+            meta.sample     = row.sample.toString()
+            meta.id         = "${row.patient}_${row.sample}".toString()
+            def bam         = file(row.bam,   checkIfExists: true)
+            def read_group  = "\"@RG\\tID:${row.patient}_${row.sample}\\tLB:${row.patient}_${row.sample}\\tSM:${row.patient}_${row.sample}\\tPL:ILLUMINA\""
+            meta.read_group = read_group.toString()
+            meta.data_type  = "bam"
+            return [meta, bam]
+        } else {
+            log.warn "Missing2 or unknown field in csv file header"
+        }
+    }
+}
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     THE END
