@@ -140,78 +140,95 @@ workflow.onComplete {
 */
 // Function to extract information (meta data + file(s)) from csv file(s)
 def extract_csv(csv_file) {
-    Channel.from(csv_file).splitCsv(header: true)
-        //Retrieves number of lanes by grouping together by patient and sample and counting how many entries there are for this combination
-        .map{ row ->
-            if (!(row.patient && row.sample)) log.warn "Missing or unknown field in csv file header"
-            [[row.patient.toString(), row.sample.toString()], row]
-        }.groupTuple()
-        .map{ meta, rows ->
-            size = rows.size()
-            [rows, size]
-        }.transpose()
-        .map{ row, numLanes -> //from here do the usual thing for csv parsing
-        def meta = [:]
-
-        //TODO since it is mandatory: error/warning if not present?
-        // Meta data to identify samplesheet
-        // Both patient and sample are mandatory
-        // Several sample can belong to the same patient
-        // Sample should be unique for the patient
-        if (row.patient) meta.patient = row.patient.toString()
-        if (row.sample)  meta.sample  = row.sample.toString()
-
-        // If no gender specified, gender is not considered
-        // gender is only mandatory for somatic CNV
-        if (row.gender) meta.gender = row.gender.toString()
-        else meta.gender = "NA"
-
-        // If no status specified, sample is assumed normal
-        if (row.status) meta.status = row.status.toInteger()
-        else meta.status = 0
-
-        // mapping with fastq
-        if (row.fastq_1) {
-            meta.patient    = row.patient.toString()
-            meta.sample     = row.sample.toString()
-            if (row.lane){
-                meta.lane       = row.lane.toString()
-                meta.id         = "${row.patient}_${row.sample}_${row.lane}"}
-                else {
-                    meta.id     = "${row.patient}_${row.sample}"
-                }
-            def fastq_1     = file(row.fastq_1, checkIfExists: true)
-            def fastq_2     = file(row.fastq_2, checkIfExists: true)
-            def CN          = params.sequencing_center ? "CN:${params.sequencing_center}\\t" : ''
-            def read_group  = "\"@RG\\tID:${row.patient}_${row.sample}\\t${CN}PU:${row.lane}\\tSM:${row.patient}_${row.sample}\\tLB:${row.patient}_${row.sample}\\tPL:ILLUMINA\""
-            meta.numLanes   = numLanes.toInteger()
-            meta.read_group = read_group.toString()
-            meta.data_type  = 'fastq'
-
-            fqs = [] // list to fill with all arguments matching regex below
-            map_fqs = row.findAll{k,v -> k.matches(~/^fastq(_[0-9]+)?/)} // find fqs in row
-            map_fqs = map_fqs.sort{it -> (it.key.replaceAll(/fastq(_)?/, "") ?: 0).toInteger() } // sort matches
-            for (fq in map_fqs) {
-            fqs.add(file(fq.value, checkIfExists: true))
-            }
-
-            return [meta, fqs]
-
-        // start from BAM
-        } else if (row.patient && row.bam) {
-            meta.patient    = row.patient.toString()
-            meta.sample     = row.sample.toString()
-            meta.id         = "${row.patient}_${row.sample}".toString()
-            def bam         = file(row.bam,   checkIfExists: true)
-            def read_group  = "\"@RG\\tID:${row.patient}_${row.sample}\\tLB:${row.patient}_${row.sample}\\tSM:${row.patient}_${row.sample}\\tPL:ILLUMINA\""
-            meta.read_group = read_group.toString()
-            meta.data_type  = "bam"
-            return [meta, bam]
-        } else {
-            log.warn "Missing2 or unknown field in csv file header"
-        }
+  Channel.from(csv_file).splitCsv(header: true)
+    .map { row ->
+        if (!(row.patient && row.sample)) log.warn "Missing or unknown field in csv file header"
+        [[row.patient.toString(), row.sample.toString()], row]
     }
+    .groupTuple()
+    .map { meta, rows -> 
+        size = rows.size()
+        [rows, size]
+        }.transpose() 
+          //A Transpose Function takes a collection of columns and returns a collection of rows. 
+          //The first row consists of the first element from each column. Successive rows are constructed similarly. 
+          //def result = [['a', 'b'], [1, 2], [3, 4]].transpose()
+          //assert result == [['a', 1, 3], ['b', 2, 4]]
+            .map{
+            row, num_lanes ->
+            def meta = [:]
+            if (row.patient) meta.patient = row.patient.toString()
+            if (row.sample)  meta.sample  = row.sample.toString()
+            if (row.gender)  meta.gender  = row.gender.toString()
+                else meta.gender = "NA"
+            if (row.status)  meta.status  = row.status.toString()
+                else meta.status = 0
+            if (row.fastq_1) {
+                meta.patient  = row.patient.toString()
+                meta.sample   = row.sample.toString()
+                if (row.lane) {
+                    meta.lane = row.lane.toString()
+                    meta.id   = "${row.patient}_${row.sample}_${row.lane}"
+                } else {
+                    meta.id = "${row.patient}_${row.sample}"
+                    }
+                def fastq_1 = file(row.fastq_1, checkIfExists: true)
+                def fastq_2 = file(row.fastq_2, checkIfExists: true)
+                def CN      = params.sequencing_center ? "CN:${params.sequencing_center}\\t" : ''
+                def flowcell    = flowcellLaneFromFastq(fastq_1)
+                //Don't use a random element for ID, it breaks resuming
+                def read_group  = "\"@RG\\tID:${flowcell}.${row.sample}.${row.lane}\\t${CN}PU:${row.lane}\\tSM:${row.patient}_${row.sample}\\tLB:${row.sample}\\tDS:${params.fasta}\\tPL:${params.seq_platform}\""
+                meta.num_lanes   = num_lanes.toInteger()
+                meta.read_group  = read_group.toString()
+                meta.data_type   = "fastq"
+                if (params.step == 'mapping') return [meta, [fastq_1, fastq_2]]
+                else {
+                    log.error "Samplesheet contains fastq files but step is `$params.step`. Please check your samplesheet or adjust the step parameter.\nhttps://nf-co.re/sarek/usage#input-samplesheet-configurations"
+                    System.exit(1)
+                    }
+                } else if (row.bam) {
+                    meta.id = meta.sample
+                    def bam = file(row.bam, checkIfExists: true)
+                    def bai = file(row.bai, checkIfExists: true)
+                    meta.data_type  = 'bam'
+                    if (!(params.step == 'mapping')) return [meta, bam, bai]
+                    else {
+                        log.error "Samplesheet contains bam files but step is `$params.step`. Please check your samplesheet or adjust the step parameter.\nhttps://nf-co.re/sarek/usage#input-samplesheet-configurations"
+                        System.exit(1)
+                    }
+                }
+            }
+    }
+
+// Parse first line of a FASTQ file, return the flowcell id and lane number.
+def flowcellLaneFromFastq(path) {
+    // expected format:
+    // xx:yy:FLOWCELLID:LANE:... (seven fields)
+    // or
+    // FLOWCELLID:LANE:xx:... (five fields)
+    def line
+    path.withInputStream {
+        InputStream gzipStream = new java.util.zip.GZIPInputStream(it)
+        Reader decoder = new InputStreamReader(gzipStream, 'ASCII')
+        BufferedReader buffered = new BufferedReader(decoder)
+        line = buffered.readLine()
+    }
+    assert line.startsWith('@')
+    line = line.substring(1)
+    def fields = line.split(':')
+    String fcid
+
+    if (fields.size() >= 7) {
+        // CASAVA 1.8+ format, from  https://support.illumina.com/help/BaseSpace_OLH_009008/Content/Source/Informatics/BS/FileFormat_FASTQ-files_swBS.htm
+        // "@<instrument>:<run number>:<flowcell ID>:<lane>:<tile>:<x-pos>:<y-pos>:<UMI> <read>:<is filtered>:<control number>:<index>"
+        fcid = fields[2]
+    } else if (fields.size() == 5) {
+        fcid = fields[0]
+    }
+    return fcid
 }
+
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     THE END
