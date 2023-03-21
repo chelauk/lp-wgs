@@ -2,14 +2,13 @@
 
 library(ACE)
 args <- commandArgs(trailingOnly = TRUE)
-input_folder <- args[1]
-output_folder <- args[2]
+output_folder <- args[1]
 ploidy <- c(2, 3, 4)
 
 
 runACE(
-    inputdir = input_folder, outputdir = output_folder,
-    filetype = "bam", genome = "hg38", ploidies = ploidy
+    outputdir = output_folder, filetype = "bam",
+    genome = "hg38", ploidies = ploidy
 )
 
 # runACE(inputdir = "./", outputdir, filetype = 'rds', genome = 'hg19',
