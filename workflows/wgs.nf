@@ -84,15 +84,13 @@ workflow WGS {
         QC_TRIM_ALIGN ( fastq_input, ch_map_index, sort_bam)
         ch_versions = ch_versions.mix(QC_TRIM_ALIGN.out.ch_versions)
         ch_reports  = ch_reports.mix(QC_TRIM_ALIGN.out.ch_reports)
-        ch_ace_input = QC_TRIM_ALIGN.out.bam
+        ch_bam_input = QC_TRIM_ALIGN.out.bam
     } else if ( params.step == 'ace' ) {
-        ch_ace_input = ch_input_sample
+        ch_bam_input = ch_input_sample
     }
 
-    ch_mos_input = ch_ace_input
-
     MOSDEPTH(
-        ch_mos_input
+        ch_bam_input,
         fasta.map{ it -> [[id:it[0].baseName], it] }
         )
     ch_reports  = ch_reports.mix(MOSDEPTH.out.zip.collect{meta, logs -> logs})
@@ -100,7 +98,7 @@ workflow WGS {
 
 
     // run ACE
-    ACE(ch_ace_input)
+    ACE(ch_bam_input)
     ch_versions = ch_versions.mix(ACE.out.versions)
 
     CUSTOM_DUMPSOFTWAREVERSIONS(ch_versions.unique().collectFile(name: 'collated_versions.yml'))
