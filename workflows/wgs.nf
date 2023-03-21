@@ -70,6 +70,7 @@ workflow WGS {
     ch_reports  = Channel.empty()
     ch_versions = Channel.empty()
     ch_version_yaml = Channel.empty()
+    mosdepth_reports = Channel.empty()
 
     //
     // FASTQC, FASTP and BWA
@@ -93,6 +94,10 @@ workflow WGS {
         ch_bam_input,
         fasta.map{ it -> [[id:it[0].baseName], it] }
         )
+
+    mosdepth_reports = mosdepth_reports.mix(MOSDEPTH.out.global_txt,
+                                            MOSDEPTH.out.regions_txt)
+    ch_reports  = ch_reports.mix(mosdepth_reports.collect{meta, report -> report})
     ch_versions = ch_versions.mix(MOSDEPTH.out.versions.first())
 
 
@@ -115,7 +120,7 @@ workflow WGS {
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
-    //ch_multiqc_files = ch_multiqc_files.mix(ch_reports.collect{it[1]}.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(ch_reports.collect{it[1]}.ifEmpty([]))
     //ch_multiqc_files - ch_multiqc_files.mix(MOSDEPTH.out.global_txt.collect{it[1]}.ifEmpty([]))
     //ch_multiqc_files - ch_multiqc_files.mix(MOSDEPTH.out.summary_txt.collect{it[1]}.ifEmpty([]))
 
