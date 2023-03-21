@@ -33,18 +33,10 @@ process MOSDEPTH {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def reference = fasta ? "--fasta ${fasta}" : ""
-    def interval = bed ? "--by ${bed}" : ""
-    if (bed && args.contains("--by")) {
-        exit 1, "'--by' can only be specified once when running mosdepth! Either remove input BED file definition or remove '--by' from 'ext.args' definition"
-    }
-    if (!bed && args.contains("--thresholds")) {
-        exit 1, "'--thresholds' can only be specified in conjunction with '--by'"
-    }
 
     """
     mosdepth \\
         --threads $task.cpus \\
-        $interval \\
         $reference \\
         $args \\
         $prefix \\
