@@ -1,4 +1,4 @@
-#!/usr/bin/env Rscript --slave
+#!/usr/bin/env Rscript
 
 library(ACE)
 args <- commandArgs(trailingOnly = TRUE)
