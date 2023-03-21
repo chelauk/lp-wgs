@@ -7,7 +7,7 @@ process ACE {
     //               For Conda, the build (i.e. "h9402c20_2") must be EXCLUDED to support installation on different operating systems.
     // TODO nf-core: See section in main README for further information regarding finding and adding container addresses to the section below.
     conda "YOUR-TOOL-HERE"
-    container 'r-evoverse.sif'
+    container 'r-ace.img'
 
     input:
     tuple val(meta), path(bam), path(bai)
