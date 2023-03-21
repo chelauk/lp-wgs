@@ -23,6 +23,8 @@ process ACE {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
+    prefix=$prefix
+    mkdir \$prefix
     Rscript --slave ace.R \$prefix
 
     cat <<-END_VERSIONS > versions.yml
