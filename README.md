@@ -12,17 +12,77 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 4. Coverage ([`mosdepth`](https://github.com/brentp/mosdepth))
 5. Collate QC ([`MultiQC`](http://multiqc.info/))
 
-## Quick Start
+## ALMA/FHT quick start:
 
-1. Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation) (`>=22.10.1`)
+The pipeline will require a csv file with headers describing the paths to samples
 
-2. Install [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/) (you can follow [this tutorial](https://singularity-tutorial.github.io/01-installation/))
+1. Starting from fastq example csv:
+```
+patient,sample,fastq_1 ,fastq_2
+patient1,sample1,./data/patient1_sample1_R1.fastq.gz,./data/patient1_sample1_R2.fastq.gz
+patient1,sample2,./data/patient1_sample2_R1.fastq.gz,./data/patient1_sample2_R2.fastq.gz
+patient2,sample1,./data/patient2_sample1_R1.fastq.gz,./data/patient2_sample1_R2.fastq.gz
+patient2,sample2,./data/patient2_sample2_R1.fastq.gz,./data/patient2_sample2_R2.fastq.gz
+```
+example sbatch script:
+```
+#!/bin/bash -l
+#SBATCH --job-name=nextflow
+#SBATCH --output=nextflow_out.txt
+#SBATCH --partition=master-worker
+#SBATCH --ntasks=1
+#SBATCH --time=96:00:00
 
-3. Download the pipeline and test it on a minimal dataset with a single command:
+module load java/jdk15.0.1
+nextflow run /path/to/lp-wgs \
+		--input input_fastq.csv  \
+		--outdir results \
+		--igenomes_base /path/to/reference \
+		--step 'mapping' \
+		-c local.config \
+		-with-tower \
+		-profile singularity \
+		-resume
+ ```
+ note that when starting with fastq you need to add `--step mapping`
+ note with regard to the reference path it needs to match this pattern:
+```
+            bwa                   = "${params.igenomes_base}/Homo_sapiens/GATK/GRCh38/Sequence/BWAIndex/"
+            dict                  = "${params.igenomes_base}/Homo_sapiens/GATK/GRCh38/Sequence/WholeGenomeFasta/Homo_sapiens_assembly38.dict"
+            fasta                 = "${params.igenomes_base}/Homo_sapiens/GATK/GRCh38/Sequence/WholeGenomeFasta/Homo_sapiens_assembly38.fasta"
+            fasta_fai             = "${params.igenomes_base}/Homo_sapiens/GATK/GRCh38/Sequence/WholeGenomeFasta/Homo_sapiens_assembly38.fasta.fai"
+```
+or you can modify the genomes.config file yourself
 
-   ```bash
-   nextflow run lp/wgs -profile test,YOURPROFILE --outdir <OUTDIR>
-   ```
+
+2. Starting from bam example csv:
+```
+patient,sample,fastq_1 ,fastq_2
+patient1,sample1,./data/patient1_sample1.bam
+patient1,sample2,./data/patient1_sample2.bam
+patient2,sample1,./data/patient2_sample1.bam
+patient2,sample2,./data/patient2_sample2.bam
+```
+example sbatch script:
+```
+#!/bin/bash -l
+#SBATCH --job-name=nextflow
+#SBATCH --output=nextflow_out.txt
+#SBATCH --partition=master-worker
+#SBATCH --ntasks=1
+#SBATCH --time=96:00:00
+
+module load java/jdk15.0.1
+nextflow run /path/to/lp-wgs \
+		--input input_fastq.csv  \
+		--outdir results \
+		--igenomes_base /path/to/reference \
+		--step 'ace' \
+		-c local.config \
+		-with-tower \
+		-profile singularity \
+		-resume
+ ```
 
    Note that some form of configuration will be needed so that Nextflow knows how to fetch the required software. This is usually done in the form of a config profile (`YOURPROFILE` in the example command above). You can chain multiple config profiles in a comma-separated string.
 
