@@ -22,6 +22,9 @@
 - [bwa](https://github.com/lh3/bwa)
   > Li H. (2013) Aligning sequence reads, clone sequences and assembly contigs with BWA-MEM. arXiv:1303.3997v2 [q-bio.GN].
 
+- [ACE](https://github.com/tgac-vumc/ACE)
+  > Poell JB, Mendeville M, Sie D, Brink A, Brakenhoff RH, Ylstra B.  ACE: Absolute Copy number Estimation from low-coverage whole-genome sequencing data.  Bioinformatics. 2018 Dec 28. doi: 10.1093/bioinformatics/bty1055
+
 - [MultiQC](https://pubmed.ncbi.nlm.nih.gov/27312411/)
   > Ewels P, Magnusson M, Lundin S, Käller M. MultiQC: summarize analysis results for multiple tools and samples in a single report. Bioinformatics. 2016 Oct 1;32(19):3047-8. doi: 10.1093/bioinformatics/btw354. Epub 2016 Jun 16. PubMed PMID: 27312411; PubMed Central PMCID: PMC5039924.
 
