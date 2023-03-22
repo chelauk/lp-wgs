@@ -45,6 +45,7 @@ nextflow run /path/to/lp-wgs \
 		-resume
  ```
  note that when starting with fastq you need to add `--step mapping`
+ 
  note with regard to the reference path it needs to match this pattern:
 ```
             bwa                   = "${params.igenomes_base}/Homo_sapiens/GATK/GRCh38/Sequence/BWAIndex/"
