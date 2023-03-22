@@ -36,7 +36,7 @@ process ACE {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        ace: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//' ))
+        ace: 3.16
     END_VERSIONS
     """
     stub:

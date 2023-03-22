@@ -49,11 +49,11 @@ process FASTP {
         $args \\
         2> ${prefix}.fastp.log
 
-        cat <<-END_VERSIONS > versions.yml
-        "${task.process}":
-            fastp: \$(fastp --version 2>&1 | sed -e "s/fastp //g")
-        END_VERSIONS
-        """
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        fastp: \$(fastp --version 2>&1 | sed -e "s/fastp //g")
+    END_VERSIONS
+    """
 
     stub:    
     def args = task.ext.args ?: ''
