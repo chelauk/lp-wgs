@@ -13,7 +13,7 @@
 - [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
   > Andrews, S. (2010). FastQC: A Quality Control Tool for High Throughput Sequence Data [Online].24 Jun 2015
 
-- [fastp]
+- [fastp](https://github.com/OpenGene/fastp)
   > Shifu Chen, Yanqing Zhou, Yaru Chen, Jia Gu; fastp: an ultra-fast all-in-one FASTQ preprocessor, Bioinformatics, Volume 34, Issue 17, 1 September 2018, Pages i884–i890, https://doi.org/10.1093/bioinformatics/bty560
 
 - [MultiQC](https://pubmed.ncbi.nlm.nih.gov/27312411/)
