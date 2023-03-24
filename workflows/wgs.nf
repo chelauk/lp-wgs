@@ -15,7 +15,9 @@ def checkPathParamList = [
     params.multiqc_config,
     params.bwa,
     params.fasta,
-    params.fasta_fai
+    params.fasta_fai,
+    params.centromere,
+    params.map_wig
     ]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
@@ -47,6 +49,9 @@ include { QC_TRIM_ALIGN               } from '../subworkflows/local/qc_trim_alig
 include { MOSDEPTH                    } from '../modules/nf-core/mosdepth/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
+include { HMMCOPY_GCCOUNTER           } from '../modules/nf-core/hmmcopy/gccounter/main'
+include { HMMCOPY_READCOUNTER         } from '../modules/nf-core/hmmcopy/readcounter/main'
+include { ICHORCNA_RUN                } from '../modules/nf-core/ichorcna/run/main'      
 include { ACE                         } from '../modules/local/ace'
 
 //
@@ -55,6 +60,17 @@ include { ACE                         } from '../modules/local/ace'
     fasta                  = params.fasta              ? Channel.fromPath(params.fasta).collect()     : Channel.empty()
     fasta_fai              = params.fasta_fai          ? Channel.fromPath(params.fasta_fai).collect() : Channel.empty()
     bwa                    = params.bwa                ? Channel.fromPath(params.bwa).collect()       : Channel.empty()
+    centromere             = params.centromere         ? Channel.fromPath(params.centromere).collect(): Channel.empty()
+    if ( params.map_bin == '10kb' ) {
+        map_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_10kb.wig").collect()   : Channel.empty()
+    } else if ( params.map_bin == '50kb' ) {
+        map_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_50kb.wig").collect()   : Channel.empty()
+    } else if ( params.map_bin == '500kb') {
+        map_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_500kb.wig").collect()   : Channel.empty()
+    } else  if ( params.map_bin == '1000kb' ){
+        map_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_1000kb.wig").collect()   : Channel.empty()
+    }
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -100,7 +116,32 @@ workflow WGS {
     ch_reports  = ch_reports.mix(mosdepth_reports.collect{meta, report -> report})
     ch_versions = ch_versions.mix(MOSDEPTH.out.versions.first())
 
+    // run hmmcopygccounter
+    HMMCOPY_GCCOUNTER(
+        fasta.map{ it -> [[id:it[0].baseName], it] }
+         )
+    ch_versions = ch_versions.mix(HMMCOPY_GCCOUNTER.out.versions)
 
+    // run hmmcopyreadcounter
+    HMMCOPY_READCOUNTER(
+        ch_bam_input
+        )
+    ch_versions = ch_versions.mix(HMMCOPY_READCOUNTER.out.versions)
+
+    
+    panel_of_normals = []
+    normal_wig = []
+    HMMCOPY_GCCOUNTER.out.wig.view()
+    // run ichorcna
+    ICHORCNA_RUN(
+        HMMCOPY_READCOUNTER.out.wig,
+        panel_of_normals,
+        HMMCOPY_GCCOUNTER.out.wig,
+        map_wig,
+        normal_wig,        
+        centromere
+        )
+    
     // run ACE
     ACE(ch_bam_input)
     ch_versions = ch_versions.mix(ACE.out.versions)

@@ -25,6 +25,21 @@
                         "git_sha": "c8e35eb2055c099720a75538d1b8adb3fb5a464c",
                         "installed_by": ["modules"]
                     },
+                    "hmmcopy/gccounter": {
+                        "branch": "master",
+                        "git_sha": "0f8a77ff00e65eaeebc509b8156eaa983192474b",
+                        "installed_by": ["modules"]
+                    },
+                    "hmmcopy/readcounter": {
+                        "branch": "master",
+                        "git_sha": "0f8a77ff00e65eaeebc509b8156eaa983192474b",
+                        "installed_by": ["modules"]
+                    },
+                    "ichorcna/run": {
+                        "branch": "master",
+                        "git_sha": "7c51d3e30559100439671cf49fa221ec6c22b91e",
+                        "installed_by": ["modules"]
+                    },
                     "mosdepth": {
                         "branch": "master",
                         "git_sha": "def5f182583df0c20f43ec3d4355e8ebd341aaa9",
