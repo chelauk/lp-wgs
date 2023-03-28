@@ -19,11 +19,13 @@ process HMMCOPY_GCCOUNTER {
 
     script:
     def args = task.ext.args ?: ''
+    def args2 = task.ext.args2 ?: '' 
     def prefix = task.ext.prefix ?: "${meta.id}"
     def VERSION = '0.1.1' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
     gcCounter \\
         $args \\
+        $args2 \\
         ${fasta} > ${prefix}.wig
 
     cat <<-END_VERSIONS > versions.yml

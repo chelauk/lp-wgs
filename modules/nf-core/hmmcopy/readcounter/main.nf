@@ -20,11 +20,13 @@ process HMMCOPY_READCOUNTER {
 
     script:
     def args = task.ext.args ?: ''
+    def args2 = task.ext.args2 ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def VERSION = '0.1.1' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
     readCounter \\
         $args \\
+        $args2 \\
         ${bam} > ${prefix}.wig
 
     cat <<-END_VERSIONS > versions.yml

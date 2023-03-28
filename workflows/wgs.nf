@@ -51,7 +51,7 @@ include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 include { HMMCOPY_GCCOUNTER           } from '../modules/nf-core/hmmcopy/gccounter/main'
 include { HMMCOPY_READCOUNTER         } from '../modules/nf-core/hmmcopy/readcounter/main'
-include { ICHORCNA_RUN                } from '../modules/nf-core/ichorcna/run/main'      
+include { ICHORCNA_RUN                } from '../modules/nf-core/ichorcna/run/main'
 include { ACE                         } from '../modules/local/ace'
 
 //
@@ -119,7 +119,7 @@ workflow WGS {
     // run hmmcopygccounter
     HMMCOPY_GCCOUNTER(
         fasta.map{ it -> [[id:it[0].baseName], it] }
-         )
+        )
     ch_versions = ch_versions.mix(HMMCOPY_GCCOUNTER.out.versions)
 
     // run hmmcopyreadcounter
@@ -128,7 +128,7 @@ workflow WGS {
         )
     ch_versions = ch_versions.mix(HMMCOPY_READCOUNTER.out.versions)
 
-    
+
     panel_of_normals = []
     normal_wig = []
     HMMCOPY_GCCOUNTER.out.wig.view()
@@ -138,10 +138,10 @@ workflow WGS {
         panel_of_normals,
         HMMCOPY_GCCOUNTER.out.wig,
         map_wig,
-        normal_wig,        
+        normal_wig,
         centromere
         )
-    
+
     // run ACE
     ACE(ch_bam_input)
     ch_versions = ch_versions.mix(ACE.out.versions)
