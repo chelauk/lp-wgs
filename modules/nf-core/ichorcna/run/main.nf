@@ -42,8 +42,6 @@ process ICHORCNA_RUN {
         ${centro} \\
         --outDir .
 
-    cp */*genomeWide.pdf .
-
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         ichorcna: $VERSION
