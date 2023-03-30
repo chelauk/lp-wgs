@@ -66,7 +66,7 @@ process MOSDEPTH {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        mosdepth: \$(mosdepth --version 2>&1 | sed 's/^.*mosdepth //; s/ .*\$//')
+        mosdepth: stub version
     END_VERSIONS
     """
 }

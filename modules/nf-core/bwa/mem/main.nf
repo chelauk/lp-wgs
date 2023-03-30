@@ -56,6 +56,7 @@ process BWA_MEM {
             $reads \\
             | samtools $samtools_command $args2 --threads $task.cpus -o ${prefix}.bam - "
     touch ${prefix}.bam
+    touch ${prefix}.bam.bai
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
