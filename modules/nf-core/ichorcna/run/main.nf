@@ -30,6 +30,7 @@ process ICHORCNA_RUN {
     def centro = centromere ? "--centromere ${centromere}" : ''
     def VERSION = '0.3.2' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
+    mkdir ./ichor_${prefix}
     runIchorCNA.R \\
         $args \\
         --WIG ${wig} \\
@@ -38,7 +39,7 @@ process ICHORCNA_RUN {
         --mapWig ${map_wig} \\
         ${pon} \\
         ${centro} \\
-        --outDir ./ichor_"${prefix}"
+        --outDir ./ichor_${prefix}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -52,6 +53,7 @@ process ICHORCNA_RUN {
     def centro = centromere ? "--centromere ${centromere}" : ''
     def VERSION = '0.3.2' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
+    mkdir ./ichor_${prefix}
     echo -e "runIchorCNA.R \\
         $args \\
         --WIG ${wig} \\
@@ -60,12 +62,7 @@ process ICHORCNA_RUN {
         --mapWig ${map_wig} \\
         ${pon} \\
         ${centro} \\
-        --outDir . 
-
-    cp */*genomeWide.pdf ."
-    touch ${prefix}.cna.seg
-    touch ${prefix}.params.txt
-    touch ${prefix}genomeWide.pdf
+        --outDir . "
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
