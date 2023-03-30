@@ -17,9 +17,7 @@ process ICHORCNA_RUN {
     path centromere
 
     output:
-    tuple val(meta), path("*.cna.seg")    , emit: cna_seg
-    tuple val(meta), path("*.params.txt") , emit: ichorcna_params
-    tuple val(meta), path("${meta.id}")    , emit: plots
+    tuple val(meta), path("ichor_*")   , emit: ichor_out
     path "versions.yml"                   , emit: versions
 
     when:
@@ -40,7 +38,7 @@ process ICHORCNA_RUN {
         --mapWig ${map_wig} \\
         ${pon} \\
         ${centro} \\
-        --outDir .
+        --outDir ./ichor_"${prefix}"
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
