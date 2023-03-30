@@ -55,6 +55,11 @@ include { ICHORCNA_RUN                } from '../modules/nf-core/ichorcna/run/ma
 include { ACE                         } from '../modules/local/ace'
 
 //
+// value channels
+//
+    map_bin = params.map_bin
+
+//
 // gather prebuilt indices
 //
     fasta                  = params.fasta              ? Channel.fromPath(params.fasta).collect()     : Channel.empty()
@@ -62,16 +67,24 @@ include { ACE                         } from '../modules/local/ace'
     bwa                    = params.bwa                ? Channel.fromPath(params.bwa).collect()       : Channel.empty()
     centromere             = params.centromere         ? Channel.fromPath(params.centromere).collect(): Channel.empty()
     if ( params.map_bin == '10kb' ) {
-        map_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_10kb.wig").collect()   : Channel.empty()
+        gc_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_10kb.wig").collect()   : Channel.empty()
     } else if ( params.map_bin == '50kb' ) {
-        map_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_50kb.wig").collect()   : Channel.empty()
+        gc_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_50kb.wig").collect()   : Channel.empty()
     } else if ( params.map_bin == '500kb') {
-        map_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_500kb.wig").collect()   : Channel.empty()
+        gc_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_500kb.wig").collect()   : Channel.empty()
     } else  if ( params.map_bin == '1000kb' ){
-        map_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_1000kb.wig").collect()   : Channel.empty()
+        gc_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_1000kb.wig").collect()   : Channel.empty()
     }
 
-
+    if ( params.map_bin == '10kb' ) {
+        map_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_10kb.wig").collect()   : Channel.empty()
+    } else if ( params.map_bin == '50kb' ) {
+        map_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_50kb.wig").collect()   : Channel.empty()
+    } else if ( params.map_bin == '500kb') {
+        map_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_500kb.wig").collect()   : Channel.empty()
+    } else  if ( params.map_bin == '1000kb' ){
+        map_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_1000kb.wig").collect()   : Channel.empty()
+    }
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
@@ -117,10 +130,16 @@ workflow WGS {
     ch_versions = ch_versions.mix(MOSDEPTH.out.versions.first())
 
     // run hmmcopygccounter
+    if ( params.call_gc ) {
     HMMCOPY_GCCOUNTER(
-        fasta.map{ it -> [[id:it[0].baseName], it] }
+        fasta.map{ it -> [[id:it[0].baseName], it] },
+        map_bin
         )
+    gc_wig = HMMCOPY_GCCOUNTER.out.wig
     ch_versions = ch_versions.mix(HMMCOPY_GCCOUNTER.out.versions)
+    } else {
+        gc_wig = gc_wig
+    }
 
     // run hmmcopyreadcounter
     HMMCOPY_READCOUNTER(
@@ -131,12 +150,11 @@ workflow WGS {
 
     panel_of_normals = []
     normal_wig = []
-    HMMCOPY_GCCOUNTER.out.wig.view()
     // run ichorcna
     ICHORCNA_RUN(
         HMMCOPY_READCOUNTER.out.wig,
         panel_of_normals,
-        HMMCOPY_GCCOUNTER.out.wig,
+        gc_wig,
         map_wig,
         normal_wig,
         centromere

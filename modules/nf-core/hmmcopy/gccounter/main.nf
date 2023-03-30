@@ -9,9 +9,10 @@ process HMMCOPY_GCCOUNTER {
 
     input:
     tuple val(meta), path(fasta)
+    val map_bin
 
     output:
-    tuple val(meta), path("*.wig"), emit: wig
+    path("*.wig"), emit: wig
     path "versions.yml"           , emit: versions
 
     when:
@@ -26,7 +27,7 @@ process HMMCOPY_GCCOUNTER {
     gcCounter \\
         $args \\
         $args2 \\
-        ${fasta} > ${prefix}.wig
+        ${fasta} > gc_${prefix}_${map_bin}.wig
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -34,15 +35,15 @@ process HMMCOPY_GCCOUNTER {
     END_VERSIONS
     """
     stub:
-        def args = task.ext.args ?: ''
+    def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def VERSION = '0.1.1' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
     echo -e "gcCounter \\
             $args \\
-            ${fasta} > ${prefix}.wig"
+            ${fasta} > gc_${prefix}_${map_bin}.wig"
     
-    touch ${fasta}.wig
+    touch gc_${prefix}_${map_bin}.wig
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

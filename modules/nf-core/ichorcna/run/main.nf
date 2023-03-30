@@ -11,7 +11,7 @@ process ICHORCNA_RUN {
     input:
     tuple val(meta), path(wig)
     path normal_wig
-    tuple val(meta), path(gc_wig)
+    path(gc_wig)
     path map_wig
     path panel_of_normals
     path centromere
