@@ -19,7 +19,7 @@ process ICHORCNA_RUN {
     output:
     tuple val(meta), path("*.cna.seg")    , emit: cna_seg
     tuple val(meta), path("*.params.txt") , emit: ichorcna_params
-    tuple val(meta), path("${prefix}")    , emit: plots
+    tuple val(meta), path("${meta.id}")    , emit: plots
     path "versions.yml"                   , emit: versions
 
     when:
