@@ -68,23 +68,22 @@ include { ACE                         } from '../modules/local/ace'
     centromere             = params.centromere         ? Channel.fromPath(params.centromere).collect(): Channel.empty()
     if ( params.map_bin == '10kb' ) {
         gc_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_10kb.wig").collect()   : Channel.empty()
+        map_wig               = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_10kb.wig").collect()   : Channel.empty()
+        pon_rds               = params.map_wig            ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_hg38_500kb_median_normAutosome_median.rds")   : Channel.empty()
     } else if ( params.map_bin == '50kb' ) {
         gc_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_50kb.wig").collect()   : Channel.empty()
+        map_wig               = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_50kb.wig").collect()   : Channel.empty()
+        pon_rds               = params.map_wig            ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_hg38_500kb_median_normAutosome_median.rds")   : Channel.empty()
     } else if ( params.map_bin == '500kb') {
         gc_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_500kb.wig").collect()   : Channel.empty()
+        map_wig               = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_500kb.wig").collect()   : Channel.empty()
+        pon_rds               = params.map_wig            ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_hg38_500kb_median_normAutosome_median.rds")   : Channel.empty()
     } else  if ( params.map_bin == '1000kb' ){
         gc_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_1000kb.wig").collect()   : Channel.empty()
+        map_wig               = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_1000kb.wig").collect()   : Channel.empty()
+        pon_rds               = params.map_wig            ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_hg38_1Mb_median_normAutosome_median.rds")   : Channel.empty()
     }
 
-    if ( params.map_bin == '10kb' ) {
-        map_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_10kb.wig").collect()   : Channel.empty()
-    } else if ( params.map_bin == '50kb' ) {
-        map_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_50kb.wig").collect()   : Channel.empty()
-    } else if ( params.map_bin == '500kb') {
-        map_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_500kb.wig").collect()   : Channel.empty()
-    } else  if ( params.map_bin == '1000kb' ){
-        map_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_1000kb.wig").collect()   : Channel.empty()
-    }
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
@@ -148,7 +147,7 @@ workflow WGS {
     ch_versions = ch_versions.mix(HMMCOPY_READCOUNTER.out.versions)
 
 
-    panel_of_normals = []
+    panel_of_normals = pon_rds
     normal_wig = []
     // run ichorcna
     ICHORCNA_RUN(
