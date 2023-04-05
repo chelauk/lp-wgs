@@ -12,6 +12,27 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 4. Coverage ([`mosdepth`](https://github.com/brentp/mosdepth))
 5. Collate QC ([`MultiQC`](http://multiqc.info/))
 
+
+```mermaid
+flowchart TD
+step1(reference fasta)
+step2(fastqs)
+step2-->step3(qc fastqc)
+step2-->step4(trim fastp)
+step1-->step5(align bwa)
+step4-->step5(align bwa)
+step5-->step6(coverage mosdepth)
+step1-->step12(gccounter HMMCOPY)
+step5-->step7(counter HMMCOPY)
+step12-->step8(CNA ICHOR)
+step7-->step8(CNA ICHOR)
+step5-->step9(DNA ACE)
+step9-->step10(copy number output)
+step8-->step10(copy number output)
+step3-->step11(multiqc)
+step6-->step11(multiqc)
+```
+
 ## ALMA/FHT quick start:
 
 The pipeline will require a csv file with headers describing the paths to samples
