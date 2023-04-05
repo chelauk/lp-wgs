@@ -152,10 +152,10 @@ workflow WGS {
     // run ichorcna
     ICHORCNA_RUN(
         HMMCOPY_READCOUNTER.out.wig,
-        panel_of_normals,
+        normal_wig,
         gc_wig,
         map_wig,
-        normal_wig,
+        panel_of_normals,
         centromere
         )
 
