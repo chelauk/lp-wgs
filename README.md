@@ -12,7 +12,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 4. Coverage ([`mosdepth`](https://github.com/brentp/mosdepth))
 5. GC counts ([`HMMcopy`](http://compbio.bccrc.ca/software/hmmcopy/))
 6. read counts ([`HMMcopy`](http://compbio.bccrc.ca/software/hmmcopy/))
-7. ichor cna calls and tumour cell fraction ([`ICHOR`](https://github.com/broadinstitute/ichorCNA/wiki))
+7. ICHOR cna calls and tumour cell fraction ([`ICHOR`](https://github.com/broadinstitute/ichorCNA/wiki))
 8. ACE Absolute Copy number Estimation using low-coverage whole genome sequencing data ([`ACE`](https://github.com/tgac-vumc/ACE))
 5. Collate QC ([`MultiQC`](http://multiqc.info/))
 
