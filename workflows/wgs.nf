@@ -69,19 +69,19 @@ include { ACE                         } from '../modules/local/ace'
     if ( params.map_bin == '10kb' ) {
         gc_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_10kb.wig").collect()   : Channel.empty()
         map_wig               = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_10kb.wig").collect()   : Channel.empty()
-        pon_rds               = params.map_wig            ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_hg38_10kb_median_normAutosome_median.rds").collect()   : Channel.empty()
+        pon_rds               = params.normal             ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_hg38_10kb_median_normAutosome_median.rds").collect()   : Channel.empty()
     } else if ( params.map_bin == '50kb' ) {
         gc_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_50kb.wig").collect()   : Channel.empty()
         map_wig               = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_50kb.wig").collect()   : Channel.empty()
-        pon_rds               = params.map_wig            ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_hg38_50kb_median_normAutosome_median.rds").collect()   : Channel.empty()
+        pon_rds               = params.normal             ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_hg38_50kb_median_normAutosome_median.rds").collect()   : Channel.empty()
     } else if ( params.map_bin == '500kb') {
         gc_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_500kb.wig").collect()   : Channel.empty()
         map_wig               = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_500kb.wig").collect()   : Channel.empty()
-        pon_rds               = params.map_wig            ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_hg38_500kb_median_normAutosome_median.rds").collect()   : Channel.empty()
+        pon_rds               = params.normal             ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_hg38_500kb_median_normAutosome_median.rds").collect()   : Channel.empty()
     } else  if ( params.map_bin == '1000kb' ){
         gc_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_1000kb.wig").collect()   : Channel.empty()
         map_wig               = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_1000kb.wig").collect()   : Channel.empty()
-        pon_rds               = params.map_wig            ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_hg38_1Mb_median_normAutosome_median.rds").collect()   : Channel.empty()
+        pon_rds               = params.normal             ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_hg38_1Mb_median_normAutosome_median.rds").collect()   : Channel.empty()
     }
 
 /*
