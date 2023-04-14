@@ -241,5 +241,43 @@
         {
             "$ref": "#/definitions/generic_options"
         }
-    ]
+    ],
+    "properties": {
+        "call_gc": {
+            "type": "string",
+            "default": null
+        },
+        "igenomes_ignore": {
+            "type": "string",
+            "default": "false"
+        },
+        "ploidy": {
+            "type": "string",
+            "default": "default"
+        },
+        "bin": {
+            "type": "string",
+            "default": "default"
+        },
+        "normal": {
+            "type": "string",
+            "default": null
+        },
+        "map_bin": {
+            "type": "string",
+            "default": "10kb"
+        },
+        "bwa": {
+            "type": "string",
+            "default": null
+        },
+        "centromere": {
+            "type": "string",
+            "default": null
+        },
+        "map_wig": {
+            "type": "string",
+            "default": null
+        }
+    }
 }
