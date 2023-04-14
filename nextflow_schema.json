@@ -36,11 +36,13 @@
                 },
                 "step": {
                     "type": "string",
-                    "default": "mapping"
+                    "default": "bam",
+                    "description": "start from fastq or bam"
                 },
                 "igenomes_base": {
                     "type": "string",
-                    "default": "None"
+                    "default": "None",
+                    "description": "path to reference"
                 },
                 "save_reference": {
                     "type": "string",
@@ -48,7 +50,8 @@
                 },
                 "fasta_fai": {
                     "type": "string",
-                    "default": "None"
+                    "default": "None",
+                    "hidden": true
                 }
             }
         },
@@ -245,7 +248,7 @@
     "properties": {
         "call_gc": {
             "type": "string",
-            "default": null
+            "default": "None"
         },
         "igenomes_ignore": {
             "type": "string",
@@ -261,7 +264,7 @@
         },
         "normal": {
             "type": "string",
-            "default": null
+            "default": "None"
         },
         "map_bin": {
             "type": "string",
@@ -269,15 +272,15 @@
         },
         "bwa": {
             "type": "string",
-            "default": null
+            "default": "None"
         },
         "centromere": {
             "type": "string",
-            "default": null
+            "default": "None"
         },
         "map_wig": {
             "type": "string",
-            "default": null
+            "default": "None"
         }
     }
 }
