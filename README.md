@@ -103,7 +103,7 @@ nextflow run /path/to/lp-wgs \
 		--input input_fastq.csv  \
 		--outdir results \
 		--igenomes_base /path/to/reference \
-		--step 'ace' \
+		--step 'bam' \
 		-c local.config \
 		-with-tower \
 		-profile singularity \
