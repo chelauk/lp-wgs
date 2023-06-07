@@ -107,7 +107,7 @@ workflow WGS {
     sort_bam = true
     // Gather index for mapping given the chosen aligner
     ch_map_index = bwa
-    if ( params.step == 'fastq' ) {
+    if ( params.step == 'mapping' ) {
         // Create input channel
         fastq_input = ch_input_sample
         QC_TRIM_ALIGN ( fastq_input, ch_map_index, sort_bam)
