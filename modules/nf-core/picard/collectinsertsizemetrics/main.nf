@@ -8,7 +8,7 @@ process PICARD_COLLECTINSERTSIZEMETRICS {
         'quay.io/biocontainers/picard:2.26.10--hdfd78af_0' }"
 
     input:
-    tuple val(meta), path(bam)
+    tuple val(meta), path(bam), path(bai)
 
     output:
     tuple val(meta), path("*.txt"), emit: size_metrics
