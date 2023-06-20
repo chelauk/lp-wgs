@@ -47,6 +47,7 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 
 include { QC_TRIM_ALIGN               } from '../subworkflows/local/qc_trim_align'
 include { MOSDEPTH                    } from '../modules/nf-core/mosdepth/main'
+include { PICARD_COLLECTINSERTSIZEMETRICS } from '../modules/nf-core/picard/collectinsertsizemetrics/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 include { HMMCOPY_GCCOUNTER           } from '../modules/nf-core/hmmcopy/gccounter/main'
@@ -69,19 +70,19 @@ include { ACE                         } from '../modules/local/ace'
     if ( params.map_bin == '10kb' ) {
         gc_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_10kb.wig").collect()   : Channel.empty()
         map_wig               = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_10kb.wig").collect()   : Channel.empty()
-        pon_rds               = params.normal             ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_hg38_10kb_median_normAutosome_median.rds").collect()   : Channel.empty()
+        pon_rds               = params.normal             ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_hg38_10kb_median_normAutosome_median.rds").collect() : Channel.value([]) // optional
     } else if ( params.map_bin == '50kb' ) {
         gc_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_50kb.wig").collect()   : Channel.empty()
         map_wig               = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_50kb.wig").collect()   : Channel.empty()
-        pon_rds               = params.normal             ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_hg38_50kb_median_normAutosome_median.rds").collect()   : Channel.empty()
+        pon_rds               = params.normal             ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_hg38_50kb_median_normAutosome_median.rds").collect() : Channel.value([]) // optional Channel.empty()
     } else if ( params.map_bin == '500kb') {
         gc_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_500kb.wig").collect()   : Channel.empty()
         map_wig               = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_500kb.wig").collect()   : Channel.empty()
-        pon_rds               = params.normal             ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_500kb_median_normAutosome_mapScoreFiltered_median.rds").collect()   : Channel.empty()
+        pon_rds               = params.normal             ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_500kb_median_normAutosome_mapScoreFiltered_median.rds").collect() : Channel.value([]) // optional Channel.empty()
     } else  if ( params.map_bin == '1000kb' ){
         gc_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_1000kb.wig").collect()   : Channel.empty()
         map_wig               = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_1000kb.wig").collect()   : Channel.empty()
-        pon_rds               = params.normal             ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_1Mb_median_normAutosome_mapScoreFiltered_median.rds").collect()   : Channel.empty()
+        pon_rds               = params.normal             ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_1Mb_median_normAutosome_mapScoreFiltered_median.rds").collect() : Channel.value([]) // optional Channel.empty()
     }
 
 /*
@@ -117,6 +118,10 @@ workflow WGS {
     } else if ( params.step == 'bam' ) {
         ch_bam_input = ch_input_sample
     }
+
+    PICARD_COLLECTINSERTSIZEMETRICS ( ch_bam_input )
+    ch_versions = ch_versions.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.versions.first())
+    ch_reports  = ch_reports.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.size_metrics.collect{meta, report -> report})
 
     MOSDEPTH(
         ch_bam_input,
