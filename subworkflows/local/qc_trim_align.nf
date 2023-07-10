@@ -32,7 +32,7 @@ workflow QC_TRIM_ALIGN {
                             FASTP.out.html.collect{meta, html -> html}
                             )
     ch_versions = ch_versions.mix(FASTP.out.versions.first())
-    FASTP.out.reads.view()
+    FASTP.out.reads.
     BWA_MEM(FASTP.out.reads,   ch_map_index.map{ it -> [[id:it[0].baseName], it] }, sort) // If aligner is bwa-mem
     ch_versions = ch_versions.mix(BWA_MEM.out.versions.first())
     // Get the bam files from the aligner
