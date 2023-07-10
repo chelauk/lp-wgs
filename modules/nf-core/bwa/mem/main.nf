@@ -48,7 +48,7 @@ process BWA_MEM {
     def samtools_command = sort_bam ? 'sort' : 'view'
     """
     INDEX=`find -L ./ -name "*.amb" | sed 's/\\.amb\$//'`
-
+    echo "${task.ext.args}"
     echo -e "bwa mem \\
             $args \\
             -t $task.cpus \\
