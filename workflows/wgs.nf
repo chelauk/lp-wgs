@@ -218,7 +218,15 @@ workflow.onComplete {
 */
 // Function to extract information (meta data + file(s)) from csv file(s)
 def extract_csv(csv_file) {
-    Channel.from(csv_file).splitCsv(header: true)
+    // check file is not empty
+    file(csv_file).withReader('UTF-8') { reader ->
+        if (reader.readLine() == null) {
+            log.error "CSV file is empty"
+            return null
+        }
+    }
+    // read csv file
+    Channel.of(csv_file).splitCsv(header: true)
     .map { row ->
         if (!(row.patient && row.sample)) log.warn "Missing or unknown field in csv file header"
         [[row.patient.toString(), row.sample.toString()], row]
@@ -237,8 +245,8 @@ def extract_csv(csv_file) {
             def meta = [:]
             if (row.patient) meta.patient = row.patient.toString()
             if (row.sample)  meta.sample  = row.sample.toString()
-            if (row.gender)  meta.gender  = row.gender.toString()
-                else meta.gender = "NA"
+            if (row.sex)  meta.sex  = row.sex.toString()
+                else meta.sex = "NA"
             if (row.status)  meta.status  = row.status.toString()
                 else meta.status = 0
             if (row.fastq_1) {
@@ -256,7 +264,6 @@ def extract_csv(csv_file) {
                 def flowcell    = flowcellLaneFromFastq(fastq_1)
                 //Don't use a random element for ID, it breaks resuming
                 def read_group  = "\"@RG\\tID:${flowcell}.${row.sample}.${row.lane}\\t${CN}PU:${row.lane}\\tSM:${row.patient}_${row.sample}\\tLB:${row.sample}\\tDS:${params.fasta}\\tPL:${params.seq_platform}\""
-                meta.num_lanes   = num_lanes.toInteger()
                 meta.read_group  = read_group.toString()
                 meta.data_type   = "fastq"
                 if (params.step == 'mapping') return [meta, [fastq_1, fastq_2]]
