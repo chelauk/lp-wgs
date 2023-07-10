@@ -7,9 +7,7 @@ process ACE {
     //               For Conda, the build (i.e. "h9402c20_2") must be EXCLUDED to support installation on different operating systems.
     // TODO nf-core: See section in main README for further information regarding finding and adding container addresses to the section below.
     conda "bioconductor-ace:1.16.0--r42hdfd78af_0"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/bioconductor-ace:1.16.0--r42hdfd78af_0' :
-        'quay.io/biocontainers/bioconductor-ace:1.16.0--r42hdfd78af_0' }"
+    container "r-ace.sif"
 
     input:
     tuple val(meta), path(bam), path(bai)

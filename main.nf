@@ -20,6 +20,7 @@ params.fasta_fai             = WorkflowMain.getGenomeAttribute(params, 'fasta_fa
 params.bwa                   = WorkflowMain.getGenomeAttribute(params, 'bwa')
 params.centromere            = WorkflowMain.getGenomeAttribute(params, 'centromere')
 params.map_wig               = WorkflowMain.getGenomeAttribute(params, 'map_wig')
+params.chr_bed               = WorkflowMain.getGenomeAttribute(params, 'chr_bed')
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

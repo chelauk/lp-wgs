@@ -66,6 +66,7 @@ include { ACE                         } from '../modules/local/ace'
     fasta                  = params.fasta              ? Channel.fromPath(params.fasta).collect()     : Channel.empty()
     fasta_fai              = params.fasta_fai          ? Channel.fromPath(params.fasta_fai).collect() : Channel.empty()
     bwa                    = params.bwa                ? Channel.fromPath(params.bwa).collect()       : Channel.empty()
+    chr_bed                = params.chr_bed            ? Channel.fromPath(params.chr_bed).collect()       : Channel.empty()
     centromere             = params.centromere         ? Channel.fromPath(params.centromere).collect(): Channel.empty()
     if ( params.map_bin == '10kb' ) {
         gc_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_10kb.wig").collect()   : Channel.empty()
@@ -125,6 +126,7 @@ workflow WGS {
 
     MOSDEPTH(
         ch_bam_input,
+        chr_bed,
         fasta.map{ it -> [[id:it[0].baseName], it] }
         )
 

@@ -9,6 +9,7 @@ process MOSDEPTH {
 
     input:
     tuple val(meta),  path(bam), path(bai)
+    path(chr_bed)
     tuple val(meta3), path(fasta)
 
     output:

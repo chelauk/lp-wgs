@@ -30,7 +30,7 @@ process ICHORCNA_RUN {
     def centro = centromere ? "--centromere ${centromere}" : ''
     def VERSION = '0.3.2' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
-    mkdir ./ichor_${prefix}
+    [ ! -d "./ichor_${prefix}" ] && mkdir ./ichor_${prefix} || echo "./ichor_${prefix} exists"
     runIchorCNA.R \\
         $args \\
         --WIG ${wig} \\
