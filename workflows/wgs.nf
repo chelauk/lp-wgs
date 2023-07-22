@@ -45,7 +45,7 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 // MODULE: Installed directly from nf-core/modules
 //
 
-include { QC_TRIM_ALIGN               } from '../subworkflows/local/qc_trim/main'
+include { QC_TRIM                     } from '../subworkflows/local/qc_trim/main'
 include { MOSDEPTH                    } from '../modules/nf-core/mosdepth/main'
 include { PICARD_COLLECTINSERTSIZEMETRICS } from '../modules/nf-core/picard/collectinsertsizemetrics/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
@@ -112,10 +112,10 @@ workflow WGS {
     if ( params.step == 'mapping' ) {
         // Create input channel
         fastq_input = ch_input_sample
-        QC_TRIM_ALIGN ( fastq_input, ch_map_index, sort_bam)
-        ch_versions = ch_versions.mix(QC_TRIM_ALIGN.out.ch_versions)
-        ch_reports  = ch_reports.mix(QC_TRIM_ALIGN.out.ch_reports)
-        ch_bam_input = QC_TRIM_ALIGN.out.bam
+        QC_TRIM ( fastq_input, ch_map_index, sort_bam)
+        ch_versions = ch_versions.mix(QC_TRIM.out.ch_versions)
+        ch_reports  = ch_reports.mix(QC_TRIM.out.ch_reports)
+        ch_bam_input = QC_TRIM.out.bam
     } else if ( params.step == 'bam' ) {
         ch_bam_input = ch_input_sample
     }

@@ -6,7 +6,7 @@ include { FASTQC  } from '../../../modules/nf-core/fastqc/main'
 include { FASTP   } from '../../../modules/nf-core/fastp/main'
 include { BWA_MEM } from '../../../modules/nf-core/bwa/mem/main'
 
-workflow QC_TRIM_ALIGN {
+workflow QC_TRIM {
     take:
     ch_reads               // channel: [ val(meta), [ reads ] ]
     ch_map_index           // channel: [mandatory] mapping index
