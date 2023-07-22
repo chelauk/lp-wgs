@@ -10,7 +10,7 @@ process ACE {
     container "r-ace.sif"
 
     input:
-    tuple val(meta), path(bam), path(bai)
+    tuple val(meta), path(bam)
 
     output:
     tuple val(meta), path("${meta.id}"), emit: ace

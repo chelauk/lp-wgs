@@ -4,7 +4,6 @@
 
 include { FASTQC  } from '../../../modules/nf-core/fastqc/main'
 include { FASTP   } from '../../../modules/nf-core/fastp/main'
-include { BWA_MEM } from '../../../modules/nf-core/bwa/mem/main'
 
 workflow QC_TRIM {
     take:
@@ -32,15 +31,11 @@ workflow QC_TRIM {
                             FASTP.out.html.collect{meta, html -> html}
                             )
     ch_versions = ch_versions.mix(FASTP.out.versions.first())
-    BWA_MEM(FASTP.out.reads,   ch_map_index.map{ it -> [[id:it[0].baseName], it] }, sort) // If aligner is bwa-mem
-    ch_versions = ch_versions.mix(BWA_MEM.out.versions.first())
+    // BWA_MEM(FASTP.out.reads,   ch_map_index.map{ it -> [[id:it[0].baseName], it] }, sort) // If aligner is bwa-mem
     // Get the bam files from the aligner
 
-    ch_bam_mapped = Channel.empty()
-    ch_bam_mapped = ch_bam_mapped.mix(BWA_MEM.out.bam)
-
     emit:
-    bam          = ch_bam_mapped // channel: [ [meta], bam ]
-    ch_versions
-    ch_reports
+    reads          = FASTP.out.reads // channel: [ [meta], reads ]
+    ch_versions    // channel: fastqc, fastp versions
+    ch_reports    // channel: fastqc, fastp reports
 }

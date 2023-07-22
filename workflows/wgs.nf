@@ -43,9 +43,11 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 
 //
 // MODULE: Installed directly from nf-core/modules
-//
+// 
 
+include { BWA_MEM                     } from '../modules/nf-core/bwa/mem/main'
 include { QC_TRIM                     } from '../subworkflows/local/qc_trim/main'
+include { MERGE_LANES                 } from '../subworkflows/local/merge_lanes/main'
 include { MOSDEPTH                    } from '../modules/nf-core/mosdepth/main'
 include { PICARD_COLLECTINSERTSIZEMETRICS } from '../modules/nf-core/picard/collectinsertsizemetrics/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
@@ -115,7 +117,11 @@ workflow WGS {
         QC_TRIM ( fastq_input, ch_map_index, sort_bam)
         ch_versions = ch_versions.mix(QC_TRIM.out.ch_versions)
         ch_reports  = ch_reports.mix(QC_TRIM.out.ch_reports)
-        ch_bam_input = QC_TRIM.out.bam
+        BWA_MEM( QC_TRIM.out.reads,   ch_map_index.map{ it -> [[id:it[0].baseName], it] }, sort_bam) // If aligner is bwa-mem
+        ch_versions = ch_versions.mix(BWA_MEM.out.versions.first())
+        MERGE_LANES ( BWA_MEM.out.bam )
+        ch_versions = ch_versions.mix(MERGE_LANES.out.ch_versions.first())
+        ch_bam_input = MERGE_LANES.out.bam
     } else if ( params.step == 'bam' ) {
         ch_bam_input = ch_input_sample
     }
@@ -165,6 +171,7 @@ workflow WGS {
         panel_of_normals,
         centromere
         )
+    ch_versions= ch_versions.mix(ICHORCNA_RUN.out.versions)
 
     // run ACE
     ACE(ch_bam_input)
@@ -185,15 +192,17 @@ workflow WGS {
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
-    ch_multiqc_files = ch_multiqc_files.mix(ch_reports.collect{it[1]}.ifEmpty([]))
-
+    ch_multiqc_files = ch_multiqc_files.mix(ch_reports.collect())
+    
+    ch_multiqc_files = ch_multiqc_files.collect()
+    //ch_multiqc_files = ch_multiqc_files.view()
+    
     MULTIQC (
-        ch_multiqc_files.collect(),
-        ch_multiqc_config.toList(),
-        ch_multiqc_custom_config.toList(),
-        ch_multiqc_logo.toList()
+        ch_multiqc_files
     )
     multiqc_report = MULTIQC.out.report.toList()
+    ch_versions    = ch_versions.mix(MULTIQC.out.versions)
+
 }
 
 /*

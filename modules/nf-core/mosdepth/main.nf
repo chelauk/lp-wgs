@@ -8,7 +8,7 @@ process MOSDEPTH {
         'quay.io/biocontainers/mosdepth:0.3.3--hdfd78af_1'}"
 
     input:
-    tuple val(meta),  path(bam), path(bai)
+    tuple val(meta),  path(bam)
     path(chr_bed)
     tuple val(meta3), path(fasta)
 

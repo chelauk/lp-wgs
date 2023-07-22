@@ -9,7 +9,7 @@ process HMMCOPY_READCOUNTER {
         'quay.io/biocontainers/hmmcopy:0.1.1--h2e03b76_7' }"
 
     input:
-    tuple val(meta), path(bam), path(bai)
+    tuple val(meta), path(bam)
 
     output:
     tuple val(meta), path("*.wig"), emit: wig
