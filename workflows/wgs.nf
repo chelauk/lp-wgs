@@ -287,6 +287,11 @@ def extract_csv(csv_file) {
 
 // Parse first line of a FASTQ file, return the flowcell id and lane number.
 def flowcellLaneFromFastq(path) {
+        // Check if running in stub mode
+    if (workflow.stubRun) {
+        // Return default value when in -stub mode
+        return "DEFAULT_FLOWCELL_LANE"
+    }
     // expected format:
     // xx:yy:FLOWCELLID:LANE:... (seven fields)
     // or
