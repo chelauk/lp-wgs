@@ -2,9 +2,9 @@
 // QC Trimming and Alignment
 //
 
-include { FASTQC  } from '../../modules/nf-core/fastqc/main'
-include { FASTP   } from '../../modules/nf-core/fastp/main'
-include { BWA_MEM } from '../../modules/nf-core/bwa/mem/main'
+include { FASTQC  } from '../../../modules/nf-core/fastqc/main'
+include { FASTP   } from '../../../modules/nf-core/fastp/main'
+include { BWA_MEM } from '../../../modules/nf-core/bwa/mem/main'
 
 workflow QC_TRIM_ALIGN {
     take:

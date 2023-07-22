@@ -45,7 +45,7 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 // MODULE: Installed directly from nf-core/modules
 //
 
-include { QC_TRIM_ALIGN               } from '../subworkflows/local/qc_trim_align'
+include { QC_TRIM_ALIGN               } from '../subworkflows/local/qc_trim/main'
 include { MOSDEPTH                    } from '../modules/nf-core/mosdepth/main'
 include { PICARD_COLLECTINSERTSIZEMETRICS } from '../modules/nf-core/picard/collectinsertsizemetrics/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
