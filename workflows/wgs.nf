@@ -195,7 +195,6 @@ workflow WGS {
     ch_multiqc_files = ch_multiqc_files.mix(ch_reports.collect())
     
     ch_multiqc_files = ch_multiqc_files.collect()
-    //ch_multiqc_files = ch_multiqc_files.view()
     
     MULTIQC (
         ch_multiqc_files

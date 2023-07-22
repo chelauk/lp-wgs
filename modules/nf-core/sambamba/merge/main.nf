@@ -8,10 +8,10 @@ process SAMBAMBA_MERGE {
         'quay.io/biocontainers/sambamba:0.8.1--hadffe2f_1' }"
 
     input:
-    tuple val(meta), path(bam)
+    tuple val(meta), path(bam), path(bai)
 
     output:
-    tuple val(meta), path("${meta.id}.bam"), emit: bam
+    tuple val(meta), path("${meta.id}.bam"), path("${meta.id}.bam.bai"), emit: bam
     path  "versions.yml"                , emit: versions
 
     script:
@@ -21,7 +21,8 @@ process SAMBAMBA_MERGE {
     """
     sambamba merge  \\
     --nthreads=${task.cpus} \\
-    ${prefix}.bam $bam 
+    ${prefix}.bam $bam
+    sambamba index -t ${task.cpus} ${prefix}.bam
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         sambamba: \$( echo \$(sambamba --version 2>&1 | sed 's/^.*sambamba //; s/ by.*//')) 
@@ -33,6 +34,7 @@ process SAMBAMBA_MERGE {
     if ("$bam" == "${prefix}.bam") error "Input and output names are the same, use \"task.ext.prefix\" to disambiguate!"
     """
     touch ${prefix}.bam
+    touch ${prefix}.bam.bai
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         sambamba: 0.8.1 
