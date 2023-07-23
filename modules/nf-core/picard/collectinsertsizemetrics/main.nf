@@ -12,6 +12,7 @@ process PICARD_COLLECTINSERTSIZEMETRICS {
 
     output:
     tuple val(meta), path("*.txt"), emit: size_metrics
+    tuple val(meta), path("*.bam"), path("*.bai"), emit: bams
     path "versions.yml"                           , emit: versions
 
     when:
