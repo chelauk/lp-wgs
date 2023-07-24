@@ -22,7 +22,7 @@ workflow MERGE_LANES {
                 single:   it[1].size() == 1
                 multiple: it[1].size() > 1
             }.set{ bam_bwa_to_sort }
-
+        
         bam_multiple = bam_bwa_to_sort.multiple
                                 .map{
                                     info,bam,bai ->
@@ -34,7 +34,7 @@ workflow MERGE_LANES {
                                     meta.status  = info[4]
                                     [meta,bam,bai]
                                 }
-
+        
         bam_single = bam_bwa_to_sort.single
                                 .map{
                                     info,bam,bai ->
@@ -47,6 +47,7 @@ workflow MERGE_LANES {
                                     [meta,bam,bai]
                                 }
         // STEP 1.5: MERGING AND INDEXING BAM FROM MULTIPLE LANES
+        //bam_multiple.view()
         SAMBAMBA_MERGE(bam_multiple)
         bam          = bam_single.mix(SAMBAMBA_MERGE.out.bam)
         ch_versions  = ch_versions.mix(SAMBAMBA_MERGE.out.versions.first())

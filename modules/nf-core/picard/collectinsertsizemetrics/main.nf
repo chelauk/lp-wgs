@@ -11,8 +11,9 @@ process PICARD_COLLECTINSERTSIZEMETRICS {
     tuple val(meta), path(bam), path(bai)
 
     output:
-    tuple val(meta), path("*.txt"), emit: size_metrics
-    tuple val(meta), path("*.bam"), path("*.bai"), emit: bams
+    tuple val(meta), path("*.txt"),  emit: size_metrics
+    tuple val(meta), path("*.pdf"), emit: size_plots
+    tuple val(meta), path("*processed.bam"), path("*processed.bai"), emit: bams
     path "versions.yml"                           , emit: versions
 
     when:
@@ -30,11 +31,13 @@ process PICARD_COLLECTINSERTSIZEMETRICS {
         avail_mem = task.memory.giga
     }
     """
+    ln -s $bam ${prefix}_processed.bam
+    ln -s $bai ${prefix}_processed.bai
     picard \\
     CollectInsertSizeMetrics \\
     I=$bam \\
     O=${prefix}_${args}.insert_sizes.txt \\
-    H=${prefix}_${args}.insert_sizes.pdf \\
+    H=${prefix}.${args}.insert_sizes.pdf \\
     HISTOGRAM_WIDTH=${args} \\
     M=0.5
 
@@ -47,7 +50,11 @@ process PICARD_COLLECTINSERTSIZEMETRICS {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    touch ${prefix}_${args}_collectinsertsizemetrics.txt
+    ln -s $bam ${prefix}_processed.bam
+    ln -s $bai ${prefix}_processed.bai
+    echo ${args}
+    touch ${prefix}_${args}.collectinsertsizemetrics.txt
+    touch ${prefix}_${args}.collectinsertsizemetrics.pdf
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         picard: 2.26.10 
