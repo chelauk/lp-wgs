@@ -24,8 +24,8 @@ process ACE {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     prefix=$prefix
-    ln -s \$bam \$prefix.bam
-    ln -s \$bai \$prefix.bai
+    mv $bam \$prefix.bam
+    mv $bai \$prefix.bai
     ace.R .
 
     cat <<-END_VERSIONS > versions.yml

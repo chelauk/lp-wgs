@@ -17,8 +17,8 @@ process ICHORCNA_RUN {
     path centromere
 
     output:
-    tuple val(meta), path("${meta.id}"), path("*{txt,RData,seg}") , emit: ichor_out
-    path "versions.yml"                   , emit: versions
+    tuple val(meta), path("${meta.id}"), path("*.{txt,RData,seg}"), emit: ichor_out
+    path "versions.yml"                , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
