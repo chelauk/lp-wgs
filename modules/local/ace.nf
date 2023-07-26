@@ -13,7 +13,7 @@ process ACE {
     tuple val(meta), path(bam), path(bai)
 
     output:
-    tuple val(meta), path("${meta.id}"), emit: ace
+    tuple val(meta), path("1000kbp"), path("500kbp"), path("100kbp"), path("*.{tsv,rds}"),  emit: ace
     path "versions.yml"                , emit: versions
 
     when:
@@ -24,15 +24,8 @@ process ACE {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     prefix=$prefix
-    if [ -d \$prefix ]
-    then
-        echo "Directory /path/to/dir exists."
-    else
-        echo "Error: Directory /path/to/dir does not exist."
-        mkdir \$prefix
-    fi
 
-    ace.R \$prefix
+    ace.R .
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
