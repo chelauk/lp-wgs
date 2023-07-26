@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "https://raw.githubusercontent.com/lp/wgs/master/nextflow_schema.json",
-    "title": "lp/wgs pipeline parameters",
+    "$id": "https://raw.githubusercontent.com/lp-wgs/master/nextflow_schema.json",
+    "title": "lp-wgs pipeline parameters",
     "description": "shallow whole genome sequence analyses",
     "type": "object",
     "definitions": {

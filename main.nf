@@ -1,9 +1,9 @@
 #!/usr/bin/env nextflow
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    lp/wgs
+    lp-wgs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Github : https://github.com/lp/wgs
+    Github : https://github.com/chelauk/lp-wgs
 ----------------------------------------------------------------------------------------
 */
 
@@ -39,7 +39,7 @@ WorkflowMain.initialise(workflow, params, log)
 include { WGS } from './workflows/wgs'
 
 //
-// WORKFLOW: Run main lp/wgs analysis pipeline
+// WORKFLOW: Run main lp-wgs analysis pipeline
 //
 workflow LP_WGS {
     WGS ()
