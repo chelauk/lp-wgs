@@ -1,5 +1,5 @@
 //
-// This file holds several functions specific to the workflow/wgs.nf in the lp/wgs pipeline
+// This file holds several functions specific to the workflow/wgs.nf in the lp-wgs pipeline
 //
 
 import groovy.text.SimpleTemplateEngine

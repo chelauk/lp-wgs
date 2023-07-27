@@ -1,4 +1,4 @@
-# lp/wgs: Output
+# lp-wgs: Output
 
 ## Introduction
 

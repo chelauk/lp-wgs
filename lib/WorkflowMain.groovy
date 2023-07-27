@@ -1,5 +1,5 @@
 //
-// This file holds several functions specific to the main.nf workflow in the lp/wgs pipeline
+// This file holds several functions specific to the main.nf workflow in the lp-wgs pipeline
 //
 
 class WorkflowMain {

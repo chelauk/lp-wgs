@@ -1,6 +1,6 @@
 {
-    "name": "lp/wgs",
-    "homePage": "https://github.com/lp/wgs",
+    "name": "lp-wgs",
+    "homePage": "https://github.com/chelauk/lp-wgs",
     "repos": {
         "https://github.com/nf-core/modules.git": {
             "modules": {

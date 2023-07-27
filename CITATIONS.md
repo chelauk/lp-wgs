@@ -1,4 +1,4 @@
-# lp/wgs: Citations
+# lp-wgs: Citations
 
 ## [nf-core](https://pubmed.ncbi.nlm.nih.gov/32055031/)
 

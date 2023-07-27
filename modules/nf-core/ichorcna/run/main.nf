@@ -17,8 +17,8 @@ process ICHORCNA_RUN {
     path centromere
 
     output:
-    tuple val(meta), path("ichor_*")   , emit: ichor_out
-    path "versions.yml"                   , emit: versions
+    tuple val(meta), path("solutions"),  emit: ichor_out
+    path "versions.yml"                , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -30,7 +30,9 @@ process ICHORCNA_RUN {
     def centro = centromere ? "--centromere ${centromere}" : ''
     def VERSION = '0.3.2' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
-    [ ! -d "./ichor_${prefix}" ] && mkdir ./ichor_${prefix} || echo "./ichor_${prefix} exists"
+    if [ ! -d solutions ]; then
+    mkdir -p solutions
+    fi
     runIchorCNA.R \\
         $args \\
         --WIG ${wig} \\
@@ -39,7 +41,7 @@ process ICHORCNA_RUN {
         --mapWig ${map_wig} \\
         ${pon} \\
         ${centro} \\
-        --outDir ./ichor_${prefix}
+        --outDir solutions
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -53,7 +55,6 @@ process ICHORCNA_RUN {
     def centro = centromere ? "--centromere ${centromere}" : ''
     def VERSION = '0.3.2' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
-    mkdir ./ichor_${prefix}
     echo -e "runIchorCNA.R \\
         $args \\
         --WIG ${wig} \\
