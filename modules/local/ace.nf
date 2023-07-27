@@ -24,8 +24,14 @@ process ACE {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     prefix=$prefix
-    mv $bam \$prefix.bam
-    mv $bai \$prefix.bai
+    if [ ! -e "\$prefix.bam" ]; then
+       echo "renaming bam"
+       mv $bam \$prefix.bam
+       mv $bai \$prefix.bai
+    else
+       echo "File exists."
+    fi
+    
     ace.R .
 
     cat <<-END_VERSIONS > versions.yml
