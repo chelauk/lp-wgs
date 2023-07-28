@@ -61,6 +61,8 @@ patient1,sample2,1,./data/patient1_sample2_R1.fastq.gz,./data/patient1_sample2_R
 patient2,sample1,1,./data/patient2_sample1_R1.fastq.gz,./data/patient2_sample1_R2.fastq.gz
 patient2,sample2,1,./data/patient2_sample2_R1.fastq.gz,./data/patient2_sample2_R2.fastq.gz
 ```
+Multi-lane samples are merged automatically with sambamba
+
 example sbatch script:
 ```
 #!/bin/bash -l
