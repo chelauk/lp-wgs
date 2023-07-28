@@ -10,11 +10,12 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 2. Trim Reads ([`Fastp`](https://github.com/OpenGene/fastp))
 3. Align Reads ([`bwa`](https://github.com/lh3/bwa)) (optional: begin from this stage)
 4. Coverage ([`mosdepth`](https://github.com/brentp/mosdepth))
-5. GC counts ([`HMMcopy`](http://compbio.bccrc.ca/software/hmmcopy/))
-6. read counts ([`HMMcopy`](http://compbio.bccrc.ca/software/hmmcopy/))
-7. ICHOR cna calls and tumour cell fraction ([`ICHOR`](https://github.com/broadinstitute/ichorCNA/wiki))
+5. Alignment QC with ([`picard`](https://broadinstitute.github.io/picard/))
+6. GC counts ([`HMMcopy`](http://compbio.bccrc.ca/software/hmmcopy/))
+7. read counts ([`HMMcopy`](http://compbio.bccrc.ca/software/hmmcopy/))
+8. ICHOR cna calls and tumour cell fraction ([`ICHOR`](https://github.com/broadinstitute/ichorCNA/wiki))
 Bin options for ICHOR include 1000kb,500kb,100kb and 10kb these are set with the --map_bin parameter
-8. ACE Absolute Copy number Estimation using low-coverage whole genome sequencing data ([`ACE`](https://github.com/tgac-vumc/ACE)). The default script for ACE is 
+9. ACE Absolute Copy number Estimation using low-coverage whole genome sequencing data ([`ACE`](https://github.com/tgac-vumc/ACE)). The default script for ACE is 
 ```
 library(ACE)
 args <- commandArgs(trailingOnly = TRUE)
@@ -38,15 +39,16 @@ step2-->step4(trim fastp)
 step1-->step5(align bwa)
 step4-->step5(align bwa)
 step5-->step6(coverage mosdepth)
-step1-->step12(gccounter HMMCOPY)
-step5-->step7(counter HMMCOPY)
-step12-->step8(CNA ICHOR)
-step7-->step8(CNA ICHOR)
-step5-->step9(DNA ACE)
-step9-->step10(copy number output)
-step8-->step10(copy number output)
-step3-->step11(multiqc)
-step6-->step11(multiqc)
+step5-->step7(alignment qc picard)
+step1-->step13(gccounter HMMCOPY)
+step5-->step8(counter HMMCOPY)
+step12-->step9(CNA ICHOR)
+step7-->step9(CNA ICHOR)
+step5-->step10(DNA ACE)
+step9-->step11(copy number output)
+step8-->step11(copy number output)
+step3-->step12(multiqc)
+step6-->step12(multiqc)
 ```
 
 ## slurm quick start:
