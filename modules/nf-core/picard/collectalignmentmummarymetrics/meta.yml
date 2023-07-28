@@ -1,4 +1,4 @@
-name: picard_collectwgsmetrics
+name: picard_CollectAlignmentSummaryMetrics
 description: Collect metrics about coverage and performance of whole genome sequencing (WGS) experiments.
 keywords:
   - alignment

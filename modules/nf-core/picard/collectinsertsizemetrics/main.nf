@@ -37,7 +37,7 @@ process PICARD_COLLECTINSERTSIZEMETRICS {
     CollectInsertSizeMetrics \\
     I=$bam \\
     O=${prefix}_${args}.insert_sizes.txt \\
-    H=${prefix}.${args}.insert_sizes.pdf \\
+    H=${prefix}_${args}.insert_sizes.pdf \\
     HISTOGRAM_WIDTH=${args} \\
     M=0.5
 

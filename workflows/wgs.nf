@@ -17,7 +17,8 @@ def checkPathParamList = [
     params.fasta,
     params.fasta_fai,
     params.centromere,
-    params.map_wig
+    params.map_wig,
+    params.dict
     ]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
@@ -56,6 +57,7 @@ include { HMMCOPY_GCCOUNTER           } from '../modules/nf-core/hmmcopy/gccount
 include { HMMCOPY_READCOUNTER         } from '../modules/nf-core/hmmcopy/readcounter/main'
 include { ICHORCNA_RUN                } from '../modules/nf-core/ichorcna/run/main'
 include { ACE                         } from '../modules/local/ace'
+include { PICARD_COLLECTALIGNMENTSUMMARYMETRICS} from '../modules/nf-core/picard/collectalignmentmummarymetrics/main.nf'
 
 //
 // value channels
@@ -65,6 +67,7 @@ include { ACE                         } from '../modules/local/ace'
 //
 // gather prebuilt indices
 //
+    dict                   = params.dict               ? Channel.fromPath(params.dict).collect()      : Channel.empty()
     fasta                  = params.fasta              ? Channel.fromPath(params.fasta).collect()     : Channel.empty()
     fasta_fai              = params.fasta_fai          ? Channel.fromPath(params.fasta_fai).collect() : Channel.empty()
     bwa                    = params.bwa                ? Channel.fromPath(params.bwa).collect()       : Channel.empty()
@@ -126,6 +129,9 @@ workflow WGS {
         ch_bam_input = ch_input_sample
     }
 
+    PICARD_COLLECTALIGNMENTSUMMARYMETRICS ( ch_bam_input , fasta, dict)
+    ch_versions = ch_versions.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.versions.first())
+    ch_reports  = ch_reports.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.metrics.collect{meta, report -> report})
     PICARD_COLLECTINSERTSIZEMETRICS ( ch_bam_input )
     ch_versions = ch_versions.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.versions.first())
     ch_reports  = ch_reports.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.size_metrics.collect{meta, report -> report})

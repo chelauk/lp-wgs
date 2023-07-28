@@ -1,4 +1,4 @@
-process PICARD_COLLECTWGSMETRICS {
+process PICARD_COLLECTALIGNMENTSUMMARYMETRICS {
     tag "$meta.id"
     label 'process_single'
 
@@ -9,12 +9,11 @@ process PICARD_COLLECTWGSMETRICS {
 
     input:
     tuple val(meta), path(bam), path(bai)
-    tuple val(meta2), path(fasta)
-    tuple val(meta3), path(fai)
-    path  intervallist
+    path fasta
+    path dict
 
     output:
-    tuple val(meta), path("*_metrics"), emit: metrics
+    tuple val(meta), path("*metrics"), emit: metrics
     path  "versions.yml"              , emit: versions
 
     when:
@@ -24,37 +23,35 @@ process PICARD_COLLECTWGSMETRICS {
     def args      = task.ext.args ?: ''
     def prefix    = task.ext.prefix ?: "${meta.id}"
     def avail_mem = 3072
-    def interval  = intervallist ? "--INTERVALS ${intervallist}" : ''
     if (!task.memory) {
-        log.info '[Picard CollectWgsMetrics] Available memory not known - defaulting to 3GB. Specify process memory requirements to change this.'
+        log.info '[Picard CollectAlignmentSummaryMetrics] Available memory not known - defaulting to 3GB. Specify process memory requirements to change this.'
     } else {
         avail_mem = (task.memory.mega*0.8).intValue()
     }
     """
     picard \\
         -Xmx${avail_mem}M \\
-        CollectWgsMetrics \\
+        CollectAlignmentSummaryMetrics \\
         $args \\
         --INPUT $bam \\
-        --OUTPUT ${prefix}.CollectWgsMetrics.coverage_metrics \\
-        --REFERENCE_SEQUENCE ${fasta} \\
-        $interval
+        --OUTPUT ${prefix}.CollectAlignmentSummaryMetrics.metrics \\
+        --REFERENCE_SEQUENCE ${fasta} 
 
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        picard: \$(picard CollectWgsMetrics --version 2>&1 | grep -o 'Version.*' | cut -f2- -d:)
+        picard: \$(picard CollectAlignmentSummaryMetrics --version 2>&1 | grep -o 'Version.*' | cut -f2- -d:)
     END_VERSIONS
     """
 
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    touch ${prefix}.CollectWgsMetrics.coverage_metrics
+    touch ${prefix}.CollectAlignmentSummaryMetrics.metrics
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        picard: \$(picard CollectWgsMetrics --version 2>&1 | grep -o 'Version.*' | cut -f2- -d:)
+        picard: \$(picard CollectAlignmentSummaryMetrics --version 2>&1 | grep -o 'Version.*' | cut -f2- -d:)
     END_VERSIONS
     """
 }
