@@ -55,7 +55,7 @@ The pipeline will require a csv file with headers describing the paths to sample
 
 1. Starting from fastq example csv:
 ```
-patient,sample,fastq_1 ,fastq_2
+patient,sample,lane,fastq_1,fastq_2
 patient1,sample1,./data/patient1_sample1_R1.fastq.gz,./data/patient1_sample1_R2.fastq.gz
 patient1,sample2,./data/patient1_sample2_R1.fastq.gz,./data/patient1_sample2_R2.fastq.gz
 patient2,sample1,./data/patient2_sample1_R1.fastq.gz,./data/patient2_sample1_R2.fastq.gz
