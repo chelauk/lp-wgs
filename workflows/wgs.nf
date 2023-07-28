@@ -57,7 +57,7 @@ include { HMMCOPY_GCCOUNTER           } from '../modules/nf-core/hmmcopy/gccount
 include { HMMCOPY_READCOUNTER         } from '../modules/nf-core/hmmcopy/readcounter/main'
 include { ICHORCNA_RUN                } from '../modules/nf-core/ichorcna/run/main'
 include { ACE                         } from '../modules/local/ace'
-include { PICARD_COLLECTALIGNMENTSUMMARYMETRICS} from '../modules/nf-core/picard/collectalignmentsummarymetrics/main'
+include { PICARD_COLLECTALIGNMENTSUMMARYMETRICS} from '../modules/nf-core/picard/collectalignmentmummarymetrics/main.nf'
 
 //
 // value channels

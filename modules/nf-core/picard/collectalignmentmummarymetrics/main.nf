@@ -13,7 +13,7 @@ process PICARD_COLLECTALIGNMENTSUMMARYMETRICS {
     path dict
 
     output:
-    tuple val(meta), path("*_metrics"), emit: metrics
+    tuple val(meta), path("*metrics"), emit: metrics
     path  "versions.yml"              , emit: versions
 
     when:
@@ -23,7 +23,6 @@ process PICARD_COLLECTALIGNMENTSUMMARYMETRICS {
     def args      = task.ext.args ?: ''
     def prefix    = task.ext.prefix ?: "${meta.id}"
     def avail_mem = 3072
-    def interval  = intervallist ? "--INTERVALS ${intervallist}" : ''
     if (!task.memory) {
         log.info '[Picard CollectAlignmentSummaryMetrics] Available memory not known - defaulting to 3GB. Specify process memory requirements to change this.'
     } else {
