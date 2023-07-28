@@ -13,7 +13,19 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 5. GC counts ([`HMMcopy`](http://compbio.bccrc.ca/software/hmmcopy/))
 6. read counts ([`HMMcopy`](http://compbio.bccrc.ca/software/hmmcopy/))
 7. ICHOR cna calls and tumour cell fraction ([`ICHOR`](https://github.com/broadinstitute/ichorCNA/wiki))
-8. ACE Absolute Copy number Estimation using low-coverage whole genome sequencing data ([`ACE`](https://github.com/tgac-vumc/ACE))
+Bin options for ICHOR include 1000kb,500kb,100kb and 10kb these are set with the --map_bin parameter
+8. ACE Absolute Copy number Estimation using low-coverage whole genome sequencing data ([`ACE`](https://github.com/tgac-vumc/ACE)). The default script for ACE is 
+```
+library(ACE)
+args <- commandArgs(trailingOnly = TRUE)
+output_folder <- args[1]
+ploidy <- c(2, 3, 4)
+
+runACE(
+    outputdir = output_folder, filetype = "bam",
+    genome = "hg38", ploidies = ploidy
+)
+```
 5. Collate QC ([`MultiQC`](http://multiqc.info/))
 
 
@@ -37,7 +49,7 @@ step3-->step11(multiqc)
 step6-->step11(multiqc)
 ```
 
-## ALMA/FHT quick start:
+## slurm quick start:
 
 The pipeline will require a csv file with headers describing the paths to samples
 
@@ -119,9 +131,6 @@ nextflow run /path/to/lp-wgs \
 
 4. Start running your own analysis!
 
-   <!-- TODO nf-core: Update the example "typical command" below used to run the pipeline -->
-
-   ```bash
    nextflow run lp-wgs --input samplesheet.csv --outdir <OUTDIR> --genome GRCh38 -profile <docker/singularity/podman/shifter/charliecloud/conda/institute>
    ```
 
