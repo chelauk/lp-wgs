@@ -15,7 +15,9 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 7. read counts ([`HMMcopy`](http://compbio.bccrc.ca/software/hmmcopy/))
 8. ICHOR cna calls and tumour cell fraction ([`ICHOR`](https://github.com/broadinstitute/ichorCNA/wiki))
 Bin options for ICHOR include 1000kb,500kb,100kb and 10kb these are set with the --map_bin parameter
-9. ACE Absolute Copy number Estimation using low-coverage whole genome sequencing data ([`ACE`](https://github.com/tgac-vumc/ACE)). The default script for ACE is 
+for ichor the normal fraction and ploids and subclone fractions can be set, see [`here`](https://github.com/broadinstitute/ichorCNA/wiki/Parameter-tuning-and-settings) for low tumour fractions
+
+10. ACE Absolute Copy number Estimation using low-coverage whole genome sequencing data ([`ACE`](https://github.com/tgac-vumc/ACE)). The default script for ACE is 
 ```
 library(ACE)
 args <- commandArgs(trailingOnly = TRUE)
