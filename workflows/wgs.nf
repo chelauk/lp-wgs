@@ -62,7 +62,8 @@ include { PICARD_COLLECTALIGNMENTSUMMARYMETRICS} from '../modules/nf-core/picard
 //
 // value channels
 //
-    map_bin = params.map_bin
+
+map_bin = params.map_bin
 
 //
 // gather prebuilt indices

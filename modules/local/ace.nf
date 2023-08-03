@@ -13,7 +13,7 @@ process ACE {
     tuple val(meta), path(bam), path(bai)
 
     output:
-    tuple val(meta), path("1000kbp"), path("500kbp"), path("100kbp"), path("*.{tsv,rds}"),  emit: ace
+    tuple val(meta), path("1000kbp"), path("500kbp"), path("100kbp"),  emit: ace
     path "versions.yml"                , emit: versions
 
     when:
@@ -41,8 +41,7 @@ process ACE {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    prefix=$prefix
-    mkdir \$prefix
+    mkdir 1000kbp 500kbp 100kbp 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         ace: stub version
