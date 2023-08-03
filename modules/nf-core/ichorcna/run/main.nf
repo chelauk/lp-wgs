@@ -58,7 +58,7 @@ process ICHORCNA_RUN {
     def centro = centromere ? "--centromere ${centromere}" : ''
     def VERSION = '0.3.2' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
-    echo -e "runIchorCNA.R \\
+    echo -e 'runIchorCNA.R \\
         $args \\
         $args2 \\
         --WIG ${wig} \\
@@ -67,7 +67,7 @@ process ICHORCNA_RUN {
         --mapWig ${map_wig} \\
         ${pon} \\
         ${centro} \\
-        --outDir solutions"
+        --outDir solutions'
     if [ ! -d solutions ] 
         then
             mkdir -p solutions
