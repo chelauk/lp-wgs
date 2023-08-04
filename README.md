@@ -31,7 +31,7 @@ setting
 * otherwise you can set 
 
        --ichor_purity_manual  c(0.95, 0.99, 0.995, 0.999)
-  which will sent this parameter to ichor
+  which will set this parameter for ichor
   
        --normal "c(0.95, 0.99, 0.995, 0.999)"
 
