@@ -29,7 +29,9 @@ setting
         --chrTrain "c(1:22)" 
 
 * otherwise you can set 
-       --ichor_purity_manual  c(0.95, 0.99, 0.995, 0.999) which will sent this parameter to ichor
+
+       --ichor_purity_manual  c(0.95, 0.99, 0.995, 0.999)
+  which will sent this parameter to ichor
   
        --normal "c(0.95, 0.99, 0.995, 0.999)"
 
