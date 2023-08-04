@@ -28,13 +28,12 @@ setting
         --chrTrain "c(1:22)" 
 
 * otherwise you can set 
-       --ichor_purity_manual  c(0.95, 0.99, 0.995, 0.999)
+       --ichor_purity_manual  c(0.95, 0.99, 0.995, 0.999) which will sent this parameter to ichor
+  
+       --normal "c(0.95, 0.99, 0.995, 0.999)"
 
-which will sent this parameter to ichor  
---normal "c(0.95, 0.99, 0.995, 0.999)"
 
-
-10. ACE Absolute Copy number Estimation using low-coverage whole genome sequencing data ([`ACE`](https://github.com/tgac-vumc/ACE)). The default script for ACE is 
+9. ACE Absolute Copy number Estimation using low-coverage whole genome sequencing data ([`ACE`](https://github.com/tgac-vumc/ACE)). The default script for ACE is 
 ```
 library(ACE)
 args <- commandArgs(trailingOnly = TRUE)
@@ -46,7 +45,7 @@ runACE(
     genome = "hg38", ploidies = ploidy
 )
 ```
-5. Collate QC ([`MultiQC`](http://multiqc.info/))
+10. Collate QC ([`MultiQC`](http://multiqc.info/))
 
 
 ```mermaid
