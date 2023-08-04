@@ -16,6 +16,23 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 8. ICHOR cna calls and tumour cell fraction ([`ICHOR`](https://github.com/broadinstitute/ichorCNA/wiki))
 Bin options for ICHOR include 1000kb,500kb,100kb and 10kb these are set with the --map_bin parameter
 for ichor the normal fraction and ploids and subclone fractions can be set, see [`here`](https://github.com/broadinstitute/ichorCNA/wiki/Parameter-tuning-and-settings) for low tumour fractions
+setting
+        --ichor_purity cf_dna
+* will set these parameters automatically
+        --normal "c(0.95, 0.99, 0.995, 0.999)"  
+        --ploidy "c(2)"  
+        --maxCN 3  
+        --estimateScPrevalence FALSE   
+        --scStates "c()"   
+        --chrs "c(1:22)"   
+        --chrTrain "c(1:22)" 
+
+* otherwise you can set 
+       --ichor_purity_manual  c(0.95, 0.99, 0.995, 0.999)
+
+which will sent this parameter to ichor  
+--normal "c(0.95, 0.99, 0.995, 0.999)"
+
 
 10. ACE Absolute Copy number Estimation using low-coverage whole genome sequencing data ([`ACE`](https://github.com/tgac-vumc/ACE)). The default script for ACE is 
 ```
