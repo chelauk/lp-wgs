@@ -17,7 +17,8 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 Bin options for ICHOR include 1000kb,500kb,100kb and 10kb these are set with the --map_bin parameter
 for ichor the normal fraction and ploids and subclone fractions can be set, see [`here`](https://github.com/broadinstitute/ichorCNA/wiki/Parameter-tuning-and-settings) for low tumour fractions
 setting
-        --ichor_purity cf_dna
+
+       --ichor_purity cf_dna
 * will set these parameters for ichor automatically
 
         --normal "c(0.95, 0.99, 0.995, 0.999)"  
