@@ -25,6 +25,8 @@ process ICHORCNA_RUN {
 
     script:
     def args = task.ext.args ? "${task.ext.args} ${normal_wig}" : ''
+    def args2 = task.ext.args2 ?: ''
+    def args3 = task.ext.args3 ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def pon = panel_of_normals ? "--normalPanel ${panel_of_normals}" : ''
     def centro = centromere ? "--centromere ${centromere}" : ''
@@ -35,6 +37,8 @@ process ICHORCNA_RUN {
     fi
     runIchorCNA.R \\
         $args \\
+        $args2 \\
+        $args3 \\
         --WIG ${wig} \\
         --id ${prefix} \\
         --gcWig ${gc_wig} \\
@@ -50,21 +54,28 @@ process ICHORCNA_RUN {
     """
     stub:
     def args = task.ext.args ? "${task.ext.args} ${normal_wig}" : ''
+    def args2 = task.ext.args2 ?: ''
+    def args3 = task.ext.args3 ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def pon = panel_of_normals ? "--normalPanel ${panel_of_normals}" : ''
     def centro = centromere ? "--centromere ${centromere}" : ''
     def VERSION = '0.3.2' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
-    echo -e "runIchorCNA.R \\
+    echo -e 'runIchorCNA.R \\
         $args \\
+        $args2 \\
+        $args3 \\
         --WIG ${wig} \\
         --id ${prefix} \\
         --gcWig ${gc_wig} \\
         --mapWig ${map_wig} \\
         ${pon} \\
         ${centro} \\
-        --outDir . "
-
+        --outDir solutions'
+    if [ ! -d solutions ] 
+        then
+            mkdir -p solutions
+    fi
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         ichorcna: $VERSION
