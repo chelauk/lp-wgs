@@ -287,7 +287,7 @@ def extract_csv(csv_file) {
                     System.exit(1)
                     }
                 } else if (row.bam) {
-                    meta.id = meta.sample
+                    meta.id = "${row.patient}_${row.sample}"
                     def bam = file(row.bam, checkIfExists: true)
                     def bai = file(row.bai, checkIfExists: true)
                     meta.data_type  = 'bam'
