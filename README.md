@@ -101,13 +101,13 @@ nextflow run /path/to/lp-wgs \
 		--input input_fastq.csv  \
 		--outdir results \
 		--igenomes_base /path/to/reference \
-		--step 'mapping' \
+		--step 'fastq' \
 		-c local.config \
 		-with-tower \
 		-profile singularity \
 		-resume
  ```
- note that when starting with fastq you need to add `--step mapping`
+ note that when starting with fastq you need to add `--step fastq`
  
  note with regard to the reference path it needs to match this pattern:
 ```

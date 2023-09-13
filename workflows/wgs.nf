@@ -56,8 +56,9 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoft
 include { HMMCOPY_GCCOUNTER           } from '../modules/nf-core/hmmcopy/gccounter/main'
 include { HMMCOPY_READCOUNTER         } from '../modules/nf-core/hmmcopy/readcounter/main'
 include { ICHORCNA_RUN                } from '../modules/nf-core/ichorcna/run/main'
+include { SAMTOOLS_VIEW               } from '../modules/nf-core/samtools/view/main'
 include { ACE                         } from '../modules/local/ace'
-include { PICARD_COLLECTALIGNMENTSUMMARYMETRICS} from '../modules/nf-core/picard/collectalignmentmummarymetrics/main.nf'
+include { PICARD_COLLECTALIGNMENTSUMMARYMETRICS } from '../modules/local/picard/collectalignmentmummarymetrics/main'
 
 //
 // value channels
@@ -100,7 +101,6 @@ map_bin = params.map_bin
 
 // Info required for completion email and summary
 def multiqc_report = []
-
 workflow WGS {
     // To gather all QC reports for MultiQC
     ch_reports  = Channel.empty()
@@ -115,7 +115,7 @@ workflow WGS {
     sort_bam = true
     // Gather index for mapping given the chosen aligner
     ch_map_index = bwa
-    if ( params.step == 'mapping' ) {
+    if ( params.step == 'fastq' ) {
         // Create input channel
         fastq_input = ch_input_sample
         QC_TRIM ( fastq_input, ch_map_index, sort_bam)
@@ -126,8 +126,13 @@ workflow WGS {
         MERGE_LANES ( BWA_MEM.out.bam )
         ch_versions = ch_versions.mix(MERGE_LANES.out.ch_versions.first())
         ch_bam_input = MERGE_LANES.out.bam
-    } else if ( params.step == 'bam' ) {
+    } else if ( params.step == 'bam'  &&  params.filter_bam == null ){
         ch_bam_input = ch_input_sample
+    } else if ( params.step == 'bam'  &&  params.filter_bam != null ){
+        ch_filter_input = ch_input_sample
+        SAMTOOLS_VIEW ( ch_filter_input )
+        ch_bam_input = SAMTOOLS_VIEW.out.bam
+        ch_versions = ch_versions.mix(SAMTOOLS_VIEW.out.versions.first())
     }
 
     PICARD_COLLECTALIGNMENTSUMMARYMETRICS ( ch_bam_input , fasta, dict)
@@ -281,7 +286,7 @@ def extract_csv(csv_file) {
                 def read_group  = "\"@RG\\tID:${flowcell}.${row.sample}.${row.lane}\\t${CN}PU:${row.lane}\\tSM:${row.patient}_${row.sample}\\tLB:${row.sample}\\tDS:${params.fasta}\\tPL:${params.seq_platform}\""
                 meta.read_group  = read_group.toString()
                 meta.data_type   = "fastq"
-                if (params.step == 'mapping') return [meta, [fastq_1, fastq_2]]
+                if (params.step == 'fastq') return [meta, [fastq_1, fastq_2]]
                 else {
                     log.error "Samplesheet contains fastq files but step is `$params.step`. Please check your samplesheet or adjust the step parameter.\nhttps://nf-co.re/sarek/usage#input-samplesheet-configurations"
                     System.exit(1)
@@ -291,7 +296,7 @@ def extract_csv(csv_file) {
                     def bam = file(row.bam, checkIfExists: true)
                     def bai = file(row.bai, checkIfExists: true)
                     meta.data_type  = 'bam'
-                    if (!(params.step == 'mapping')) return [meta, bam, bai]
+                    if (!(params.step == 'fastq')) return [meta, bam, bai]
                     else {
                         log.error "Samplesheet contains bam files but step is `$params.step`. Please check your samplesheet or adjust the step parameter.\nhttps://nf-co.re/sarek/usage#input-samplesheet-configurations"
                         System.exit(1)
