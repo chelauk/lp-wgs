@@ -8,7 +8,7 @@ process SAMTOOLS_VIEW {
         'biocontainers/samtools:1.17--h00cdaf9_0' }"
 
     input:
-    tuple val(meta), path(bam), path(bai)
+    tuple val(meta), path(bam), path(bai), val(filter_min), val(filter_max)
 
     output:
     tuple val(meta), path("*filtered.bam"), path("*filtered.bam.bai"), emit: bam
@@ -26,7 +26,7 @@ process SAMTOOLS_VIEW {
     ${bam} | \\
     awk 'function abs(v) { return v < 0 ? -v : v} \\
     { if (\$0 ~ /^@/) {print} \\
-    else { if ( abs(\$9) > 90 && abs(\$9) <= 150 ) {print}}}' | \\
+    else { if ( abs(\$9) > $filter_min && abs(\$9) <= $filter_max ) {print}}}' | \\
     samtools view -b > ${prefix}.filtered.bam
     samtools index ${prefix}.filtered.bam
 
