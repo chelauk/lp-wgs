@@ -130,7 +130,7 @@ workflow WGS {
         ch_bam_input = ch_input_sample
     } else if ( params.step == 'bam'  &&  params.filter_bam != null ){
         ch_filter_input = ch_input_sample
-        SAMTOOLS_VIEW ( ch_filter_input, filter_bam_min, filter_bam_max )
+        SAMTOOLS_VIEW ( ch_filter_input, params.filter_bam_min, params.filter_bam_max )
         ch_bam_input = SAMTOOLS_VIEW.out.bam
         ch_versions = ch_versions.mix(SAMTOOLS_VIEW.out.versions.first())
     }
