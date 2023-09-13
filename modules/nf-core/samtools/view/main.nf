@@ -26,7 +26,7 @@ process SAMTOOLS_VIEW {
     ${bam} | \\
     awk 'function abs(v) { return v < 0 ? -v : v} \\
     { if (\$0 ~ /^@/) {print} \\
-    else { if ( abs(\$9) > 90 && abs(\$9) < 150 ) {print}}}' | \\
+    else { if ( abs(\$9) > 90 && abs(\$9) <= 150 ) {print}}}' | \\
     samtools view -b > ${prefix}.filtered.bam
     samtools index ${prefix}.filtered.bam
 
