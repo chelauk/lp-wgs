@@ -4,7 +4,7 @@
 ================================================================================
 */
 
-include { SAMBAMBA_MERGE }              from '../../../modules/nf-core/sambamba/merge/main'
+include { SAMBAMBA_MERGE }              from '../../../modules/local/sambamba/merge/main.nf'
 
 workflow MERGE_LANES {
     take:
