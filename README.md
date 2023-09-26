@@ -9,11 +9,12 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
 2. Trim Reads ([`Fastp`](https://github.com/OpenGene/fastp))
 3. Align Reads ([`bwa`](https://github.com/lh3/bwa)) (optional: begin from this stage)
-4. Coverage ([`mosdepth`](https://github.com/brentp/mosdepth))
-5. Alignment QC with ([`picard`](https://broadinstitute.github.io/picard/))
-6. GC counts ([`HMMcopy`](http://compbio.bccrc.ca/software/hmmcopy/))
-7. read counts ([`HMMcopy`](http://compbio.bccrc.ca/software/hmmcopy/))
-8. ICHOR cna calls and tumour cell fraction ([`ICHOR`](https://github.com/broadinstitute/ichorCNA/wiki))
+4. Filter Bam ([`samtools`](https://https://www.htslib.org/)) (optional: if it is set the defuault is 90<=fragment size<=150, this can be set with --filter_bam_min and --filter_bam_max)
+5. Coverage ([`mosdepth`](https://github.com/brentp/mosdepth))
+6. Alignment QC with ([`picard`](https://broadinstitute.github.io/picard/))
+7. GC counts ([`HMMcopy`](http://compbio.bccrc.ca/software/hmmcopy/))
+8. read counts ([`HMMcopy`](http://compbio.bccrc.ca/software/hmmcopy/))
+9. ICHOR cna calls and tumour cell fraction ([`ICHOR`](https://github.com/broadinstitute/ichorCNA/wiki))
 Bin options for ICHOR include 1000kb,500kb,100kb and 10kb these are set with the --map_bin parameter
 for ichor the normal fraction and ploids and subclone fractions can be set, see [`here`](https://github.com/broadinstitute/ichorCNA/wiki/Parameter-tuning-and-settings) for low tumour fractions
 setting
