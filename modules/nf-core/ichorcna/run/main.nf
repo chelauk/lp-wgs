@@ -15,10 +15,11 @@ process ICHORCNA_RUN {
     path map_wig
     path panel_of_normals
     path centromere
+    val solutions
 
     output:
-    tuple val(meta), path("solutions"),  emit: ichor_out
-    path "versions.yml"                , emit: versions
+    tuple val(meta), path("filter*"),  emit: ichor_out
+    path "versions.yml"             ,  emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -32,8 +33,8 @@ process ICHORCNA_RUN {
     def centro = centromere ? "--centromere ${centromere}" : ''
     def VERSION = '0.3.2' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
-    if [ ! -d solutions ]; then
-    mkdir -p solutions
+    if [ ! -d $solutions ]; then
+    mkdir -p $solutions
     fi
     runIchorCNA.R \\
         $args \\
@@ -45,7 +46,7 @@ process ICHORCNA_RUN {
         --mapWig ${map_wig} \\
         ${pon} \\
         ${centro} \\
-        --outDir solutions
+        --outDir $solutions
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -61,6 +62,9 @@ process ICHORCNA_RUN {
     def centro = centromere ? "--centromere ${centromere}" : ''
     def VERSION = '0.3.2' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
+    if [ ! -d $solutions ]; then
+    mkdir -p $solutions
+    fi
     echo -e 'runIchorCNA.R \\
         $args \\
         $args2 \\
@@ -71,11 +75,8 @@ process ICHORCNA_RUN {
         --mapWig ${map_wig} \\
         ${pon} \\
         ${centro} \\
-        --outDir solutions'
-    if [ ! -d solutions ] 
-        then
-            mkdir -p solutions
-    fi
+        --outDir ${solutions}'
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         ichorcna: $VERSION
