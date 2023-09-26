@@ -98,9 +98,10 @@ map_bin = params.map_bin
     RUN MAIN WORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-
 // Info required for completion email and summary
 def multiqc_report = []
+// define solutions
+solutions = params.filter_bam == null ? "filter_default" : "filter_${params.filter_bam_min}_${params.filter_bam_max}"
 workflow WGS {
     // To gather all QC reports for MultiQC
     ch_reports  = Channel.empty()
@@ -181,7 +182,8 @@ workflow WGS {
         gc_wig,
         map_wig,
         panel_of_normals,
-        centromere
+        centromere,
+        solutions
         )
     ch_versions= ch_versions.mix(ICHORCNA_RUN.out.versions)
 
