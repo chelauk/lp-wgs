@@ -11,10 +11,12 @@ process ACE {
 
     input:
     tuple val(meta), path(bam), path(bai)
+    solutions
 
     output:
-    tuple val(meta), path("1000kbp"), path("500kbp"), path("100kbp"),  emit: ace
-    path "versions.yml"                , emit: versions
+    //tuple val(meta), path("1000kbp"), path("500kbp"), path("100kbp"),  emit: ace
+    tuple val(meta), path("filter*"),  emit: ace
+    path "versions.yml"             , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -29,8 +31,8 @@ process ACE {
         mv $bam \$prefix.bam
         mv $bai \$prefix.bai
     fi
-
-    ace.R .
+    mkdir $solutions
+    ace.R $solutions
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
