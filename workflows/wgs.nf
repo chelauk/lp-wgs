@@ -116,7 +116,7 @@ workflow WGS {
     sort_bam = true
     // Gather index for mapping given the chosen aligner
     ch_map_index = bwa
-    if ( params.step == 'fastq' ) {
+    if ( params.step == 'fastq' &&  params.filter_bam == null ) {
         // Create input channel
         fastq_input = ch_input_sample
         QC_TRIM ( fastq_input, ch_map_index, sort_bam)
@@ -127,6 +127,20 @@ workflow WGS {
         MERGE_LANES ( BWA_MEM.out.bam )
         ch_versions = ch_versions.mix(MERGE_LANES.out.ch_versions.first())
         ch_bam_input = MERGE_LANES.out.bam
+    } else if ( params.step == 'fastq' &&  params.filter_bam != null  ) {
+        // Create input channel
+        fastq_input = ch_input_sample
+        QC_TRIM ( fastq_input, ch_map_index, sort_bam)
+        ch_versions = ch_versions.mix(QC_TRIM.out.ch_versions)
+        ch_reports  = ch_reports.mix(QC_TRIM.out.ch_reports)
+        BWA_MEM( QC_TRIM.out.reads,   ch_map_index.map{ it -> [[id:it[0].baseName], it] }, sort_bam) // If aligner is bwa-mem
+        ch_versions = ch_versions.mix(BWA_MEM.out.versions.first())
+        MERGE_LANES ( BWA_MEM.out.bam )
+        ch_versions = ch_versions.mix(MERGE_LANES.out.ch_versions.first())
+        ch_filter_input = MERGE_LANES.out.bam
+        SAMTOOLS_VIEW ( ch_filter_input, params.filter_bam_min, params.filter_bam_max )
+        ch_bam_input = SAMTOOLS_VIEW.out.bam
+        ch_versions = ch_versions.mix(SAMTOOLS_VIEW.out.versions.first())
     } else if ( params.step == 'bam'  &&  params.filter_bam == null ){
         ch_bam_input = ch_input_sample
     } else if ( params.step == 'bam'  &&  params.filter_bam != null ){
