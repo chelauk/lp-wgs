@@ -101,7 +101,7 @@ map_bin = params.map_bin
 // Info required for completion email and summary
 def multiqc_report = []
 // define filter_status for output folders
-filter_status = params.filter_bam == null ? "filter_default" : "filter_${params.filter_bam_min}_${params.filter_bam_max}"
+filter_status = ${params.filter_bam} == null ? "filter_default" : "filter_${params.filter_bam_min}_${params.filter_bam_max}"
 workflow WGS {
     // To gather all QC reports for MultiQC
     ch_reports  = Channel.empty()
@@ -150,17 +150,18 @@ workflow WGS {
         ch_versions = ch_versions.mix(SAMTOOLS_VIEW.out.versions.first())
     }
 
-    PICARD_COLLECTALIGNMENTSUMMARYMETRICS ( ch_bam_input , fasta, dict)
+    PICARD_COLLECTALIGNMENTSUMMARYMETRICS ( ch_bam_input , fasta, dict,filter_status)
     ch_versions = ch_versions.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.versions.first())
     ch_reports  = ch_reports.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.metrics.collect{meta, report -> report})
-    PICARD_COLLECTINSERTSIZEMETRICS ( ch_bam_input )
+    PICARD_COLLECTINSERTSIZEMETRICS ( ch_bam_input ,filter_status)
     ch_versions = ch_versions.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.versions.first())
     ch_reports  = ch_reports.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.size_metrics.collect{meta, report -> report})
 
     MOSDEPTH(
         ch_bam_input,
         chr_bed,
-        fasta.map{ it -> [[id:it[0].baseName], it] }
+        fasta.map{ it -> [[id:it[0].baseName], it] },
+        filter_status
         )
 
     mosdepth_reports = mosdepth_reports.mix(MOSDEPTH.out.global_txt,

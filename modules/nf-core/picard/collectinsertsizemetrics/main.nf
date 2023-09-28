@@ -9,6 +9,7 @@ process PICARD_COLLECTINSERTSIZEMETRICS {
 
     input:
     tuple val(meta), path(bam), path(bai)
+    val (filter_status)
 
     output:
     tuple val(meta), path("*.txt"),  emit: size_metrics
@@ -36,8 +37,8 @@ process PICARD_COLLECTINSERTSIZEMETRICS {
     picard \\
     CollectInsertSizeMetrics \\
     I=$bam \\
-    O=${prefix}_${args}.insert_sizes.txt \\
-    H=${prefix}_${args}.insert_sizes.pdf \\
+    O=${prefix}_${filter_status}_${args}.insert_sizes.txt \\
+    H=${prefix}_${filter_status}_${args}.insert_sizes.pdf \\
     HISTOGRAM_WIDTH=${args} \\
     M=0.5
 

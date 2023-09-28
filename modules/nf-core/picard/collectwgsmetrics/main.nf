@@ -12,6 +12,7 @@ process PICARD_COLLECTWGSMETRICS {
     tuple val(meta2), path(fasta)
     tuple val(meta3), path(fai)
     path  intervallist
+    val(filter_status)
 
     output:
     tuple val(meta), path("*_metrics"), emit: metrics
@@ -36,7 +37,7 @@ process PICARD_COLLECTWGSMETRICS {
         CollectWgsMetrics \\
         $args \\
         --INPUT $bam \\
-        --OUTPUT ${prefix}.CollectWgsMetrics.coverage_metrics \\
+        --OUTPUT ${prefix}_${filter_status}.CollectWgsMetrics.coverage_metrics \\
         --REFERENCE_SEQUENCE ${fasta} \\
         $interval
 

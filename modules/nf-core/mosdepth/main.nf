@@ -11,6 +11,7 @@ process MOSDEPTH {
     tuple val(meta),  path(bam), path(bai)
     path(chr_bed)
     tuple val(meta3), path(fasta)
+    val(filter_status)
 
     output:
     tuple val(meta), path('*.global.dist.txt')      , emit: global_txt
@@ -32,7 +33,7 @@ process MOSDEPTH {
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
+    def prefix = task.ext.prefix ?: "${meta.id}_${filter_status}"
     def reference = fasta ? "--fasta ${fasta}" : ""
 
     """
