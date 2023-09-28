@@ -100,8 +100,8 @@ map_bin = params.map_bin
 */
 // Info required for completion email and summary
 def multiqc_report = []
-// define solutions for output folders
-solutions = params.filter_bam == null ? "filter_default" : "filter_${params.filter_bam_min}_${params.filter_bam_max}"
+// define filter_status for output folders
+filter_status = params.filter_bam == null ? "filter_default" : "filter_${params.filter_bam_min}_${params.filter_bam_max}"
 workflow WGS {
     // To gather all QC reports for MultiQC
     ch_reports  = Channel.empty()
@@ -197,12 +197,12 @@ workflow WGS {
         map_wig,
         panel_of_normals,
         centromere,
-        solutions
+        filter_status
         )
     ch_versions= ch_versions.mix(ICHORCNA_RUN.out.versions)
 
     // run ACE
-    ACE(ch_bam_input, solutions)
+    ACE(ch_bam_input, filter_status)
     ch_versions = ch_versions.mix(ACE.out.versions)
 
     CUSTOM_DUMPSOFTWAREVERSIONS(ch_versions.unique().collectFile(name: 'collated_versions.yml'))

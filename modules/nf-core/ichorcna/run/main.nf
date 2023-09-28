@@ -15,7 +15,7 @@ process ICHORCNA_RUN {
     path map_wig
     path panel_of_normals
     path centromere
-    val solutions
+    val filter_status
 
     output:
     tuple val(meta), path("filter*"),  emit: ichor_out
@@ -33,8 +33,8 @@ process ICHORCNA_RUN {
     def centro = centromere ? "--centromere ${centromere}" : ''
     def VERSION = '0.3.2' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
-    if [ ! -d $solutions ]; then
-    mkdir -p $solutions
+    if [ ! -d $filter_status ]; then
+    mkdir -p $filter_status
     fi
     runIchorCNA.R \\
         $args \\
@@ -46,7 +46,7 @@ process ICHORCNA_RUN {
         --mapWig ${map_wig} \\
         ${pon} \\
         ${centro} \\
-        --outDir $solutions
+        --outDir $filter_status
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -62,8 +62,8 @@ process ICHORCNA_RUN {
     def centro = centromere ? "--centromere ${centromere}" : ''
     def VERSION = '0.3.2' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
-    if [ ! -d $solutions ]; then
-    mkdir -p $solutions
+    if [ ! -d $filter_status ]; then
+    mkdir -p $filter_status
     fi
     echo -e 'runIchorCNA.R \\
         $args \\
@@ -75,7 +75,7 @@ process ICHORCNA_RUN {
         --mapWig ${map_wig} \\
         ${pon} \\
         ${centro} \\
-        --outDir ${solutions}'
+        --outDir ${filter_status}'
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

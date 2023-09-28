@@ -11,7 +11,7 @@ process ACE {
 
     input:
     tuple val(meta), path(bam), path(bai)
-    solutions
+    filter_status
 
     output:
     //tuple val(meta), path("1000kbp"), path("500kbp"), path("100kbp"),  emit: ace
@@ -31,8 +31,8 @@ process ACE {
         mv $bam \$prefix.bam
         mv $bai \$prefix.bai
     fi
-    mkdir $solutions
-    ace.R $solutions
+    mkdir $filter_status
+    ace.R $filter_status
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
