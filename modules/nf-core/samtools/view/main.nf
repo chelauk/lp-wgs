@@ -46,7 +46,7 @@ process SAMTOOLS_VIEW {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+        samtools: \$(echo "stub version")
     END_VERSIONS
     """
 }

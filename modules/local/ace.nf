@@ -43,7 +43,10 @@ process ACE {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    mkdir 1000kbp 500kbp 100kbp 
+    
+    
+    mkdir $filter_status
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         ace: stub version

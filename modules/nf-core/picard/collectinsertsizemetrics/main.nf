@@ -51,11 +51,11 @@ process PICARD_COLLECTINSERTSIZEMETRICS {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    ln -s $bam ${prefix}_processed.bam
-    ln -s $bai ${prefix}_processed.bai
+    ln -s $bam ${prefix}_${filter_status}_processed.bam
+    ln -s $bai ${prefix}_${filter_status}_processed.bai
     echo ${args}
-    touch ${prefix}_${args}.collectinsertsizemetrics.txt
-    touch ${prefix}_${args}.collectinsertsizemetrics.pdf
+    touch ${prefix}_${filter_status}_${args}.collectinsertsizemetrics.txt
+    touch ${prefix}_${filter_status}_${args}.collectinsertsizemetrics.pdf
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         picard: 2.26.10 

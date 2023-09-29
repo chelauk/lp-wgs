@@ -51,7 +51,9 @@ process MOSDEPTH {
     """
 
     stub:
-    def prefix = task.ext.prefix ?: "${meta.id}"
+    def args = task.ext.args ?: ''
+    def prefix = task.ext.prefix ?: "${meta.id}_${filter_status}"
+    def reference = fasta ? "--fasta ${fasta}" : ""
     """
     touch ${prefix}.global.dist.txt
     touch ${prefix}.region.dist.txt

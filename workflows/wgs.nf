@@ -91,7 +91,7 @@ map_bin = params.map_bin
 workflow WGS {
     
     // define filter_status for output folders
-    filter_status = params.filter_bam == null ? "filter_default" : "filter_" + params.filter_bam_min + "_" + params.filter_bam_max
+    filter_status = params.filter_bam == null ? "filter_none" : "filter_" + params.filter_bam_min + "_" + params.filter_bam_max
 
     // MULTIQC
     ch_multiqc_config                     = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
