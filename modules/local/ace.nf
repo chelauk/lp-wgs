@@ -11,7 +11,7 @@ process ACE {
 
     input:
     tuple val(meta), path(bam), path(bai)
-    filter_status
+    val(filter_status)
 
     output:
     //tuple val(meta), path("1000kbp"), path("500kbp"), path("100kbp"),  emit: ace

@@ -101,8 +101,9 @@ map_bin = params.map_bin
 // Info required for completion email and summary
 def multiqc_report = []
 // define filter_status for output folders
-filter_status = ${params.filter_bam} == null ? "filter_default" : "filter_${params.filter_bam_min}_${params.filter_bam_max}"
+filter_status = params.filter_bam == null ? "filter_default" : "filter_" + params.filter_bam_min + "_" + params.filter_bam_max
 workflow WGS {
+    println(filter_status)
     // To gather all QC reports for MultiQC
     ch_reports  = Channel.empty()
     ch_versions = Channel.empty()

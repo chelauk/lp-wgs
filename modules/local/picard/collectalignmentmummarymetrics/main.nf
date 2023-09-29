@@ -1,6 +1,6 @@
 process PICARD_COLLECTALIGNMENTSUMMARYMETRICS {
     tag "$meta.id"
-    label 'process_single'
+    label "process_single"
 
     conda "bioconda::picard=3.0.0 r::r-base"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -11,6 +11,7 @@ process PICARD_COLLECTALIGNMENTSUMMARYMETRICS {
     tuple val(meta), path(bam), path(bai)
     path fasta
     path dict
+    val filter_status
 
     output:
     tuple val(meta), path("*metrics"), emit: metrics
@@ -20,7 +21,7 @@ process PICARD_COLLECTALIGNMENTSUMMARYMETRICS {
     task.ext.when == null || task.ext.when
 
     script:
-    def args      = task.ext.args ?: ''
+    def args      = task.ext.args ?: ""
     def prefix    = task.ext.prefix ?: "${meta.id}"
     def avail_mem = 3072
     if (!task.memory) {
@@ -34,7 +35,7 @@ process PICARD_COLLECTALIGNMENTSUMMARYMETRICS {
         CollectAlignmentSummaryMetrics \\
         $args \\
         --INPUT $bam \\
-        --OUTPUT ${prefix}.CollectAlignmentSummaryMetrics.metrics \\
+        --OUTPUT ${prefix}_${filter_status}.CollectAlignmentSummaryMetrics.metrics \\
         --REFERENCE_SEQUENCE ${fasta} 
 
 

@@ -1,6 +1,6 @@
 process PICARD_COLLECTINSERTSIZEMETRICS {
     tag "$meta.id"
-    label 'process_long'
+    label "process_long"
 
     conda "bioconda::picard=2.26.10" 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -21,19 +21,19 @@ process PICARD_COLLECTINSERTSIZEMETRICS {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
-    def args2 = task.ext.args2 ?: ''
+    def args = task.ext.args ?: ""
+    def args2 = task.ext.args2 ?: ""
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     def avail_mem = 3
     if (!task.memory) {
-        log.info '[Picard CollectInsertSizeMetrics] Available memory not known - defaulting to 3GB. Specify process memory requirements to change this.'
+        log.info "[Picard CollectInsertSizeMetrics] Available memory not known - defaulting to 3GB. Specify process memory requirements to change this."
     } else {
         avail_mem = task.memory.giga
     }
     """
-    ln -s $bam ${prefix}_processed.bam
-    ln -s $bai ${prefix}_processed.bai
+    ln -s $bam ${prefix}_${filter_status}_processed.bam
+    ln -s $bai ${prefix}_${filter_status}_processed.bai
     picard \\
     CollectInsertSizeMetrics \\
     I=$bam \\
