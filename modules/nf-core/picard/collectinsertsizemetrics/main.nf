@@ -40,7 +40,8 @@ process PICARD_COLLECTINSERTSIZEMETRICS {
     O=${prefix}_${filter_status}_${args}.insert_sizes.txt \\
     H=${prefix}_${filter_status}_${args}.insert_sizes.pdf \\
     HISTOGRAM_WIDTH=${args} \\
-    M=0.5
+    M=0.5 \\
+    VALIDATION_STRINGENCY=SILENT
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

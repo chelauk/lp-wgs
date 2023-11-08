@@ -36,7 +36,8 @@ process PICARD_COLLECTALIGNMENTSUMMARYMETRICS {
         $args \\
         --INPUT $bam \\
         --OUTPUT ${prefix}_${filter_status}.CollectAlignmentSummaryMetrics.metrics \\
-        --REFERENCE_SEQUENCE ${fasta} 
+        --REFERENCE_SEQUENCE ${fasta} \\
+        --VALIDATION_STRINGENCY SILENT 
 
 
     cat <<-END_VERSIONS > versions.yml
