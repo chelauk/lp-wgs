@@ -1,8 +1,8 @@
 #!/usr/bin/env Rscript
-library(dplyr)
-library(data.table)
-library(ACE)
-library(QDNAseq.hg38)
+library("dplyr")
+#library("data.table")
+library("ACE")
+library("QDNAseq.hg38")
 
 args <- commandArgs(trailingOnly = TRUE)
 patient <- args[1]
