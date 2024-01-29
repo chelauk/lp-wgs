@@ -1,4 +1,4 @@
-# set working dir
+#!/usr/bin/env Rscript
 library(tidyverse)
 library(data.table)
 library(ACE)
