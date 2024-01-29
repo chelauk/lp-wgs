@@ -47,7 +47,8 @@ include { HMMCOPY_READCOUNTER         } from '../modules/nf-core/hmmcopy/readcou
 include { ICHORCNA_RUN                } from '../modules/nf-core/ichorcna/run/main'
 include { SAMTOOLS_VIEW               } from '../modules/nf-core/samtools/view/main'
 include { ACE                         } from '../modules/local/ace'
-inclued { PREP_MEDICC2                } from '../modules/local/prep_medicc2/main'
+include { PREP_MEDICC2                } from '../modules/local/prep_medicc2/main'
+include { MEDICC2                     } from '../modules/local/medicc2/main'
 include { PICARD_COLLECTALIGNMENTSUMMARYMETRICS } from '../modules/local/picard/collectalignmentmummarymetrics/main'
 
 //
@@ -212,6 +213,10 @@ workflow WGS {
     // run prep_medicc
     PREP_MEDICC2(ACE.out.ace)
     ch_versions = ch_versions.mix(PREP_MEDICC2.out.versions)
+
+    // run medicc2
+    MEDICC2(PREP_MEDICC2.out.for_medicc)
+    ch_versions = ch_versions.mix(MEDICC2.out.versions)
 
     CUSTOM_DUMPSOFTWAREVERSIONS(ch_versions.unique().collectFile(name: 'collated_versions.yml'))
     ch_version_yaml = CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect()

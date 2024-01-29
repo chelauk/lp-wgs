@@ -13,7 +13,6 @@ process PREP_MEDICC2 {
     tuple val(meta), path(ace_out)    
 
     output:
-    //tuple val(meta), path("1000kbp"), path("500kbp"), path("100kbp"),  emit: ace
     tuple val(meta), path("*tsv"),    emit: for_medicc
     path "versions.yml"             , emit: versions
 
