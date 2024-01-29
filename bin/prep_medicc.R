@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-library(tidyverse)
+library(dplyr)
 library(data.table)
 library(ACE)
 library(QDNAseq.hg38)
@@ -8,10 +8,11 @@ args <- commandArgs(trailingOnly = TRUE)
 patient <- args[1]
 
 # find ace rds output
-my_rds <- list.files('.', recursive = TRUE, pattern = "*1000kbp.rds$")
+my_rds <- list.files(".", recursive = TRUE, pattern = "*1000kbp.rds$")
 
 # read rds and name after sample
-object_name <- sub("/low_pass_wgs/ace_1000kb/filter_90_150/1000kbp.rds", "", my_rds)
+object_name <- sub("/low_pass_wgs/ace_1000kb/filter_90_150/1000kbp.rds",
+                   "", my_rds)
 for (i in seq_along(my_rds)) {
   assign(object_name[i], readRDS(my_rds[i]))
 }
@@ -20,17 +21,17 @@ for (i in seq_along(my_rds)) {
 for (my_object in object_name) {
   current_object <- get(my_object)
   model1 <- singlemodel(current_object, QDNAseqobjectsample = 1)
-  bestfit1 <- model1$minima[tail(which(model1$rerror==min(model1$rerror)), 1)]
-  assign(paste0(my_object,"_segments"), getadjustedsegments(current_object,
-                                                           QDNAseqobjectsample = 1, 
-                                                           cellularity = bestfit1 ))
+  bestfit1 <- model1$minima[tail(which(model1$rerror == min(model1$rerror)), 1)]
+  assign(paste0(my_object, "_segments"), getadjustedsegments(current_object,
+                                        QDNAseqobjectsample = 1,
+                                        cellularity = bestfit1 ))
 }
 
 # add sample_name column and name as $sample_segments
-for ( my_object in object_name) {
-       current_object <- get(paste0(my_object,"_segments"))
-       current_object$sample_id <- my_object
-       assign(paste0(my_object, "_segments"), current_object, envir = .GlobalEnv)
+for (my_object in object_name) {
+  current_object <- get(paste0(my_object, "_segments"))
+  current_object$sample_id <- my_object
+  assign(paste0(my_object, "_segments"), current_object, envir = .GlobalEnv)
 }
 
 # concatenate all segment dfs
