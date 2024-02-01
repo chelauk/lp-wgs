@@ -1,5 +1,5 @@
 process MEDICC2 {
-    tag "$meta.patient"
+    tag "$patient"
     label 'process_medium'
 
     // TODO nf-core: List required Conda package(s).
@@ -12,7 +12,7 @@ process MEDICC2 {
         'biocontainers/medicc2:1.0.2--py38hcbe9525_0' }"
 
     input:
-    tuple val(meta), path(tsv)
+    tuple val(patient), path(tsv)
 
     output:
     tuple val(meta), path("medicc2_output"),  emit: medicc2
@@ -23,15 +23,12 @@ process MEDICC2 {
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.patient}"
     """
-    prefix=$prefix
-
     if [ ! -d medicc2_output ]; then
         mkdir medicc2_output
     fi
-    mkdir $filter_status
-    medicc2 --input-allele-columns Copies ${patient}.tsv medicc2_output
+    sed -i 's/-1/0/' ${patient}.tsv
+    medicc2 --total-copy-numbers --plot auto --input-allele-columns Copies ${patient}.tsv medicc2_output
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -40,7 +37,6 @@ process MEDICC2 {
     """
     stub:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.patient}"
     """
     if [ ! -d medicc2_output ]; then
         mkdir medicc2_output

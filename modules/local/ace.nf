@@ -15,7 +15,7 @@ process ACE {
 
     output:
     //tuple val(meta), path("1000kbp"), path("500kbp"), path("100kbp"),  emit: ace
-    tuple val(meta), path("filter*"),  emit: ace
+    tuple val(meta), path("${meta.sample}_${filter_status}"),  emit: ace
     path "versions.yml"             , emit: versions
 
     when:
@@ -31,8 +31,8 @@ process ACE {
         mv $bam \$prefix.bam
         mv $bai \$prefix.bai
     fi
-    mkdir $filter_status
-    ace.R $filter_status
+    mkdir ${meta.sample}_${filter_status}
+    ace.R ${meta.sample}_${filter_status}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

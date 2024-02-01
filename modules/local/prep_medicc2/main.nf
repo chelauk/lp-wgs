@@ -1,5 +1,5 @@
 process PREP_MEDICC2 {
-    tag "$meta"
+    tag "$patient"
     label 'process_medium'
 
     // TODO nf-core: List required Conda package(s).
@@ -10,10 +10,10 @@ process PREP_MEDICC2 {
     container "r-ace.sif"
 
     input:
-    tuple val(meta), path(ace_out)    
+    tuple val(patient), val(samples), path(ace_out)    
 
     output:
-    tuple val(meta), path("*tsv"),    emit: for_medicc
+    tuple val(patient), path("*tsv"), emit: for_medicc
     path "versions.yml"             , emit: versions
 
     when:
@@ -22,7 +22,7 @@ process PREP_MEDICC2 {
     script:
     def args = task.ext.args ?: ''
     """
-    prep_medicc.R $meta.patient
+    prep_medicc.R $patient
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -31,9 +31,8 @@ process PREP_MEDICC2 {
     """
     stub:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
     """    
-    touch ${meta.patient}.tsv
+    touch ${patient}.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

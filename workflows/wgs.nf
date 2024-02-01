@@ -210,8 +210,13 @@ workflow WGS {
     ACE(ch_bam_input, filter_status)
     ch_versions = ch_versions.mix(ACE.out.versions)
 
+    ACE.out.ace
+        .map{ meta, ace -> [meta.patient, meta.sample, ace]}
+        .groupTuple()
+        .set{ prep_medicc2_input }
+
     // run prep_medicc
-    PREP_MEDICC2(ACE.out.ace)
+    PREP_MEDICC2(prep_medicc2_input)
     ch_versions = ch_versions.mix(PREP_MEDICC2.out.versions)
 
     // run medicc2
