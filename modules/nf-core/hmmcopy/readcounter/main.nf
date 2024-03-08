@@ -24,6 +24,13 @@ process HMMCOPY_READCOUNTER {
     def prefix = task.ext.prefix ?: "${meta.id}"
     def VERSION = '0.1.1' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
+
+    if [[ ${bai} != *bam.bai ]]; then
+        echo "readCounter requires a bam.bai pattern"
+        echo "change ${bai} to ${bam}.bai"
+        mv ${bai} ${bam}.bai
+    fi
+
     readCounter \\
         $args \\
         $args2 \\

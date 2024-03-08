@@ -31,7 +31,10 @@ process ACE {
         mv $bam \$prefix.bam
         mv $bai \$prefix.bai
     fi
-    mkdir ${meta.sample}_${filter_status}
+
+    if [ ! -d "${meta.sample}_${filter_status}" ]; then
+    mkdir "${meta.sample}_${filter_status}"
+    fi
     ace.R ${meta.sample}_${filter_status}
 
     cat <<-END_VERSIONS > versions.yml

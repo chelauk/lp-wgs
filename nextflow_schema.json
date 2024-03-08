@@ -23,7 +23,8 @@
                     "schema": "assets/schema_input.json",
                     "description": "Name of iGenomes reference.",
                     "fa_icon": "fas fa-book",
-                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
+                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details.",
+                    "default": "GATK.GRCh38"
                 },
                 "fasta": {
                     "type": "string",
@@ -36,21 +37,18 @@
                 },
                 "step": {
                     "type": "string",
-                    "default": "bam",
+                    "default": "fastq",
                     "description": "start from fastq or bam"
                 },
                 "igenomes_base": {
                     "type": "string",
-                    "default": "None",
                     "description": "path to reference"
                 },
                 "save_reference": {
-                    "type": "string",
-                    "default": "None"
+                    "type": "string"
                 },
                 "fasta_fai": {
                     "type": "string",
-                    "default": "None",
                     "hidden": true
                 }
             }
@@ -76,7 +74,8 @@
                     "type": "string",
                     "format": "directory-path",
                     "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure.",
-                    "fa_icon": "fas fa-folder-open"
+                    "fa_icon": "fas fa-folder-open",
+                    "default": "results"
                 },
                 "email": {
                     "type": "string",
@@ -210,7 +209,7 @@
                 "tracedir": {
                     "type": "string",
                     "description": "Directory to keep pipeline Nextflow logs and reports.",
-                    "default": "${params.outdir}/Reports/pipeline_info",
+                    "default": "results/Reports/pipeline_info",
                     "fa_icon": "fas fa-cogs",
                     "hidden": true
                 },
@@ -247,12 +246,10 @@
     ],
     "properties": {
         "call_gc": {
-            "type": "string",
-            "default": "None"
+            "type": "string"
         },
         "igenomes_ignore": {
-            "type": "string",
-            "default": "false"
+            "type": "string"
         },
         "ploidy": {
             "type": "string",
@@ -263,24 +260,47 @@
             "default": "default"
         },
         "normal": {
-            "type": "string",
-            "default": "None"
+            "type": "string"
         },
         "map_bin": {
             "type": "string",
             "default": "10kb"
         },
         "bwa": {
-            "type": "string",
-            "default": "None"
+            "type": "string"
         },
         "centromere": {
-            "type": "string",
-            "default": "None"
+            "type": "string"
         },
         "map_wig": {
+            "type": "string"
+        },
+        "filter_bam": {
+            "type": "string"
+        },
+        "filter_bam_min": {
+            "type": "integer",
+            "default": 90
+        },
+        "filter_bam_max": {
+            "type": "integer",
+            "default": 150
+        },
+        "ichor_purity": {
+            "type": "string"
+        },
+        "ichor_purity_manual": {
+            "type": "string"
+        },
+        "schema_ignore_params": {
             "type": "string",
-            "default": "None"
+            "default": "genomes"
+        },
+        "dict": {
+            "type": "string"
+        },
+        "chr_bed": {
+            "type": "string"
         }
     }
 }

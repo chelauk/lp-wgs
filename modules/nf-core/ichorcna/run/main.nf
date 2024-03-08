@@ -4,9 +4,7 @@ process ICHORCNA_RUN {
 
     // WARN: Version information not provided by tool on CLI. Please update version string below when bumping container versions.
     conda "bioconda::r-ichorcna=0.3.2"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/r-ichorcna:0.3.2--pl5321r42hdfd78af_2' :
-        'quay.io/biocontainers/r-ichorcna:0.3.2--pl5321r42hdfd78af_2' }"
+    container "ichorcna_1_1.sif"
 
     input:
     tuple val(meta), path(wig)
@@ -44,6 +42,7 @@ process ICHORCNA_RUN {
         --id ${prefix} \\
         --gcWig ${gc_wig} \\
         --mapWig ${map_wig} \\
+        --genomeBuild "hg38" \\
         ${pon} \\
         ${centro} \\
         --outDir $filter_status

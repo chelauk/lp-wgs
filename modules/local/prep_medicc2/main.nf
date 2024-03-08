@@ -10,7 +10,7 @@ process PREP_MEDICC2 {
     container "r-ace.sif"
 
     input:
-    tuple val(patient), val(samples), path(ace_out)    
+    tuple val(patient), val(samples), val(ids), path(ace_out)    
 
     output:
     tuple val(patient), path("*tsv"), emit: for_medicc

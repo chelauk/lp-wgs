@@ -1,6 +1,7 @@
 process MEDICC2 {
     tag "$patient"
     label 'process_medium'
+    maxRetries 1
 
     // TODO nf-core: List required Conda package(s).
     //               Software MUST be pinned to channel (i.e. "bioconda"), version (i.e. "1.10").
@@ -15,20 +16,26 @@ process MEDICC2 {
     tuple val(patient), path(tsv)
 
     output:
-    tuple val(meta), path("medicc2_output"),  emit: medicc2
+    tuple val(patient), path("medicc2_output"),  emit: medicc2
     path "versions.yml"                    ,  emit: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
+    def plot_style = task.attempt == 1 ? 'heatmap' : 'auto'
     def args = task.ext.args ?: ''
     """
     if [ ! -d medicc2_output ]; then
         mkdir medicc2_output
     fi
-    sed -i 's/-1/0/' ${patient}.tsv
-    medicc2 --total-copy-numbers --plot auto --input-allele-columns Copies ${patient}.tsv medicc2_output
+    sed -i 's/-[0-9]*/0/' ${patient}.tsv
+    medicc2 \\
+    --total-copy-numbers \\
+    --plot ${plot_style} \\
+    --n-cores 4 \\
+    --input-allele-columns Copies \\
+    ${patient}.tsv medicc2_output
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -36,6 +43,7 @@ process MEDICC2 {
     END_VERSIONS
     """
     stub:
+    def plot_style = task.attempt == 1 ? 'heatmap' : 'auto'
     def args = task.ext.args ?: ''
     """
     if [ ! -d medicc2_output ]; then

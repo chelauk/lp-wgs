@@ -210,10 +210,14 @@ workflow WGS {
     ACE(ch_bam_input, filter_status)
     ch_versions = ch_versions.mix(ACE.out.versions)
 
+    // ACE.out.ace.view()
+
     ACE.out.ace
-        .map{ meta, ace -> [meta.patient, meta.sample, ace]}
+        .map{ meta, ace -> [meta.patient, meta.sample, meta.id, ace]}
         .groupTuple()
         .set{ prep_medicc2_input }
+    
+    prep_medicc2_input.view()
 
     // run prep_medicc
     PREP_MEDICC2(prep_medicc2_input)
@@ -221,7 +225,7 @@ workflow WGS {
 
     // run medicc2
     MEDICC2(PREP_MEDICC2.out.for_medicc)
-    ch_versions = ch_versions.mix(MEDICC2.out.versions)
+    //ch_versions = ch_versions.mix(MEDICC2.out.versions)
 
     CUSTOM_DUMPSOFTWAREVERSIONS(ch_versions.unique().collectFile(name: 'collated_versions.yml'))
     ch_version_yaml = CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect()
