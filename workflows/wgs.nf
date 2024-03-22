@@ -47,6 +47,7 @@ include { HMMCOPY_READCOUNTER         } from '../modules/nf-core/hmmcopy/readcou
 include { ICHORCNA_RUN                } from '../modules/nf-core/ichorcna/run/main'
 include { SAMTOOLS_VIEW               } from '../modules/nf-core/samtools/view/main'
 include { ACE                         } from '../modules/local/ace'
+include { PREP_ASCAT                  } from '../modules/local/prep_ascat/main'
 include { PREP_MEDICC2                } from '../modules/local/prep_medicc2/main'
 include { MEDICC2                     } from '../modules/local/medicc2/main'
 include { PICARD_COLLECTALIGNMENTSUMMARYMETRICS } from '../modules/local/picard/collectalignmentmummarymetrics/main'
@@ -206,6 +207,19 @@ workflow WGS {
         )
     ch_versions= ch_versions.mix(ICHORCNA_RUN.out.versions)
 
+    // run PREP_ASCAT
+    bin_for_prep_ascat = map_bin.replace("kb", "")
+
+    PREP_ASCAT(
+        ch_bam_input,
+        bin_for_prep_ascat
+        )
+    
+    RUN_ASCAT(
+        PREP_ASCAT.out.for_ascat
+        params.ASCAT_config
+    )
+
     // run ACE
     ACE(ch_bam_input, filter_status)
     ch_versions = ch_versions.mix(ACE.out.versions)
@@ -217,7 +231,7 @@ workflow WGS {
         .groupTuple()
         .set{ prep_medicc2_input }
     
-    prep_medicc2_input.view()
+    //prep_medicc2_input.view()
 
     // run prep_medicc
     PREP_MEDICC2(prep_medicc2_input)
