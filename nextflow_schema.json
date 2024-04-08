@@ -252,8 +252,8 @@
             "type": "string"
         },
         "ploidy": {
-            "type": "string",
-            "default": "default"
+            "type": "number",
+            "default": 1
         },
         "bin": {
             "type": "string",
@@ -301,6 +301,13 @@
         },
         "chr_bed": {
             "type": "string"
+        },
+        "run_ascat": {
+            "type": "boolean"
+        },
+        "purity": {
+            "type": "number",
+            "default": 1
         }
     }
 }

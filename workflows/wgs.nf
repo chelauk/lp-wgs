@@ -48,6 +48,7 @@ include { ICHORCNA_RUN                } from '../modules/nf-core/ichorcna/run/ma
 include { SAMTOOLS_VIEW               } from '../modules/nf-core/samtools/view/main'
 include { ACE                         } from '../modules/local/ace'
 include { PREP_ASCAT                  } from '../modules/local/prep_ascat/main'
+include { RUN_ASCAT                   } from '../modules/local/ascat_lp/main'
 include { PREP_MEDICC2                } from '../modules/local/prep_medicc2/main'
 include { MEDICC2                     } from '../modules/local/medicc2/main'
 include { PICARD_COLLECTALIGNMENTSUMMARYMETRICS } from '../modules/local/picard/collectalignmentmummarymetrics/main'
@@ -57,6 +58,8 @@ include { PICARD_COLLECTALIGNMENTSUMMARYMETRICS } from '../modules/local/picard/
 //
 
 map_bin = params.map_bin
+ploidy  = params.ploidy
+purity  = params.purity
 
 //
 // gather prebuilt indices
@@ -215,10 +218,26 @@ workflow WGS {
         bin_for_prep_ascat
         )
     
+
+    PREP_ASCAT.out.for_ascat
+        //.map { sample_info, genome_name, index -> tuple(groupKey(sample_info, 1), genome_name, index )}
+        .map{ meta, segments, bins -> tuple( meta.patient, meta.sample, meta.id, segments, bins)}
+        //.groupTuple(by : [0,0])
+        .groupTuple()
+ //       .map{ patient, metas, segments, bins -> 
+ //       tuple()}
+        .view{ it -> "ascat_input: $it"}
+        .set{ascat_input}
+
+    
+    if ( params.run_ascat ) {
     RUN_ASCAT(
-        PREP_ASCAT.out.for_ascat
-        params.ASCAT_config
-    )
+        ascat_input,
+        ploidy,
+        purity
+        //params.ASCAT_config
+        )
+    }
 
     // run ACE
     ACE(ch_bam_input, filter_status)
