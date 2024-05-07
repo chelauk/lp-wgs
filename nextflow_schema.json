@@ -213,11 +213,11 @@
             "description": "Run ascat type analysis"
         },
         "ascat_ploidy": {
-            "type": "string",
+            "type": "number",
             "description": "required if running ascat"
         },
         "ascat_purity": {
-            "type": "string",
+            "type": "number",
             "description": "required if running ascat"
         },
         "genome": {
@@ -281,6 +281,10 @@
         },
         "chr_bed": {
             "type": "string"
+        },
+        "ploidy": {
+            "type": "string",
+            "default": "default"
         }
     }
 }
