@@ -5,54 +5,6 @@
     "description": "shallow whole genome sequence analyses",
     "type": "object",
     "definitions": {
-        "user_options": {
-            "title": "User options",
-            "type": "object",
-            "fa_icon": "fas fa-terminal",
-            "description": "User defined flags and reference locations",
-            "properties": {
-                "sort": {
-                    "type": "boolean",
-                    "schema": "assets/schema_input.json",
-                    "description": "sort or not",
-                    "default": true,
-                    "fa_icon": "fas fa-question-circle"
-                },
-                "genome": {
-                    "type": "string",
-                    "schema": "assets/schema_input.json",
-                    "description": "Name of iGenomes reference.",
-                    "fa_icon": "fas fa-book",
-                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details.",
-                    "default": "GATK.GRCh38"
-                },
-                "fasta": {
-                    "type": "string",
-                    "format": "file-path",
-                    "mimetype": "text/plain",
-                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
-                    "description": "Path to FASTA genome file.",
-                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have the appropriate alignment index available this will be generated for you automatically. Combine with `--save_reference` to save alignment index for future runs.",
-                    "fa_icon": "far fa-file-code"
-                },
-                "step": {
-                    "type": "string",
-                    "default": "fastq",
-                    "description": "start from fastq or bam"
-                },
-                "igenomes_base": {
-                    "type": "string",
-                    "description": "path to reference"
-                },
-                "save_reference": {
-                    "type": "string"
-                },
-                "fasta_fai": {
-                    "type": "string",
-                    "hidden": true
-                }
-            }
-        },
         "input_output_options": {
             "title": "Input/output options",
             "type": "object",
@@ -63,9 +15,10 @@
                 "input": {
                     "type": "string",
                     "format": "file-path",
+                    "exists": true,
+                    "schema": "assets/schema_input.json",
                     "mimetype": "text/csv",
                     "pattern": "^\\S+\\.csv$",
-                    "schema": "assets/schema_input.json",
                     "description": "Path to comma-separated file containing information about the samples in the experiment.",
                     "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row.",
                     "fa_icon": "fas fa-file-csv"
@@ -120,7 +73,7 @@
                     "description": "Maximum amount of time that can be requested for any single job.",
                     "default": "240.h",
                     "fa_icon": "far fa-clock",
-                    "pattern": "^(\\d+\\.?\\s*(s|m|h|day)\\s*)+$",
+                    "pattern": "^(\\d+\\.?\\s*(s|m|h|d|day)\\s*)+$",
                     "hidden": true,
                     "help_text": "Use to set an upper-limit for the time requirement for each process. Should be a string in the format integer-unit e.g. `--max_time '2.h'`"
                 }
@@ -191,6 +144,7 @@
                 },
                 "multiqc_config": {
                     "type": "string",
+                    "format": "file-path",
                     "description": "Custom config file to supply to MultiQC.",
                     "fa_icon": "fas fa-cog",
                     "hidden": true
@@ -206,34 +160,17 @@
                     "description": "Custom MultiQC yaml file containing HTML including a methods description.",
                     "fa_icon": "fas fa-cog"
                 },
-                "tracedir": {
-                    "type": "string",
-                    "description": "Directory to keep pipeline Nextflow logs and reports.",
-                    "default": "results/Reports/pipeline_info",
-                    "fa_icon": "fas fa-cogs",
-                    "hidden": true
-                },
                 "validate_params": {
                     "type": "boolean",
                     "description": "Boolean whether to validate parameters against the schema at runtime",
                     "default": true,
                     "fa_icon": "fas fa-check-square",
                     "hidden": true
-                },
-                "show_hidden_params": {
-                    "type": "boolean",
-                    "fa_icon": "far fa-eye-slash",
-                    "description": "Show all params when using `--help`",
-                    "hidden": true,
-                    "help_text": "By default, parameters set as _hidden_ in the schema are not shown on the command line when a user runs with `--help`. Specifying this option will tell the pipeline to show all parameters."
                 }
             }
         }
     },
     "allOf": [
-        {
-            "$ref": "#/definitions/user_options"
-        },
         {
             "$ref": "#/definitions/input_output_options"
         },
@@ -245,10 +182,55 @@
         }
     ],
     "properties": {
+        "sort": {
+            "type": "boolean",
+            "default": true
+        },
+        "step": {
+            "type": "string",
+            "default": "fastq",
+            "description": "run from fastq or from bam"
+        },
         "call_gc": {
             "type": "string"
         },
+        "filter_bam": {
+            "type": "boolean",
+            "description": "filter bams (used for circulating DNA)"
+        },
+        "filter_bam_min": {
+            "type": "integer",
+            "default": 90,
+            "description": "Usually use defaults but these can be altered"
+        },
+        "filter_bam_max": {
+            "type": "integer",
+            "default": 150,
+            "description": "Usually use defaults but these can be altered"
+        },
+        "run_ascat": {
+            "type": "boolean",
+            "description": "Run ascat type analysis"
+        },
+        "ascat_ploidy": {
+            "type": "string",
+            "description": "required if running ascat"
+        },
+        "ascat_purity": {
+            "type": "string",
+            "description": "required if running ascat"
+        },
+        "genome": {
+            "type": "string",
+            "default": "GATK.GRCh38"
+        },
         "igenomes_ignore": {
+            "type": "string"
+        },
+        "igenomes_base": {
+            "type": "string"
+        },
+        "save_reference": {
             "type": "string"
         },
         "bin": {
@@ -262,26 +244,6 @@
             "type": "string",
             "default": "10kb"
         },
-        "bwa": {
-            "type": "string"
-        },
-        "centromere": {
-            "type": "string"
-        },
-        "map_wig": {
-            "type": "string"
-        },
-        "filter_bam": {
-            "type": "boolean"
-        },
-        "filter_bam_min": {
-            "type": "integer",
-            "default": 90
-        },
-        "filter_bam_max": {
-            "type": "integer",
-            "default": 150
-        },
         "ichor_purity": {
             "type": "string"
         },
@@ -292,18 +254,33 @@
             "type": "string",
             "default": "genomes"
         },
+        "tracedir": {
+            "type": "string",
+            "default": "results/Reports/pipeline_info"
+        },
+        "show_hidden_params": {
+            "type": "boolean"
+        },
         "dict": {
+            "type": "string"
+        },
+        "fasta": {
+            "type": "string"
+        },
+        "fasta_fai": {
+            "type": "string"
+        },
+        "bwa": {
+            "type": "string"
+        },
+        "centromere": {
+            "type": "string"
+        },
+        "map_wig": {
             "type": "string"
         },
         "chr_bed": {
             "type": "string"
-        },
-        "run_ascat": {
-            "type": "boolean"
-        },
-        "purity": {
-            "type": "number",
-            "default": 1
         }
     }
 }
