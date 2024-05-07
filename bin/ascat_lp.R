@@ -22,30 +22,22 @@ source(paste0(bin_dir,"/00_general_functions.R"))
 source(paste0(bin_dir,"/runASCATlp.R"))
 
 # What are the ranges for lower and higher ploidy searches?
-if (ploidy <  2) {
-  lower_range = seq(ploidy - 0.05, ploidy + 0.05,by=0.01)
-}
-if (ploidy > 2 ) {
-  highr_range = seq(ploidy - 0.05, ploidy + 0.05,by=0.01)
-}
+lower_range = seq(ploidy - 0.05, ploidy + 0.05,by=0.01)
+
+highr_range = seq(ploidy - 0.5, ploidy + 0.5,by=0.1)
 
 # Intervals for purity search
 int          = 0.001
 # Lowest purity allowed
 min_purity   = 0.05
+# maybe I should change this to 0.01
 max_purity   = purity + 0.1
 # Maximum Log2ratio allowed when fitting
 max_lrr      = Inf
 # If there is no fit, what purity do we use?
 nofit_purity = 0.4
 
-
-# patients = patients[!patients %in% "README"]
-
-# Read in the metrics analysis
-# per_sample_mets = read.table("results/2_metrics/metric_assessment_table.txt",
-#                             header = T, stringsAsFactors = F)
-
+# perhaps if we have no CN changes we shouldn't be running ascat
 # Make a blacklist of impure (by eye) or failed samples samples because they will bias the search
 # normal_samples = per_sample_mets$Sample[per_sample_mets$Assessment=="Failed" | per_sample_mets$Assessment=="Normal"]
 
@@ -53,7 +45,6 @@ nofit_purity = 0.4
 per_patient_solution = list()
 med_dev_zeros = NULL
 normal_samples = NULL
-
 
 segs = list()
 # Read in segs data
@@ -63,9 +54,7 @@ for ( id in ids ) {
     segs <- c(segs, my_table)
 }
 
-# Find bin files
-#files = list.files(paste0(pipeline_root,"/data/",patient,"/QDNASEQ"),
-#                  pattern = "_bins.txt", full.names = T, recursive = T)
+# Read in bins data
 
 bins = list()
 # Read in data
@@ -83,24 +72,24 @@ autosome_index = bins[[1]]$chromosome %in% 1:22
 segs_auto = lapply(segs, function(i) i[autosome_index])
 
 # Bins of the autosomes
-  bins_auto = lapply(bins, function(i) {
+bins_auto = lapply(bins, function(i) {
 
     res = i[autosome_index,]
-
     res$chromosome = as.numeric(res$chromosome)
-
     return(res)
 
   })
 
-  # Read in the blacklist bins
-  # blacklist = readRDS("refs/Bins_to_blacklist_from_recurrence_analysis_20210723.rds")
+# Read in the blacklist bins
+# blacklist = readRDS("refs/Bins_to_blacklist_from_recurrence_analysis_20210723.rds")
 
-  # Good bin index
-  # good_index = !bins_auto[[1]]$feature %in% paste0(blacklist$chr,":",blacklist$start,"-",blacklist$end)
+# Good bin index
+# good_index = !bins_auto[[1]]$feature %in% paste0(blacklist$chr,":",blacklist$start,"-",blacklist$end)
 
-  # Make test segs
-  # segs_test = lapply(segs_auto, function(i) i[good_index])
+# Make test segs
+# segs_test = lapply(segs_auto, function(i) i[good_index])
+
+
 segs_test = segs_auto
 
 sample_df = data.frame("Patient" = patient, "Sample" = ids)
@@ -235,14 +224,14 @@ if(run_full_pipeline) {
     pdf(paste0(patient,"_mean_intersample_distance_ploidy.pdf"),
         width = 9)
     plot(ploid_search, unlist(lapply(ploidy_mean_dist, function(i) mean(i$int_dists))), type = "l",
-         xlab = "Ploidy", ylab = "Mean Intersample Distance")
+        xlab = "Ploidy", ylab = "Mean Intersample Distance")
     dev.off()
 
 }
 
-  # With this answer generate the final calls
+# With this answer generate the final calls
 ascat = lapply(segs_auto, runASCATlp, fix_ploidy=searched_ploidy, interval = int,
-                 min_purity=min_purity, max_lrr = max_lrr, no_fit_psit = searched_ploidy)
+                min_purity=min_purity, max_lrr = max_lrr, no_fit_psit = searched_ploidy)
 
 
 
@@ -250,53 +239,48 @@ ascat = lapply(segs_auto, runASCATlp, fix_ploidy=searched_ploidy, interval = int
 names(ascat) = sample_df$Sample
 
 
-  # Plot the fit of the segments with the solutions
-  if(run_full_pipeline) {
+# Plot the fit of the segments with the solutions
+if(run_full_pipeline) {
 
     pdf(paste0(patient,"_fits.pdf"))
 
     for(s in 1:length(ascat)) {
-
-      mean_dist = mean(ascat[[s]]$CN - ascat[[s]]$contCN)
-      hist(ascat[[s]]$CN - ascat[[s]]$contCN, breaks = 100, xlim = c(-1,1), main = names(ascat)[s], xlab = "Distance")
-      abline(v = mean_dist, lty = "dotted")
-
+        mean_dist = mean(ascat[[s]]$CN - ascat[[s]]$contCN)
+        hist(ascat[[s]]$CN - ascat[[s]]$contCN, breaks = 100, xlim = c(-1,1), main = names(ascat)[s], xlab = "Distance")
+        abline(v = mean_dist, lty = "dotted")
     }
 
     dev.off()
 
-  }
+}
 
-  # If there is no solution make a fit with the nofit purity
-  for(s in 1:length(ascat)) {
+# If there is no solution make a fit with the nofit purity
+for(s in 1:length(ascat)) {
 
     if(nrow(ascat[[s]]$allsol)==0) {
+        print(names(ascat)[s])
+        lrrs  = segs_auto[[s]]
+        gamma = 1
 
-      print(names(ascat)[s])
+    # Get continuous copy number values for best fit
+    rho = nofit_purity
+    psi = (2*(1 - rho)) + (rho*searched_ploidy)
+    n = ((psi*(2^(lrrs/gamma))) - (2 * (1 - rho))) / rho
 
-      lrrs  = segs_auto[[s]]
-      gamma = 1
+    # Make them integers
+    n_int = round(n)
 
-      # Get continuous copy number values for best fit
-      rho = nofit_purity
-      psi = (2*(1 - rho)) + (rho*searched_ploidy)
-      n = ((psi*(2^(lrrs/gamma))) - (2 * (1 - rho))) / rho
+    # If we get minus states (i.e. small deletions in impure tumours)
+    n_int[n_int<0] = 0
+    ascat[[s]]$Purity = nofit_purity
+    ascat[[s]]$Psi    = psi
+    ascat[[s]]$contCN = n
+    ascat[[s]]$CN     = n_int
+    }
+}
 
-      # Make them integers
-      n_int = round(n)
-
-      # If we get minus states (i.e. small deletions in impure tumours)
-      n_int[n_int<0] = 0
-
-      ascat[[s]]$Purity = nofit_purity
-      ascat[[s]]$Psi    = psi
-      ascat[[s]]$contCN = n
-      ascat[[s]]$CN     = n_int
-
-    }}
-
-  # Add on the X and Y chromosomes in accordance with the purity, ploidy fits
-  for(s in 1:length(ascat)) {
+# Add on the X and Y chromosomes in accordance with the purity, ploidy fits
+for(s in 1:length(ascat)) {
 
     sex_segs = segs[[s]][bins[[s]]$chromosome %in% c("X", "Y")]
 
@@ -305,26 +289,26 @@ names(ascat) = sample_df$Sample
     ascat[[s]]$CN = c(ascat[[s]]$CN, round(n))
     ascat[[s]]$contCN = c(ascat[[s]]$contCN, n)
 
-  }
+}
 
-  # Collect as a matrix
-  mat = do.call(rbind, lapply(ascat, function(s) s$CN))
+# Collect as a matrix
+mat = do.call(rbind, lapply(ascat, function(s) s$CN))
 
-  # Colour with saturation
-  cols = c(c("0" = "#1981be", "1" = "#56B4E9", "2" = "grey", "3" = "#E69F00", "4" = "#ffc342",
-             "5" = "#FFAA42", "6" = "#FF9142", "7" = "#FF7742", "8" = "#FF5E42"),
-           rep("#FF4542", times = 100 - 8))
+# Colour with saturation
+cols = c(c("0" = "#1981be", "1" = "#56B4E9", "2" = "grey", "3" = "#E69F00", "4" = "#ffc342",
+            "5" = "#FFAA42", "6" = "#FF9142", "7" = "#FF7742", "8" = "#FF5E42"),
+            rep("#FF4542", times = 100 - 8))
 
-  # Name top
-  names(cols)[(9:100)+1] = 9:100
+# Name top
+names(cols)[(9:100)+1] = 9:100
 
-  # Save the object for calling
-  saveRDS(ascat, file = paste0(patient,"_ascat_objects.rds"))
+# Save the object for calling
+saveRDS(ascat, file = paste0(patient,"_ascat_objects.rds"))
 
-  # Make a pdf of these calls together
-  if(run_full_pipeline) {pdf(paste0(patient,"_new_calls.pdf"), width = 14)}
+# Make a pdf of these calls together
+if(run_full_pipeline) {pdf(paste0(patient,"_new_calls.pdf"), width = 14)}
 
-  plts = lapply(1:length(ascat), function(s) {
+plts = lapply(1:length(ascat), function(s) {
 
     sample_ascat = ascat[[s]]
 
@@ -338,36 +322,36 @@ names(ascat) = sample_df$Sample
 
     # Make plot
     p = ggplot(plt.df, aes(x = genome.bin, y = Log2ratio, col = Call)) +
-      geom_hline(yintercept = c(-2,-1,0,1,2), lty = c("solid"), lwd = 0.2) +
-      geom_point() +
-      scale_colour_manual(values = cols) +
-      scale_x_continuous(name = "Chromosomes", labels = c(1:22,"X","Y"),
-                         breaks = as.vector(c(1, cumsum(table(bins[[s]]$chromosome))[-24]) +
-                                              (table(bins[[s]]$chromosome) / 2))) +
-      geom_vline(xintercept = c(1, cumsum(table(bins[[s]]$chromosome))), lty = "dotted") +
-      ggtitle(paste0("Low pass calls - ",names(ascat[s])," purity=",
-                     sample_ascat$Purity,", psit = ",sample_ascat$PsiT,
-                     ", ploidy = ",signif(mean(sample_ascat$CN[autosome_index]), digits = 3),")")) +
-      scale_y_continuous(limits=c(-2,2), oob=scales::squish) +
-      theme(panel.grid.major = element_blank(),
+        geom_hline(yintercept = c(-2,-1,0,1,2), lty = c("solid"), lwd = 0.2) +
+        geom_point() +
+        scale_colour_manual(values = cols) +
+        scale_x_continuous(name = "Chromosomes", labels = c(1:22,"X","Y"),
+                        breaks = as.vector(c(1, cumsum(table(bins[[s]]$chromosome))[-24]) +
+                                            (table(bins[[s]]$chromosome) / 2))) +
+        geom_vline(xintercept = c(1, cumsum(table(bins[[s]]$chromosome))), lty = "dotted") +
+        ggtitle(paste0("Low pass calls - ",names(ascat[s])," purity=",
+                    sample_ascat$Purity,", psit = ",sample_ascat$PsiT,
+                    ", ploidy = ",signif(mean(sample_ascat$CN[autosome_index]), digits = 3),")")) +
+        scale_y_continuous(limits=c(-2,2), oob=scales::squish) +
+        theme(panel.grid.major = element_blank(),
             panel.grid.minor = element_blank(),
             panel.background = element_blank(),
             plot.title = element_text(hjust = 0.5, size = 18)) +
-      geom_point(aes(y = mean_segment), color="#000000")
+        geom_point(aes(y = mean_segment), color="#000000")
 
     print(p)
 
     return(p)
 
-  })
+})
 
-  if(run_full_pipeline) {dev.off()}
+if(run_full_pipeline) {dev.off()}
 
-  names(plts)   = names(ascat)
-  rownames(mat) = names(ascat)
+names(plts)   = names(ascat)
+rownames(mat) = names(ascat)
 
-  # Also produce plots as individual files
-  lapply(1:length(ascat), function(s) {
+# Also produce plots as individual files
+lapply(1:length(ascat), function(s) {
 
     sample_ascat = ascat[[s]]
 
@@ -382,19 +366,19 @@ names(ascat) = sample_df$Sample
 
     if(individual_colour=="gain_loss") {
 
-      # Baseline
-      calls[which(sample_ascat$CN==ploidy)] = "Neutral"
-      calls[which(sample_ascat$CN<ploidy)]  = "Lost"
-      calls[which(sample_ascat$CN>ploidy)]  = "Gain"
+    # Baseline
+    calls[which(sample_ascat$CN==ploidy)] = "Neutral"
+    calls[which(sample_ascat$CN<ploidy)]  = "Lost"
+    calls[which(sample_ascat$CN>ploidy)]  = "Gain"
 
-      cols = c(cols, "Neutral" = "grey", "Lost" = "#75bbfd", "Gain" = "#ff474c")
+    cols = c(cols, "Neutral" = "grey", "Lost" = "#75bbfd", "Gain" = "#ff474c")
 
     }
 
     if(individual_colour=="no_colour") {
 
-      # Baseline
-      calls = "Neutral"
+    # Baseline
+    calls = "Neutral"
 
     }
 
@@ -410,10 +394,10 @@ names(ascat) = sample_df$Sample
     minCN = -2
 
     # lines across
-    lines_across = data.frame(x1 = 1,
-                              y1 = minCN:maxCN,
-                              x2 = nrow(bins[[s]]),
-                              y2 = minCN:maxCN)
+    lines_across  =  data.frame(x1 = 1,
+                                y1 = minCN:maxCN,
+                                x2 = nrow(bins[[s]]),
+                                y2 = minCN:maxCN)
 
     # lines going up for chromosomes
     lines_vertical = data.frame(x1 = c(1, cumsum(table(bins[[s]]$chromosome))),
@@ -429,18 +413,17 @@ names(ascat) = sample_df$Sample
 
     # Make plot
     p = ggplot(plt.df, aes(x = genome.bin, y = Log2ratio, col = Call)) +
-      geom_segment(aes(x = x1, y = y1, xend = x2, yend = y2), data = lines_across, color="#00000080", lwd = 0.2) +
-      scale_colour_manual(values = cols) +
-      scale_x_continuous(name = NULL,
-                         labels = chrs_lab,
-                         breaks = as.vector(c(1, cumsum(table(bins[[s]]$chromosome))[-24]) +
-                                              (table(bins[[s]]$chromosome) / 2)),
-                         expand = c(0.01,0)) +
-      geom_segment(aes(x = x1, y = y1, xend = x2, yend = y2), data = lines_vertical, color="#0000001A", lwd = 0.2) +
-      scale_y_continuous(limits=c(-2,2), oob=scales::squish, expand = c(0,0)) +
-      geom_point(aes(size = 2)) +
-      geom_point(aes(y = mean_segment), color="#000000") +
-      theme(panel.grid.major = element_blank(),
+        geom_segment(aes(x = x1, y = y1, xend = x2, yend = y2), data = lines_across, color="#00000080", lwd = 0.2) +
+        scale_colour_manual(values = cols) +
+        scale_x_continuous(name = NULL,
+                            labels = chrs_lab,
+                            breaks = as.vector(c(1, cumsum(table(bins[[s]]$chromosome))[-24]) +
+                                                (table(bins[[s]]$chromosome) / 2)), expand = c(0.01,0)) +
+        geom_segment(aes(x = x1, y = y1, xend = x2, yend = y2), data = lines_vertical, color="#0000001A", lwd = 0.2) +
+        scale_y_continuous(limits=c(-2,2), oob=scales::squish, expand = c(0,0)) +
+        geom_point(aes(size = 2)) +
+        geom_point(aes(y = mean_segment), color="#000000") +
+        theme(panel.grid.major = element_blank(),
             panel.grid.minor = element_blank(),
             panel.background = element_blank(),
             plot.title = element_text(hjust = 0.5, size = 18),
@@ -455,125 +438,116 @@ names(ascat) = sample_df$Sample
             plot.margin = margin(0.4, 0.1, 0.4, 0.1, "in"))
 
     if(plot_chromosome) {
-      pdf(paste0(names(ascat)[s],"_higher_ploidy_calls.pdf"),
-          height = 5, width = 24, useDingbats=FALSE)
-      print(p)
-      dev.off()
+        pdf(paste0(names(ascat)[s],"_higher_ploidy_calls.pdf"),
+            height = 5, width = 24, useDingbats=FALSE)
+        print(p)
+        dev.off()
     }
 
     if(!plot_chromosome) {
-      p = p + theme(axis.text.x = element_blank())
-      ggsave(paste0(names(ascat)[s],"_higher_ploidy_calls_no_chromo.png"),
-             plot = p,
-             height = 5, width = 24)
+        p = p + theme(axis.text.x = element_blank())
+        ggsave(paste0(names(ascat)[s],"_higher_ploidy_calls_no_chromo.png"),
+            plot = p,
+            height = 5, width = 24)
     }
 
-  })
+})
 
-  if(run_full_pipeline) {pdf(paste0(patient,"_heatmap.pdf"), width = 14)}
+if(run_full_pipeline) {pdf(paste0(patient,"_heatmap.pdf"), width = 14)}
 
-  # Let's also make a heatmap of the results
-  hm = Heatmap(mat, cluster_rows = T, cluster_columns = F,
-               col = colorRamp2(c(0, round(searched_ploidy), 8), c("blue", "white", "red")),
-               name = "CN", column_title = paste0(patient,"=",searched_ploidy))
+# Let's also make a heatmap of the results
+hm = Heatmap(mat, cluster_rows = T, cluster_columns = F,
+            col = colorRamp2(c(0, round(searched_ploidy), 8), c("blue", "white", "red")),
+            name = "CN", column_title = paste0(patient,"=",searched_ploidy))
 
-  draw(hm)
+draw(hm)
 
-  # Extract chromosome vector
-  chrs = unlist(lapply(strsplit(bins[[1]]$feature, split = "[:]"), function(i) i[1]))
+# Extract chromosome vector
+chrs = unlist(lapply(strsplit(bins[[1]]$feature, split = "[:]"), function(i) i[1]))
 
-  #Chromosome separation positions
-  chr.ends = cumsum(rle(chrs)$lengths)[-24]
+#Chromosome separation positions
+chr.ends = cumsum(rle(chrs)$lengths)[-24]
 
-  #Add lines
-  for(boundary in c(0,1)) {
-
-    #Add the lines
-    decorate_heatmap_body("CN", {
-      grid.lines(c(0, 1), c(1 - boundary, 1 - boundary), gp = gpar(lwd = 0.5))
-    })
-
-  }
-
-  #Add lines
-  for(boundary in c(0,1)) {
+#Add lines
+for(boundary in c(0,1)) {
 
     #Add the lines
     decorate_heatmap_body("CN", {
-      grid.lines(c(boundary, boundary), c(0, 1), gp = gpar(lwd = 1))
+        grid.lines(c(0, 1), c(1 - boundary, 1 - boundary), gp = gpar(lwd = 0.5))
     })
 
-  }
+}
 
-  #Add lines
-  for(boundary in chr.ends / ncol(mat)) {
+#Add lines
+for(boundary in c(0,1)) {
 
     #Add the lines
     decorate_heatmap_body("CN", {
-      grid.lines(c(boundary, boundary), c(0, 1), gp = gpar(lty = "dotted", lwd = 1))
+        grid.lines(c(boundary, boundary), c(0, 1), gp = gpar(lwd = 1))
     })
 
-  }
+}
 
-  if(run_full_pipeline) {dev.off()}
+#Add lines
+for(boundary in chr.ends / ncol(mat)) {
 
-  if(run_full_pipeline) {
-
-    lapply(1:length(ascat), function(i) {
-
-      CN_out = data.frame(ascat[[i]]$CN)
-
-      colnames(CN_out) = names(ascat)[i]
-
-      rownames(CN_out) = bins[[i]]$feature
-
-      write.table(CN_out, file = paste0(sample_df[i,"Sample"],"_cna_ploidy_search_calls.txt"),
-                  quote = F)
-
-      # Calculate ploidy vector
-      ploidy_expected = rep(1, times = length(ascat[[i]]$CN))
-      ploidy_expected[!autosome_index] = 0.5
-      ploidy_expected = round(searched_ploidy)*ploidy_expected
-      ploidy_expected = round(ploidy_expected)
-
-      metrics = data.frame(Sample = names(ascat)[i],
-                           Purity = ascat[[i]]$Purity,
-                           PsiT = ascat[[i]]$PsiT,
-                           Ploidy = signif(mean(ascat[[i]]$CN[autosome_index]), digits = 4),
-                           PGA = signif(length(which(ascat[[i]]$CN!=ploidy_expected)) / length(ascat[[i]]$CN), digits = 4)
-      )
-
-      write.table(metrics, file = paste0(sample_df[i,"Sample"],"_cna_ploidy_search_metrics.txt"),
-                  quote = F, row.names = F, sep = "\t")
-
+    #Add the lines
+    decorate_heatmap_body("CN", {
+        grid.lines(c(boundary, boundary), c(0, 1), gp = gpar(lty = "dotted", lwd = 1))
     })
 
-  }
+}
 
-
-  per_patient_solution[[patient]] = searched_ploidy
-
-
+if(run_full_pipeline) {dev.off()}
 
 if(run_full_pipeline) {
 
-  # Cohort ploidy range
-  pdf("cohort_ploidy_range.pdf")
-  hist(unlist(per_patient_solution), breaks = 100, xlim = c(1.5,4.5),
-       main = "PsiT solutions", xlab = "Tumour Ploidies", ylab = "Frequency")
-  dev.off()
+    lapply(1:length(ascat), function(i) {
+        CN_out = data.frame(ascat[[i]]$CN)
+        colnames(CN_out) = names(ascat)[i]
+        rownames(CN_out) = bins[[i]]$feature
+        write.table(CN_out, file = paste0(sample_df[i,"Sample"],"_cna_ploidy_search_calls.txt"),
+        quote = F)
 
+    # Calculate ploidy vector
+    ploidy_expected = rep(1, times = length(ascat[[i]]$CN))
+    ploidy_expected[!autosome_index] = 0.5
+    ploidy_expected = round(searched_ploidy)*ploidy_expected
+    ploidy_expected = round(ploidy_expected)
+
+    metrics = data.frame(Sample = names(ascat)[i],
+                        Purity = ascat[[i]]$Purity,
+                        PsiT = ascat[[i]]$PsiT,
+                        Ploidy = signif(mean(ascat[[i]]$CN[autosome_index]), digits = 4),
+                        PGA = signif(length(which(ascat[[i]]$CN!=ploidy_expected)) / length(ascat[[i]]$CN), digits = 4)
+    )
+
+    write.table(metrics, file = paste0(sample_df[i,"Sample"],"_cna_ploidy_search_metrics.txt"),
+                quote = F, row.names = F, sep = "\t")
+
+    })
+
+}
+
+per_patient_solution[[patient]] = searched_ploidy
+
+if(run_full_pipeline) {
+# Cohort ploidy range
+pdf("cohort_ploidy_range.pdf")
+hist(unlist(per_patient_solution), breaks = 100, xlim = c(1.5,4.5),
+    main = "PsiT solutions", xlab = "Tumour Ploidies", ylab = "Frequency")
+    dev.off()
 }
 
 # Make a ploidy list per case
 per_case_psit = data.frame(Case = names(per_patient_solution),
-                           PsiT = unlist(per_patient_solution))
+                            PsiT = unlist(per_patient_solution))
 rownames(per_case_psit) = NULL
 
 if(run_full_pipeline) {
 
-  # Write out the psit
-  write.table(per_case_psit, row.names = F, col.names = T, quote = F, sep = "\t",
-              file = "patient_psit_solutions.txt")
+    # Write out the psit
+    write.table(per_case_psit, row.names = F, col.names = T, quote = F, sep = "\t",
+                file = "patient_psit_solutions.txt")
 
 }

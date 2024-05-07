@@ -8,7 +8,7 @@ ploidy <- c(2, 3, 4)
 
 runACE(
     outputdir = output_folder, filetype = "bam",
-    genome = "hg38", ploidies = ploidy
+    binsizes = 1000, genome = "hg38", ploidies = ploidy
 )
 
 # runACE(inputdir = "./", outputdir, filetype = 'rds', genome = 'hg19',

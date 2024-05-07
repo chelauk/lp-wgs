@@ -33,7 +33,7 @@ ch_input_sample = extract_csv(file(params.input, checkIfExists: true ))
 
 //
 // MODULE: Installed directly from nf-core/modules
-// 
+//
 
 include { BWA_MEM                     } from '../modules/nf-core/bwa/mem/main'
 include { QC_TRIM                     } from '../subworkflows/local/qc_trim/main'
@@ -95,7 +95,7 @@ purity  = params.purity
 */
 
 workflow WGS {
-    
+
     // define filter_status for output folders
     filter_status = params.filter_bam == null ? "filter_none" : "filter_" + params.filter_bam_min + "_" + params.filter_bam_max
 
@@ -217,28 +217,21 @@ workflow WGS {
         ch_bam_input,
         bin_for_prep_ascat
         )
-    
 
     PREP_ASCAT.out.for_ascat
-        //.map { sample_info, genome_name, index -> tuple(groupKey(sample_info, 1), genome_name, index )}
         .map{ meta, segments, bins -> tuple( meta.patient, meta.sample, meta.id, segments, bins)}
-        //.groupTuple(by : [0,0])
         .groupTuple()
- //       .map{ patient, metas, segments, bins -> 
- //       tuple()}
-        .view{ it -> "ascat_input: $it"}
         .set{ascat_input}
 
-    
+    ascat_input.dump(tag: "ascat_input")
     if ( params.run_ascat ) {
     RUN_ASCAT(
         ascat_input,
-        ploidy,
-        purity
+        params.ascat_ploidy,
+        params.ascat_purity
         //params.ASCAT_config
         )
     }
-
     // run ACE
     ACE(ch_bam_input, filter_status)
     ch_versions = ch_versions.mix(ACE.out.versions)
@@ -248,9 +241,9 @@ workflow WGS {
     ACE.out.ace
         .map{ meta, ace -> [meta.patient, meta.sample, meta.id, ace]}
         .groupTuple()
+        .dump(tag: 'med_input')
         .set{ prep_medicc2_input }
-    
-    //prep_medicc2_input.view()
+
 
     // run prep_medicc
     PREP_MEDICC2(prep_medicc2_input)
@@ -276,9 +269,9 @@ workflow WGS {
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
     ch_multiqc_files = ch_multiqc_files.mix(ch_reports.collect()).ifEmpty([])
-    
+
     MULTIQC(ch_multiqc_files.collect(), ch_multiqc_config.collect().ifEmpty([]), ch_multiqc_custom_config.collect().ifEmpty([]), ch_multiqc_logo.collect().ifEmpty([]))
-    
+
     multiqc_report = MULTIQC.out.report.toList()
     ch_versions    = ch_versions.mix(MULTIQC.out.versions)
 

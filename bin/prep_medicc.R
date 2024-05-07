@@ -11,14 +11,17 @@ patient <- args[1]
 # find ace rds output
 my_rds <- list.files(".", recursive = TRUE, pattern = "*1000kbp.rds$")
 
-# read rds and name after sample
-object_name <- sub("_filter_90_150/1000kbp.rds", "", my_rds)
+# this will give us a vector of sample_names
+object_name <- sub("_filter_.*\\/1000kbp\\.rds", "", my_rds)
+sample_list <- c()
 for (i in seq_along(my_rds)) {
+  sample_list <- c(sample_list, paste0(patient,"_", object_name[i]))
   assign(paste0(patient,"_",object_name[i]), readRDS(my_rds[i]))
 }
 
-# run getadjustedsegments and get output, name as $sample
+# run get adjustedsegments and get output, name as $sample
 for (my_object in object_name) {
+  # get ace output and best fits using minima
   current_object <- get(paste0(patient,"_",my_object))
   model1 <- singlemodel(current_object, QDNAseqobjectsample = 1)
   bestfit1 <- model1$minima[tail(which(model1$rerror == min(model1$rerror)), 1)]
@@ -69,12 +72,23 @@ for (sample in (ls(pattern = "segments"))) {
 }
 
 # keep only the chrom start end combinations that are in all the samples
-filtered_df <- final_df %>% group_by(Chromosome,Start,End) %>% filter(n() >= length(my_rds))
+filtered_df <- final_df %>% group_by(Chromosome,Start,End) %>% 
+  filter(n() >= length(my_rds))
+
+# simplify the DF
+out_df <- filtered_df %>% select(Chromosome,Start,End,Copies,sample_id) %>%
+   pivot_wider( names_from = sample_id, values_from = Copies) %>%
+   group_by(Chromosome,across(all_of(sample_list))) %>%
+   summarise(Start = min(Start), End = min(End) ) %>%
+   pivot_longer(names_to = "sample_id", values_to = "Copies",
+                cols = (sample_list)) %>%
+  rename( chrom = Chromosome, start = Start, end = End) %>%
+  select(sample_id, chrom, start, end, Copies)
 
 # rename and select columns for medicc2 
-out_df <- filtered_df %>% 
-  rename(chrom = Chromosome, start = Start, end = End) %>% 
-  select(sample_id, chrom, start, end, Copies)
+# out_df <- filtered_df %>% 
+#  rename(chrom = Chromosome, start = Start, end = End) %>% 
+#  select(sample_id, chrom, start, end, Copies)
 
 write.table(out_df,file=paste0(patient,".tsv"),quote = FALSE,
             sep = "\t", row.names = FALSE)

@@ -23,7 +23,7 @@ process MEDICC2 {
     task.ext.when == null || task.ext.when
 
     script:
-    def plot_style = task.attempt == 1 ? 'heatmap' : 'auto'
+    def plot_style = task.attempt == 1 ? 'both' : 'auto'
     def args = task.ext.args ?: ''
     """
     if [ ! -d medicc2_output ]; then
@@ -31,7 +31,6 @@ process MEDICC2 {
     fi
     sed -i 's/-[0-9]*/0/' ${patient}.tsv
     medicc2 \\
-    --total-copy-numbers \\
     --plot ${plot_style} \\
     --n-cores 4 \\
     --input-allele-columns Copies \\

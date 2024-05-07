@@ -14,7 +14,7 @@ process PICARD_COLLECTINSERTSIZEMETRICS {
     output:
     tuple val(meta), path("*.txt"),  emit: size_metrics
     tuple val(meta), path("*.pdf"), emit: size_plots
-    tuple val(meta), path("*processed.bam"), path("*processed.bai"), emit: bams
+    tuple val(meta), path("*.bam"), path("*.bai"), emit: bams
     path "versions.yml"                           , emit: versions
 
     when:
@@ -32,8 +32,12 @@ process PICARD_COLLECTINSERTSIZEMETRICS {
         avail_mem = task.memory.giga
     }
     """
-    ln -s $bam ${prefix}_${filter_status}_processed.bam
-    ln -s $bai ${prefix}_${filter_status}_processed.bai
+    
+    bam_link=\$( readlink $bam )
+    ln -s \$bam_link ${prefix}_${filter_status}_${args}.bam 
+    bai_link=\$( readlink $bai )
+    ln -s \$bai_link ${prefix}_${filter_status}_${args}.bam.bai 
+    
     picard \\
     CollectInsertSizeMetrics \\
     I=$bam \\

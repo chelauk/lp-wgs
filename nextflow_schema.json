@@ -251,10 +251,6 @@
         "igenomes_ignore": {
             "type": "string"
         },
-        "ploidy": {
-            "type": "number",
-            "default": 1
-        },
         "bin": {
             "type": "string",
             "default": "default"
@@ -276,7 +272,7 @@
             "type": "string"
         },
         "filter_bam": {
-            "type": "string"
+            "type": "boolean"
         },
         "filter_bam_min": {
             "type": "integer",
