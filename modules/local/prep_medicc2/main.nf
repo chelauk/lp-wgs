@@ -14,6 +14,7 @@ process PREP_MEDICC2 {
 
     output:
     tuple val(patient), path("*tsv"), emit: for_medicc
+    tuple val(patient), path("*txt"), emit: for_report
     path "versions.yml"             , emit: versions
 
     when:

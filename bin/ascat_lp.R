@@ -29,13 +29,13 @@ highr_range = seq(ploidy - 0.5, ploidy + 0.5,by=0.1)
 # Intervals for purity search
 int          = 0.001
 # Lowest purity allowed
-min_purity   = 0.05
+min_purity   = 0.01
 # maybe I should change this to 0.01
 max_purity   = purity + 0.1
 # Maximum Log2ratio allowed when fitting
 max_lrr      = Inf
 # If there is no fit, what purity do we use?
-nofit_purity = 0.4
+nofit_purity = 0.01
 
 # perhaps if we have no CN changes we shouldn't be running ascat
 # Make a blacklist of impure (by eye) or failed samples samples because they will bias the search
@@ -65,7 +65,7 @@ for ( id in ids ) {
 
     dat$chromosome = factor(dat$chromosome, levels = c(1:22,"X","Y"))
     bins[[id]] <- dat
-  }
+}
 
 # For now we remove the sex chromosomes!
 autosome_index = bins[[1]]$chromosome %in% 1:22
@@ -78,7 +78,7 @@ bins_auto = lapply(bins, function(i) {
     res$chromosome = as.numeric(res$chromosome)
     return(res)
 
-  })
+})
 
 # Read in the blacklist bins
 # blacklist = readRDS("refs/Bins_to_blacklist_from_recurrence_analysis_20210723.rds")
@@ -101,7 +101,7 @@ med_dev_zero = sapply(1:length(segs_test), function(i) {
 
     return(res)
 
-  })
+})
 
 # Collect the maximum observed value in the patient
 med_dev_zeros = c(med_dev_zeros, max(med_dev_zero))
@@ -127,38 +127,38 @@ ploidy_mean_dist = lapply(ploid_search, function(pld) {
     # Default to diploid if there is nothing to tumour like
     if(length(seg_test)==0) {
 
-      if(pld == 2) {
+        if(pld == 2) {
 
         output$int_dists = 0
         output$sol_dists = 0
 
-      } else {
+        } else {
 
         output$int_dists = 100
         output$sol_dists = 100
 
         return(output)
 
-      }
+    }
 
     } else {
 
-      # What's the fit for this sample?
-      ascat = lapply(seg_test, runASCATlp, fix_ploidy=pld, interval = int,
-                     min_purity=min_purity, max_purity=max_purity, max_lrr = max_lrr, no_fit_psit = pld)
+    # What's the fit for this sample?
+    ascat = lapply(seg_test, runASCATlp, fix_ploidy=pld, interval = int,
+                    min_purity=min_purity, max_purity=max_purity, max_lrr = max_lrr, no_fit_psit = pld)
 
-      # Normalise it by ploidy
-      mat = do.call(rbind, lapply(ascat, function(s) s$CN)) / pld
+    # Normalise it by ploidy
+    mat = do.call(rbind, lapply(ascat, function(s) s$CN)) / pld
 
-      # Remove extreme LRR values from the dist measure across samples
-      mat = mat[,!apply(do.call(cbind, seg_test), 1, max) > 1]
+    # Remove extreme LRR values from the dist measure across samples
+    mat = mat[,!apply(do.call(cbind, seg_test), 1, max) > 1]
 
-      # Calculate euclidean distances
-      dists = as.vector(dist(mat))
+    # Calculate euclidean distances
+    dists = as.vector(dist(mat))
 
-      # Collect as output
-      output$int_dists = dists
-      output$sol_dists = unlist(lapply(ascat, function(i) {
+    # Collect as output
+    output$int_dists = dists
+    output$sol_dists = unlist(lapply(ascat, function(i) {
 
         within_dist = i$allsol$dist[1]
 
@@ -167,13 +167,13 @@ ploidy_mean_dist = lapply(ploid_search, function(pld) {
 
         return(within_dist)
 
-      }))
+        }))
 
-      return(output)
+        return(output)
 
     }
 
-  })
+})
 
 # Calculate means across tested ploidies
 inter_sample_dist = unlist(lapply(ploidy_mean_dist, function(i) mean(i$int_dists)))

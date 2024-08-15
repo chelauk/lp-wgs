@@ -3,14 +3,7 @@ process MEDICC2 {
     label 'process_medium'
     maxRetries 1
 
-    // TODO nf-core: List required Conda package(s).
-    //               Software MUST be pinned to channel (i.e. "bioconda"), version (i.e. "1.10").
-    //               For Conda, the build (i.e. "h9402c20_2") must be EXCLUDED to support installation on different operating systems.
-    // TODO nf-core: See section in main README for further information regarding finding and adding container addresses to the section below.
-    conda "bioconda::medicc2"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/medicc2:1.0.2--py38hcbe9525_0' :
-        'biocontainers/medicc2:1.0.2--py38hcbe9525_0' }"
+    conda '/home/chela.james/miniconda3/envs/medicc2'
 
     input:
     tuple val(patient), path(tsv)
@@ -31,9 +24,12 @@ process MEDICC2 {
     fi
     sed -i 's/-[0-9]*/0/' ${patient}.tsv
     medicc2 \\
+    --events \\
     --plot ${plot_style} \\
     --n-cores 4 \\
+    --total-copy-numbers \\
     --input-allele-columns Copies \\
+    --normal-name Diploid \\
     ${patient}.tsv medicc2_output
 
     cat <<-END_VERSIONS > versions.yml
