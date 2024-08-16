@@ -7,51 +7,48 @@ library("tidyverse")
 options(scipen = 999) # prevent scientific notation
 
 ## functions
-
 explode_ranges <- function(df, step_size) {
   expanded_df <- data.frame()
-  
+
   for (i in 1:nrow(df)) {
-    
+    # go through each row
     Chromosome <- df$Chromosome[i]
     Start <- df$Start[i]
     End <- df$End[i]
     Copies <- df$Copies[i]
-    
-    seq_Starts <- seq(Start, End - step_size, by = step_size)
-    seq_Ends <- seq(Start + step_size - 1, End, by = step_size)
-    if ( seq_Ends[length(seq_Ends)] < End ) {
-      seq_Ends <- c(seq_Ends, End)
-      print(paste("last two seq_Ends", seq_Ends[length(seq_Ends) - 1], seq_Ends[length(seq_Ends)]))
-    }
-    if ( seq_Starts[length(seq_Starts)] + step_size < End){
-      seq_Starts <- c(seq_Starts,seq_Starts[length(seq_Starts)] + step_size)
-    }
-    
-    Chromosome <- rep(Chromosome,length(seq_Starts))
-    Copies <- rep(Copies,length(seq_Starts))
-    #print(paste("Chromosome: ", Chromosome[1]))
-    #print(paste("length chromosome: ", length(Chromosome)))
-    #print(paste("first start:",seq_Starts[1], "last start:", seq_Starts[length(seq_Starts)]))
-    #print(paste("length seq_Starts: ",length(seq_Starts)))
-    #print(seq_Starts)
-    #print(seq_Ends)
-    #print(paste("first end:",seq_Ends[1], "last end:", seq_Ends[length(seq_Ends)]))
-    #print(paste("length seq_Ends: ",length(seq_Ends)))
-    #print(paste("length Copies: ",length(Copies)))
+
+    # create a vector with of starts from the Start to end by step size
+    seq_Starts <- seq(Start, End, by = step_size)
+    # create corresponding end vector
+    seq_Ends <- pmin(seq_Starts + step_size - 1, End)
+
+ #   if (seq_Ends[length(seq_Ends)] < End) {
+ #     seq_Ends[length(seq_Ends)] <- End
+ #     print(paste("last two seq_Ends", seq_Ends[length(seq_Ends) - 1], seq_Ends[length(seq_Ends)]))
+ #   }
+
+ #   if (seq_Starts[length(seq_Starts)] < End) {
+ #     seq_Starts <- c(seq_Starts, seq_Starts[length(seq_Starts)] + step_size)
+ #   }
+
+    Chromosome <- rep(Chromosome, length(seq_Starts))
+    Copies <- rep(Copies, length(seq_Starts))
+    print(length(seq_Starts))
+    print(seq_Starts)
+    print(length(seq_Ends))
+    print(seq_Ends)
     new_rows <- data.frame(
       Chromosome = Chromosome,
       Start = seq_Starts,
       End = seq_Ends,
       Copies = Copies
     )
-    
-    expanded_df <- bind_rows(expanded_df, new_rows)
+
+    expanded_df <- rbind(expanded_df, new_rows)
   }
-  
+
   return(expanded_df)
 }
-
 ###
 
 args <- commandArgs(trailingOnly = TRUE)

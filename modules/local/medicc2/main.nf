@@ -22,15 +22,18 @@ process MEDICC2 {
     if [ ! -d medicc2_output ]; then
         mkdir medicc2_output
     fi
-    sed -i 's/-[0-9]*/0/' ${patient}.tsv
-    medicc2 \\
+
+    awk '{if( \$5 < 0){sub(\$5,0)}{print}}' ${patient}.tsv > ${patient}_mod.tsv
+	echo "\$?"
+    
+	medicc2 \\
     --events \\
     --plot ${plot_style} \\
     --n-cores 4 \\
     --total-copy-numbers \\
     --input-allele-columns Copies \\
     --normal-name Diploid \\
-    ${patient}.tsv medicc2_output
+    ${patient}_mod.tsv medicc2_output
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

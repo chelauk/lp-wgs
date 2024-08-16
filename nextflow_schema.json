@@ -208,10 +208,6 @@
             "default": 150,
             "description": "Usually use defaults but these can be altered"
         },
-        "run_ascat": {
-            "type": "boolean",
-            "description": "Run ascat type analysis"
-        },
         "ascat_ploidy": {
             "type": "number",
             "description": "required if running ascat"

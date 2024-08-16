@@ -151,6 +151,8 @@ workflow WGS {
         ch_versions = ch_versions.mix(SAMTOOLS_VIEW.out.versions.first())
     } else if ( params.step == 'bam'  &&  params.filter_bam == null ){
         ch_bam_input = ch_input_sample
+    } else if ( params.step == 'ascat' ) {
+        ch_bam_input = ch_input_sample
     } else if ( params.step == 'bam'  &&  params.filter_bam != null ){
         ch_filter_input = ch_input_sample
         SAMTOOLS_VIEW ( ch_filter_input, params.filter_bam_min, params.filter_bam_max )
@@ -158,24 +160,29 @@ workflow WGS {
         ch_versions = ch_versions.mix(SAMTOOLS_VIEW.out.versions.first())
     }
 
-    PICARD_COLLECTALIGNMENTSUMMARYMETRICS ( ch_bam_input , fasta, dict,filter_status)
-    ch_versions = ch_versions.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.versions.first())
-    ch_reports  = ch_reports.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.metrics.collect{meta, report -> report})
-    PICARD_COLLECTINSERTSIZEMETRICS ( ch_bam_input ,filter_status)
-    ch_versions = ch_versions.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.versions.first())
-    ch_reports  = ch_reports.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.size_metrics.collect{meta, report -> report})
+    if  ( params.step != 'ascat' ) {
+        PICARD_COLLECTALIGNMENTSUMMARYMETRICS ( ch_bam_input , fasta, dict,filter_status)
+        ch_versions = ch_versions.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.versions.first())
+        ch_reports  = ch_reports.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.metrics.collect{meta, report -> report})
+    }
+    if  ( params.step != 'ascat' ) {
+        PICARD_COLLECTINSERTSIZEMETRICS ( ch_bam_input ,filter_status)
+        ch_versions = ch_versions.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.versions.first())
+        ch_reports  = ch_reports.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.size_metrics.collect{meta, report -> report})
+    }
 
+    if  ( params.step != 'ascat' ) {
     MOSDEPTH(
         ch_bam_input,
         chr_bed,
         fasta.map{ it -> [[id:it[0].baseName], it] },
         filter_status
         )
-
-    mosdepth_reports = mosdepth_reports.mix(MOSDEPTH.out.global_txt,
+        mosdepth_reports = mosdepth_reports.mix(MOSDEPTH.out.global_txt,
                                             MOSDEPTH.out.regions_txt)
-    ch_reports  = ch_reports.mix(mosdepth_reports.collect{meta, report -> report})
-    ch_versions = ch_versions.mix(MOSDEPTH.out.versions.first())
+        ch_reports  = ch_reports.mix(mosdepth_reports.collect{meta, report -> report})
+        ch_versions = ch_versions.mix(MOSDEPTH.out.versions.first())
+    }
 
     // run hmmcopygccounter
     if ( params.call_gc ) {
@@ -183,33 +190,36 @@ workflow WGS {
         fasta.map{ it -> [[id:it[0].baseName], it] },
         map_bin
         )
-    gc_wig = HMMCOPY_GCCOUNTER.out.wig
-    ch_versions = ch_versions.mix(HMMCOPY_GCCOUNTER.out.versions)
-    } else {
-        gc_wig = gc_wig
+        gc_wig = HMMCOPY_GCCOUNTER.out.wig
+        ch_versions = ch_versions.mix(HMMCOPY_GCCOUNTER.out.versions)
+        } else {
+            gc_wig = gc_wig
     }
 
     // run hmmcopyreadcounter
-    HMMCOPY_READCOUNTER(
-        ch_bam_input
-        )
-    ch_versions = ch_versions.mix(HMMCOPY_READCOUNTER.out.versions)
+    if  ( params.step != 'ascat' ) {
+        HMMCOPY_READCOUNTER( ch_bam_input )
+        ch_versions = ch_versions.mix(HMMCOPY_READCOUNTER.out.versions)
+    }
 
 
     panel_of_normals = pon_rds
     normal_wig = []
     // run ichorcna
-    ICHORCNA_RUN(
-        HMMCOPY_READCOUNTER.out.wig,
-        normal_wig,
-        gc_wig,
-        map_wig,
-        panel_of_normals,
-        centromere,
-        filter_status
+    if  ( params.step != 'ascat' ) {
+        ICHORCNA_RUN(
+            HMMCOPY_READCOUNTER.out.wig,
+            normal_wig,
+            gc_wig,
+            map_wig,
+            panel_of_normals,
+            centromere,
+            filter_status
         )
-    ch_versions= ch_versions.mix(ICHORCNA_RUN.out.versions)
+        ch_versions= ch_versions.mix(ICHORCNA_RUN.out.versions)
+    }
 
+    if (params.step == 'ascat') {
     // run PREP_ASCAT
     bin_for_prep_ascat = map_bin.replace("kb", "")
 
@@ -223,35 +233,33 @@ workflow WGS {
         .groupTuple()
         .set{ascat_input}
 
-    ascat_input.dump(tag: "ascat_input")
-    if ( params.run_ascat ) {
+
     RUN_ASCAT(
         ascat_input,
         params.ascat_ploidy,
         params.ascat_purity
-        //params.ASCAT_config
         )
     }
+
     // run ACE
-    ACE(ch_bam_input, filter_status)
-    ch_versions = ch_versions.mix(ACE.out.versions)
+    if (params.step != 'ascat') {
+        ACE(ch_bam_input, filter_status)
+        ch_versions = ch_versions.mix(ACE.out.versions)
 
-    // ACE.out.ace.view()
-
-    ACE.out.ace
-        .map{ meta, ace -> [meta.patient, meta.sample, meta.id, ace]}
-        .groupTuple()
-        .dump(tag: 'med_input')
-        .set{ prep_medicc2_input }
+        ACE.out.ace
+            .map{ meta, ace -> [meta.patient, meta.sample, meta.id, ace]}
+            .groupTuple()
+            .dump(tag: 'med_input')
+            .set{ prep_medicc2_input }
 
 
-    // run prep_medicc
-    PREP_MEDICC2(prep_medicc2_input)
-    ch_versions = ch_versions.mix(PREP_MEDICC2.out.versions)
+        // run prep_medicc
+        PREP_MEDICC2(prep_medicc2_input)
+        ch_versions = ch_versions.mix(PREP_MEDICC2.out.versions)
 
-    // run medicc2
-    MEDICC2(PREP_MEDICC2.out.for_medicc)
-    //ch_versions = ch_versions.mix(MEDICC2.out.versions)
+        // run medicc2
+        MEDICC2(PREP_MEDICC2.out.for_medicc)
+    }
 
     CUSTOM_DUMPSOFTWAREVERSIONS(ch_versions.unique().collectFile(name: 'collated_versions.yml'))
     ch_version_yaml = CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect()
