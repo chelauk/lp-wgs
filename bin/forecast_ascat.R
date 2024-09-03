@@ -100,6 +100,7 @@ res$segs <- expanded_segs
 res$bins <- patient_lrr[, 5]
 res$sample_name <- id
 
+# prepating ggplot
 cna_data    <- res
 
 sample_name <- cna_data$samplename
@@ -175,6 +176,7 @@ metrics <- data.frame(Sample = sample_name, Purity = cna_data$Purity,
 
 cn_out <- data.frame(res$CN)
 
+# output ascat calls
 colnames(cn_out) <- names(ascat)[i]
 rownames(cn_out) <- patient_lrr$feature
 write.table(cn_out, file = paste0(id, "_cna_ploidy_search_calls.txt"),
