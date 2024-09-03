@@ -1,9 +1,9 @@
-# lp-wgs: Contributing Guidelines
+# fht/lp-wgs: Contributing Guidelines
 
 Hi there!
-Many thanks for taking an interest in improving lp-wgs.
+Many thanks for taking an interest in improving fht/lp-wgs.
 
-We try to manage the required tasks for lp-wgs using GitHub issues, you probably came to this page when creating one.
+We try to manage the required tasks for fht/lp-wgs using GitHub issues, you probably came to this page when creating one.
 Please use the pre-filled template to save time.
 
 However, don't be put off by this template - other more general issues and suggestions are welcome!
@@ -11,10 +11,10 @@ Contributions to the code are even more welcome ;)
 
 ## Contribution workflow
 
-If you'd like to write some code for lp-wgs, the standard workflow is as follows:
+If you'd like to write some code for fht/lp-wgs, the standard workflow is as follows:
 
-1. Check that there isn't already an issue about your idea in the [lp-wgs issues](https://github.com/chelauk/lp-wgs/issues) to avoid duplicating work. If there isn't one already, please create one so that others know you're working on this
-2. [Fork](https://help.github.com/en/github/getting-started-with-github/fork-a-repo) the [lp-wgs repository](https://github.com/lp-wgs) to your GitHub account
+1. Check that there isn't already an issue about your idea in the [fht/lp-wgs issues](https://github.com/fht/lp-wgs/issues) to avoid duplicating work. If there isn't one already, please create one so that others know you're working on this
+2. [Fork](https://help.github.com/en/github/getting-started-with-github/fork-a-repo) the [fht/lp-wgs repository](https://github.com/fht/lp-wgs) to your GitHub account
 3. Make the necessary changes / additions within your forked repository following [Pipeline conventions](#pipeline-contribution-conventions)
 4. Use `nf-core schema build` and add any new parameters to the pipeline JSON schema (requires [nf-core tools](https://github.com/nf-core/tools) >= 1.10).
 5. Submit a Pull Request against the `dev` branch and wait for the code to be reviewed and merged
@@ -22,6 +22,12 @@ If you'd like to write some code for lp-wgs, the standard workflow is as follows
 If you're not used to this workflow with git, you can start with some [docs from GitHub](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests) or even their [excellent `git` resources](https://try.github.io/).
 
 ## Tests
+
+You have the option to test your changes locally by running the pipeline. For receiving warnings about process selectors and other `debug` information, it is recommended to use the debug profile. Execute all the tests with the following command:
+
+```bash
+nf-test test --profile debug,test,docker --verbose
+```
 
 When you create a pull request with changes, [GitHub Actions](https://github.com/features/actions) will run automatic tests.
 Typically, pull-requests are only fully reviewed when these tests are passing, though of course we can help out before then.
@@ -52,7 +58,7 @@ These tests are run both with the latest available version of `Nextflow` and als
 
 ## Pipeline contribution conventions
 
-To make the lp-wgs code and processing logic more understandable for new contributors and to ensure quality, we semi-standardise the way the code and other contributions are written.
+To make the fht/lp-wgs code and processing logic more understandable for new contributors and to ensure quality, we semi-standardise the way the code and other contributions are written.
 
 ### Adding a new step
 
@@ -79,7 +85,7 @@ Once there, use `nf-core schema build` to add to `nextflow_schema.json`.
 
 Sensible defaults for process resource requirements (CPUs / memory / time) for a process should be defined in `conf/base.config`. These should generally be specified generic with `withLabel:` selectors so they can be shared across multiple processes/steps of the pipeline. A nf-core standard set of labels that should be followed where possible can be seen in the [nf-core pipeline template](https://github.com/nf-core/tools/blob/master/nf_core/pipeline-template/conf/base.config), which has the default process as a single core-process, and then different levels of multi-core configurations for increasingly large memory requirements defined with standardised labels.
 
-The process resources can be passed on to the tool dynamically within the process with the `${task.cpu}` and `${task.memory}` variables in the `script:` block.
+The process resources can be passed on to the tool dynamically within the process with the `${task.cpus}` and `${task.memory}` variables in the `script:` block.
 
 ### Naming schemes
 
@@ -102,7 +108,7 @@ This repo includes a devcontainer configuration which will create a GitHub Codes
 
 To get started:
 
-- Open the repo in [Codespaces](https://github.com/chelauk/lp-wgs/codespaces)
+- Open the repo in [Codespaces](https://github.com/fht/lp-wgs/codespaces)
 - Tools installed
   - nf-core
   - Nextflow
@@ -110,4 +116,3 @@ To get started:
 Devcontainer specs:
 
 - [DevContainer config](.devcontainer/devcontainer.json)
-- [Dockerfile](.devcontainer/Dockerfile)
