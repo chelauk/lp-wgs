@@ -68,7 +68,7 @@ colnames(sample_seg)[7] <- sample_seg$sampleID[1]
 sample_seg$sampleID <- NULL
 
 # now we expand according to the number of probes
-expanded_segs <- rep(sample_seg[,6], times = sample_seg$n.probes)
+expanded_segs <- rep(sample_seg[, 6], times = sample_seg$n.probes)
 names(expanded_segs) <- rep(id, length(expanded_segs))
 
 # runAscat
@@ -108,7 +108,7 @@ cn_output   <- data.frame(cna_data$CN)
 colnames(cn_output) <- sample_name
 
 # Make a plot dataframe
-plt_df <- data.frame(genome.bin = 1:length(cna_data$bins),
+plt_df <- data.frame(genome.bin = seq_along(cna_data$bins),
                      Chromosome = chr_pos$chromosome,
                      Log2ratio = cna_data$bins,
                      mean_segment = cna_data$segs,
@@ -138,17 +138,17 @@ chrs_lab[chr_out] <- ""
 
 # Make the plot
 p <- ggplot(plt_df, aes(x = genome.bin, y = Log2ratio, col = Call)) +
-  geom_hline(yintercept = c(-2,-1,0,1,2), lty = c("solid"), lwd = 0.2) +
+  geom_hline(yintercept = c(-2, -1, 0, 1, 2), lty = c("solid"), lwd = 0.2) +
   geom_point() +
   scale_colour_manual(values = cols) +
-  scale_x_continuous(name = "Chromosomes",labels = chrs_lab,
+  scale_x_continuous(name = "Chromosomes", labels = chrs_lab,
                      breaks = as.vector(c(1, cumsum(table(plt_df$Chromosome))[-24]) + # nolint: line_length_linter.
                                           (table(plt_df$Chromosome) / 2))) +
   geom_vline(xintercept = c(1, cumsum(table(plt_df$Chromosome))),
              lty = "dotted") +
-  ggtitle(paste0("Low pass calls - ",sample_name,", purity=",
+  ggtitle(paste0("Low pass calls - ", sample_name, ", purity=",
                  cna_data$Purity, ", psit = ", cna_data$PsiT)) +
-  scale_y_continuous(limits=c(-2, 2), oob = scales::squish) +
+  scale_y_continuous(limits = c(-2, 2), oob = scales::squish) +
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.background = element_blank(),
@@ -159,7 +159,7 @@ autosome_index <- chr_pos$chromosome %in% 1:22
 
 ploidy_expected <- rep(1, times = length(cna_data$CN))
 ploidy_expected[!autosome_index] <- 0.5
-ploidy_expected <- median(cna_data$CN)*ploidy_expected
+ploidy_expected <- median(cna_data$CN) * ploidy_expected
 ploidy_expected <- round(ploidy_expected)
 
 # Get output metrics
@@ -177,5 +177,5 @@ cn_out <- data.frame(res$CN)
 
 colnames(cn_out) <- names(ascat)[i]
 rownames(cn_out) <- patient_lrr$feature
-write.table(cn_out, file = paste0(id,"_cna_ploidy_search_calls.txt"),
+write.table(cn_out, file = paste0(id, "_cna_ploidy_search_calls.txt"),
             quote = FALSE)
