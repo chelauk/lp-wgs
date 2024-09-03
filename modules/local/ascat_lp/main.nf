@@ -10,7 +10,7 @@ process RUN_ASCAT {
     container "ascatlp.0.1_latest.sif"
 
     input:
-    tuple val(patient), val(samples), val(ids), path(cna_segments), path(bins)
+    tuple val(patient), val(samples), val(ids), path(cna_segments)
     val(ploidy)
     val(purity)
 
@@ -25,7 +25,7 @@ process RUN_ASCAT {
     def args = task.ext.args ?: ''
     //def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    ascat_lp.R $patient "${samples.join(' ')}" "${ids.join(' ')}" $ploidy $purity  ${baseDir}/bin
+    ascat_lp.R $patient "${samples.join(' ')}" "${ids.join(' ')}" $ploidy $purity  ${workflow.projectDir}/bin
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
