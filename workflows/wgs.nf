@@ -219,8 +219,8 @@ workflow WGS {
         ch_versions= ch_versions.mix(ICHORCNA_RUN.out.versions)
     }
 
-    if (params.step == 'ascat') {
     // run PREP_ASCAT
+    if (params.step == 'ascat') {
     bin_for_prep_ascat = map_bin.replace("kb", "")
 
     PREP_ASCAT(
@@ -229,10 +229,9 @@ workflow WGS {
         )
 
     PREP_ASCAT.out.for_ascat
-        .map{ meta, segments, bins -> tuple( meta.patient, meta.sample, meta.id, segments, bins)}
+        .map{ meta, segments, bins -> tuple( meta.patient, meta.sample, meta.id, cna_segments, cna_bins)}
         .groupTuple()
         .set{ascat_input}
-
 
     RUN_ASCAT(
         ascat_input,

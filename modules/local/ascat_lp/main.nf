@@ -10,7 +10,7 @@ process RUN_ASCAT {
     container "ascatlp.0.1_latest.sif"
 
     input:
-    tuple val(patient), val(samples), val(ids), path(cna_segments)
+    tuple val(patient), val(samples), val(ids), path(cna_segments), path(cna_bins)
     val(ploidy)
     val(purity)
 

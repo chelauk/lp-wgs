@@ -26,13 +26,6 @@ process PREP_ASCAT {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    # prefix=$prefix
-
-    #    if [ ! -e \$prefix.bam ]; then
-    #        mv $bam \$prefix.bam
-    #        mv $bai \$prefix.bai
-    #    fi
-
     QDNAseq.R ${meta.patient} ${meta.sample} $bin $bam
 
     cat <<-END_VERSIONS > versions.yml
