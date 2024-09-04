@@ -17,6 +17,8 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 9. ICHOR cna calls and tumour cell fraction ([`ICHOR`](https://github.com/broadinstitute/ichorCNA/wiki))
 10. Segmentation and log read ratios QDNAseq ([`QDNAseq`](https://bioconductor.org/packages/release/bioc/html/QDNAseq.html))
 11. ACE cna calls and tumour cell fraction ([`ACE`](https://bioconductor.org/packages/release/bioc/html/ACE.html))
+
+
 Bin options for ICHOR include 1000kb,500kb,100kb and 10kb these are set with the --map_bin parameter
 for ichor the normal fraction and ploids and subclone fractions can be set, see [`here`](https://github.com/broadinstitute/ichorCNA/wiki/Parameter-tuning-and-settings) for low tumour fractions
 setting
