@@ -1,6 +1,6 @@
 ## Introduction
 
-**lp-wgs** is a bioinformatics best-practice analysis pipeline for shallow whole genome sequence analyses.
+**lp-wgs** is a bioinformatics analysis pipeline for shallow whole genome sequence analyses.
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) 
 
@@ -15,6 +15,8 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 7. GC counts ([`HMMcopy`](http://compbio.bccrc.ca/software/hmmcopy/))
 8. read counts ([`HMMcopy`](http://compbio.bccrc.ca/software/hmmcopy/))
 9. ICHOR cna calls and tumour cell fraction ([`ICHOR`](https://github.com/broadinstitute/ichorCNA/wiki))
+10. Segmentation and log read ratios QDNAseq ([`QDNAseq`](https://bioconductor.org/packages/release/bioc/html/QDNAseq.html))
+11. ACE cna calls and tumour cell fraction ([`ACE`](https://bioconductor.org/packages/release/bioc/html/ACE.html))
 Bin options for ICHOR include 1000kb,500kb,100kb and 10kb these are set with the --map_bin parameter
 for ichor the normal fraction and ploids and subclone fractions can be set, see [`here`](https://github.com/broadinstitute/ichorCNA/wiki/Parameter-tuning-and-settings) for low tumour fractions
 setting
