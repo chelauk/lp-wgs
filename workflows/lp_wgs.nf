@@ -3,11 +3,10 @@
     VALIDATE INPUTS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-
-def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
-
-// Validate input parameters
-WorkflowWgs.initialise(params, log)
+include { paramsSummaryMultiqc                              } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { softwareVersionsToYAML                            } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { methodsDescriptionText                            } from '../subworkflows/local/utils_nfcore_lp_wgs_pipeline'
+include { paramsSummaryMap                                  } from 'plugin/nf-validation'
 
 // Check input path parameters to see if they exist
 def checkPathParamList = [
@@ -24,6 +23,14 @@ for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true
 
 // Check mandatory parameters
 ch_input_sample = extract_csv(file(params.input, checkIfExists: true ))
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    INITIALIZATION
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+include { PIPELINE_COMPLETION              } from '../subworkflows/local/utils_nfcore_lp_wgs_pipeline'
+include { PIPELINE_INITIALISATION          } from '../subworkflows/local/utils_nfcore_lp_wgs_pipeline'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -46,6 +53,7 @@ include { HMMCOPY_GCCOUNTER           } from '../modules/nf-core/hmmcopy/gccount
 include { HMMCOPY_READCOUNTER         } from '../modules/nf-core/hmmcopy/readcounter/main'
 include { ICHORCNA_RUN                } from '../modules/nf-core/ichorcna/run/main'
 include { SAMTOOLS_VIEW               } from '../modules/nf-core/samtools/view/main'
+
 include { ACE                         } from '../modules/local/ace'
 include { PREP_ASCAT                  } from '../modules/local/prep_ascat/main'
 include { RUN_ASCAT                   } from '../modules/local/ascat_lp/main'
@@ -58,8 +66,6 @@ include { PICARD_COLLECTALIGNMENTSUMMARYMETRICS } from '../modules/local/picard/
 //
 
 map_bin = params.map_bin
-ploidy  = params.ploidy
-purity  = params.purity
 
 //
 // gather prebuilt indices
@@ -94,12 +100,18 @@ purity  = params.purity
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-workflow WGS {
-
-    // define filter_status for output folders
+workflow LP_WGS {
+    // define filter status
     filter_status = params.filter_bam == null ? "filter_none" : "filter_" + params.filter_bam_min + "_" + params.filter_bam_max
+        
 
-    // MULTIQC
+    // To gather all QC reports for MultiQC
+    ch_multiqc_files = Channel.empty()
+    multiqc_report   = Channel.empty()
+    reports          = Channel.empty()
+    versions         = Channel.empty()
+    ch_multiqc_files = Channel.empty()
+
     ch_multiqc_config                     = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
     ch_multiqc_custom_config              = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
     ch_multiqc_logo                       = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
@@ -107,105 +119,81 @@ workflow WGS {
 
     // To gather all QC reports for MultiQC
     reports  = Channel.empty()
-    // To gather used softwares versions for MultiQC
+    // To gather software versions for MultiQC
     versions = Channel.empty()
-
-
-    // To gather all QC reports for MultiQC
-    ch_reports  = Channel.empty()
-    ch_versions = Channel.empty()
-    ch_version_yaml = Channel.empty()
+    // To gather mosdepth reports
     mosdepth_reports = Channel.empty()
+
 
     //
     // FASTQC, FASTP and BWA
     //
-
     sort_bam = true
     // Gather index for mapping given the chosen aligner
     ch_map_index = bwa
-    if ( params.step == 'fastq' &&  params.filter_bam == null ) {
-        // Create input channel
+
+    if ( params.step == 'fastq' ) {
         fastq_input = ch_input_sample
         QC_TRIM ( fastq_input, ch_map_index, sort_bam)
-        ch_versions = ch_versions.mix(QC_TRIM.out.ch_versions)
-        ch_reports  = ch_reports.mix(QC_TRIM.out.ch_reports)
+        versions = versions.mix(QC_TRIM.out.versions)
+        reports  = reports.mix(QC_TRIM.out.reports)
         BWA_MEM( QC_TRIM.out.reads,   ch_map_index.map{ it -> [[id:it[0].baseName], it] }, sort_bam) // If aligner is bwa-mem
-        ch_versions = ch_versions.mix(BWA_MEM.out.versions.first())
-        MERGE_LANES ( BWA_MEM.out.bam )
-        ch_versions = ch_versions.mix(MERGE_LANES.out.ch_versions.first())
-        ch_bam_input = MERGE_LANES.out.bam
-    } else if ( params.step == 'fastq' &&  params.filter_bam != null  ) {
-        // Create input channel
-        fastq_input = ch_input_sample
-        QC_TRIM ( fastq_input, ch_map_index, sort_bam)
-        ch_versions = ch_versions.mix(QC_TRIM.out.ch_versions)
-        ch_reports  = ch_reports.mix(QC_TRIM.out.ch_reports)
-        BWA_MEM( QC_TRIM.out.reads,   ch_map_index.map{ it -> [[id:it[0].baseName], it] }, sort_bam) // If aligner is bwa-mem
-        ch_versions = ch_versions.mix(BWA_MEM.out.versions.first())
-        MERGE_LANES ( BWA_MEM.out.bam )
-        ch_versions = ch_versions.mix(MERGE_LANES.out.ch_versions.first())
-        ch_filter_input = MERGE_LANES.out.bam
-        SAMTOOLS_VIEW ( ch_filter_input, params.filter_bam_min, params.filter_bam_max )
-        ch_bam_input = SAMTOOLS_VIEW.out.bam
-        ch_versions = ch_versions.mix(SAMTOOLS_VIEW.out.versions.first())
-    } else if ( params.step == 'bam'  &&  params.filter_bam == null ){
-        ch_bam_input = ch_input_sample
-    } else if ( params.step == 'ascat' ) {
-        ch_bam_input = ch_input_sample
-    } else if ( params.step == 'bam'  &&  params.filter_bam != null ){
+        versions = versions.mix(BWA_MEM.out.versions.first())
+        if ( params.filter_bam == null ) {
+            MERGE_LANES ( BWA_MEM.out.bam )
+            ch_bam_input = MERGE_LANES.out.bam
+            versions = versions.mix(MERGE_LANES.out.versions.first())
+            } else if ( params.filter_bam != null  ) {
+                ch_filter_input = MERGE_LANES.out.bam
+                SAMTOOLS_VIEW ( ch_filter_input, params.filter_bam_min, params.filter_bam_max )
+                ch_bam_input = SAMTOOLS_VIEW.out.bam
+                versions = versions.mix(SAMTOOLS_VIEW.out.versions.first()) 
+            }
+        }
+    if ( params.step == 'bam' || params.step == 'ascat' ) { ch_bam_input = ch_input_sample }
+    if ( params.step == 'bam'  &&  params.filter_bam != null ){
         ch_filter_input = ch_input_sample
         SAMTOOLS_VIEW ( ch_filter_input, params.filter_bam_min, params.filter_bam_max )
         ch_bam_input = SAMTOOLS_VIEW.out.bam
-        ch_versions = ch_versions.mix(SAMTOOLS_VIEW.out.versions.first())
+        versions = versions.mix(SAMTOOLS_VIEW.out.versions.first())
     }
-
-    if  ( params.step != 'ascat' ) {
+    if ( params.step != 'ascat' ) {
         PICARD_COLLECTALIGNMENTSUMMARYMETRICS ( ch_bam_input , fasta, dict,filter_status)
-        ch_versions = ch_versions.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.versions.first())
-        ch_reports  = ch_reports.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.metrics.collect{meta, report -> report})
-    }
-    if  ( params.step != 'ascat' ) {
+        versions = versions.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.versions.first())
+        reports  = reports.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.metrics.collect{meta, report -> report})
         PICARD_COLLECTINSERTSIZEMETRICS ( ch_bam_input ,filter_status)
-        ch_versions = ch_versions.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.versions.first())
-        ch_reports  = ch_reports.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.size_metrics.collect{meta, report -> report})
-    }
-
-    if  ( params.step != 'ascat' ) {
-    MOSDEPTH(
-        ch_bam_input,
-        chr_bed,
-        fasta.map{ it -> [[id:it[0].baseName], it] },
-        filter_status
+        versions = versions.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.versions.first())
+        reports  = reports.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.size_metrics.collect{meta, report -> report})
+        MOSDEPTH(
+            ch_bam_input,
+            chr_bed,
+            fasta.map{ it -> [[id:it[0].baseName], it] },
+            filter_status
         )
         mosdepth_reports = mosdepth_reports.mix(MOSDEPTH.out.global_txt,
-                                            MOSDEPTH.out.regions_txt)
-        ch_reports  = ch_reports.mix(mosdepth_reports.collect{meta, report -> report})
-        ch_versions = ch_versions.mix(MOSDEPTH.out.versions.first())
+                                        MOSDEPTH.out.regions_txt)
+        reports  = reports.mix(mosdepth_reports.collect{meta, report -> report})
+        versions = versions.mix(MOSDEPTH.out.versions.first())
     }
 
     // run hmmcopygccounter
     if ( params.call_gc ) {
-    HMMCOPY_GCCOUNTER(
-        fasta.map{ it -> [[id:it[0].baseName], it] },
-        map_bin
-        )
+        HMMCOPY_GCCOUNTER(fasta.map{ it -> [[id:it[0].baseName], it] }, map_bin )
         gc_wig = HMMCOPY_GCCOUNTER.out.wig
-        ch_versions = ch_versions.mix(HMMCOPY_GCCOUNTER.out.versions)
-        } else {
-            gc_wig = gc_wig
-    }
+        versions = versions.mix(HMMCOPY_GCCOUNTER.out.versions)
+        } else { 
+            gc_wig = gc_wig 
+        }
 
     // run hmmcopyreadcounter
-    if  ( params.step != 'ascat' ) {
+    if ( params.step != 'ascat' ) {
         HMMCOPY_READCOUNTER( ch_bam_input )
-        ch_versions = ch_versions.mix(HMMCOPY_READCOUNTER.out.versions)
+        versions = versions.mix(HMMCOPY_READCOUNTER.out.versions)
     }
 
-
+    // run ichorcna
     panel_of_normals = pon_rds
     normal_wig = []
-    // run ichorcna
     if  ( params.step != 'ascat' ) {
         ICHORCNA_RUN(
             HMMCOPY_READCOUNTER.out.wig,
@@ -216,34 +204,26 @@ workflow WGS {
             centromere,
             filter_status
         )
-        ch_versions= ch_versions.mix(ICHORCNA_RUN.out.versions)
+        versions= versions.mix(ICHORCNA_RUN.out.versions)
     }
 
     // run PREP_ASCAT
     if (params.step == 'ascat') {
-    bin_for_prep_ascat = map_bin.replace("kb", "")
+        bin_for_prep_ascat = map_bin.replace("kb", "")
+        PREP_ASCAT( ch_bam_input, bin_for_prep_ascat )
+        PREP_ASCAT.out.for_ascat
+            .map{ meta, segments, bins -> tuple( meta.patient, meta.sample, meta.id, cna_segments, cna_bins)}
+            .groupTuple()
+            .set{ ascat_input }
 
-    PREP_ASCAT(
-        ch_bam_input,
-        bin_for_prep_ascat
-        )
-
-    PREP_ASCAT.out.for_ascat
-        .map{ meta, segments, bins -> tuple( meta.patient, meta.sample, meta.id, cna_segments, cna_bins)}
-        .groupTuple()
-        .set{ascat_input}
-
-    RUN_ASCAT(
-        ascat_input,
-        params.ascat_ploidy,
-        params.ascat_purity
-        )
+        RUN_ASCAT( ascat_input, params.ascat_ploidy, params.ascat_purity )
     }
+
 
     // run ACE
     if (params.step != 'ascat') {
         ACE(ch_bam_input, filter_status)
-        ch_versions = ch_versions.mix(ACE.out.versions)
+        versions = versions.mix(ACE.out.versions)
 
         ACE.out.ace
             .map{ meta, ace -> [meta.patient, meta.sample, meta.id, ace]}
@@ -251,54 +231,90 @@ workflow WGS {
             .dump(tag: 'med_input')
             .set{ prep_medicc2_input }
 
-
         // run prep_medicc
         PREP_MEDICC2(prep_medicc2_input)
-        ch_versions = ch_versions.mix(PREP_MEDICC2.out.versions)
+        versions = versions.mix(PREP_MEDICC2.out.versions)
 
         // run medicc2
         MEDICC2(PREP_MEDICC2.out.for_medicc)
     }
 
-    CUSTOM_DUMPSOFTWAREVERSIONS(ch_versions.unique().collectFile(name: 'collated_versions.yml'))
-    ch_version_yaml = CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect()
+    //
+    // Collate and save software versions
+    //
+    version_yaml = Channel.empty()
+    version_yaml = softwareVersionsToYAML(versions)
+        .collectFile(storeDir: "${params.outdir}/pipeline_info", name: 'nf_core_sarek_software_mqc_versions.yml', sort: true, newLine: true)
+
     //
     // MODULE: MultiQC
     //
-    workflow_summary    = WorkflowWgs.paramsSummaryMultiqc(workflow, summary_params)
-    ch_workflow_summary = Channel.value(workflow_summary)
+    ch_multiqc_config                     = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
+    ch_multiqc_custom_config              = params.multiqc_config ? Channel.fromPath(params.multiqc_config, checkIfExists: true) : Channel.empty()
+    ch_multiqc_logo                       = params.multiqc_logo ? Channel.fromPath(params.multiqc_logo, checkIfExists: true) : Channel.empty()
+    summary_params                        = paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
+    ch_workflow_summary                   = Channel.value(paramsSummaryMultiqc(summary_params))
+    ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
+    ch_methods_description                = Channel.value(methodsDescriptionText(ch_multiqc_custom_methods_description))
+    ch_multiqc_files                      = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
+    ch_multiqc_files                      = ch_multiqc_files.mix(version_yaml)
+    ch_multiqc_files                      = ch_multiqc_files.mix(reports)
+    ch_multiqc_files                      = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml', sort: true))
 
-    methods_description    = WorkflowWgs.methodsDescriptionText(workflow, ch_multiqc_custom_methods_description)
-    ch_methods_description = Channel.value(methods_description)
+    
 
-    ch_multiqc_files = Channel.empty()
-    ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
-    ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
-    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
-    ch_multiqc_files = ch_multiqc_files.mix(ch_reports.collect()).ifEmpty([])
+    MULTIQC (
+        ch_multiqc_files.collect(),
+        ch_multiqc_config.toList(),
+        ch_multiqc_custom_config.toList(),
+        ch_multiqc_logo.toList()
+    )
+    multiqc_report = MULTIQC.out.report.toList()
 
-    MULTIQC(ch_multiqc_files.collect(), ch_multiqc_config.collect().ifEmpty([]), ch_multiqc_custom_config.collect().ifEmpty([]), ch_multiqc_logo.collect().ifEmpty([]))
+    emit:
+        multiqc_report // channel: /path/to/multiqc_report.html
+        versions
+}
+
+/*
+
+workflow WGS {
+
+
+
+
+    CUSTOM_DUMPSOFTWAREVERSIONS(ch_versions.unique().collectFile(name: 'collated_versions.yml'))
+    version_yaml = CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect()
+
+    //
+    // MODULE: MultiQC
+    //
+
+        ch_multiqc_config                     = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
+        ch_multiqc_custom_config              = params.multiqc_config ? Channel.fromPath(params.multiqc_config, checkIfExists: true) : Channel.empty()
+        ch_multiqc_logo                       = params.multiqc_logo ? Channel.fromPath(params.multiqc_logo, checkIfExists: true) : Channel.empty()
+        summary_params                        = paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
+        ch_workflow_summary                   = Channel.value(paramsSummaryMultiqc(summary_params))
+        ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
+        ch_methods_description                = Channel.value(methodsDescriptionText(ch_multiqc_custom_methods_description))
+        ch_multiqc_files                      = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
+        ch_multiqc_files                      = ch_multiqc_files.mix(version_yaml)
+        ch_multiqc_files                      = ch_multiqc_files.mix(reports)
+        ch_multiqc_files                      = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml', sort: true))
+    
+    MULTIQC(
+        ch_multiqc_files.collect(),
+        ch_multiqc_config.collect().ifEmpty([]), 
+        ch_multiqc_custom_config.collect().ifEmpty([]), 
+        ch_multiqc_logo.collect().ifEmpty([])
+        )
 
     multiqc_report = MULTIQC.out.report.toList()
     ch_versions    = ch_versions.mix(MULTIQC.out.versions)
 
 }
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    COMPLETION EMAIL AND SUMMARY
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-workflow.onComplete {
-    if (params.email || params.email_on_fail) {
-        NfcoreTemplate.email(workflow, params, summary_params, projectDir, log, multiqc_report)
-    }
-    NfcoreTemplate.summary(workflow, params, log)
-    if (params.hook_url) {
-        NfcoreTemplate.IM_notification(workflow, params, summary_params, projectDir, log)
-    }
-}
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     FUNCTIONS

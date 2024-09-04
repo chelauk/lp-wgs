@@ -12,11 +12,11 @@ workflow QC_TRIM {
     sort                   // boolean: [mandatory] true -> sort, false -> don't sort
 
     main:
-    ch_versions = Channel.empty()
-    ch_reports  = Channel.empty()
+    versions = Channel.empty()
+    reports  = Channel.empty()
     FASTQC(ch_reads)
-    ch_reports  = ch_reports.mix(FASTQC.out.zip.collect{meta, logs -> logs})
-    ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+    reports  = reports.mix(FASTQC.out.zip.collect{meta, logs -> logs})
+    versions = versions.mix(FASTQC.out.versions.first())
 
     save_trimmed_fail = false
     save_merged = false
@@ -26,16 +26,16 @@ workflow QC_TRIM {
         save_trimmed_fail,
         save_merged
         )
-    ch_reports  = ch_reports.mix(
+    reports  = reports.mix(
                             FASTP.out.json.collect{meta, json -> json},
                             FASTP.out.html.collect{meta, html -> html}
                             )
-    ch_versions = ch_versions.mix(FASTP.out.versions.first())
+    versions = versions.mix(FASTP.out.versions.first())
     // BWA_MEM(FASTP.out.reads,   ch_map_index.map{ it -> [[id:it[0].baseName], it] }, sort) // If aligner is bwa-mem
     // Get the bam files from the aligner
 
     emit:
     reads          = FASTP.out.reads // channel: [ [meta], reads ]
-    ch_versions    // channel: fastqc, fastp versions
-    ch_reports    // channel: fastqc, fastp reports
+    versions    // channel: fastqc, fastp versions
+    reports    // channel: fastqc, fastp reports
 }

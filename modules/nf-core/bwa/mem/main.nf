@@ -13,8 +13,8 @@ process BWA_MEM {
     val   sort_bam
 
     output:
-    tuple val(meta), path("*.bam"), path("*bai"), emit: bam
-    path  "versions.yml"                        , emit: versions
+    tuple val(meta), path("*.bam"), emit: bam
+    path  "versions.yml"          , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -33,7 +33,6 @@ process BWA_MEM {
         \$INDEX \\
         $reads \\
         | samtools $samtools_command $args2 --threads $task.cpus -o ${prefix}.bam -
-        samtools index ${prefix}.bam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -41,27 +40,26 @@ process BWA_MEM {
         samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
     END_VERSIONS
     """
+    
     stub:
     def args = task.ext.args ?: ''
     def args2 = task.ext.args2 ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def samtools_command = sort_bam ? 'sort' : 'view'
+    def extension = args2.contains("--output-fmt sam")   ? "sam" :
+                    args2.contains("--output-fmt cram")  ? "cram":
+                    sort_bam && args2.contains("-O cram")? "cram":
+                    !sort_bam && args2.contains("-C")    ? "cram":
+                    "bam"
     """
-    INDEX=`find -L ./ -name "*.amb" | sed 's/\\.amb\$//'`
-    echo "${task.ext.args}"
-    echo -e "bwa mem \\
-            $args \\
-            -t $task.cpus \\
-            \$INDEX \\
-            $reads \\
-            | samtools $samtools_command $args2 --threads $task.cpus -o ${prefix}.bam - "
-    touch ${prefix}.bam
-    touch ${prefix}.bam.bai
+    touch ${prefix}.${extension}
+    touch ${prefix}.csi
+    touch ${prefix}.crai
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        bwa: stub version
-        samtools:  stub_version
+        bwa: \$(echo \$(bwa 2>&1) | sed 's/^.*Version: //; s/Contact:.*\$//')
+        samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
     END_VERSIONS
     """
 }

@@ -15,21 +15,13 @@ nextflow.enable.dsl = 2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-params.dict                  = WorkflowMain.getGenomeAttribute(params, 'dict')
-params.fasta                 = WorkflowMain.getGenomeAttribute(params, 'fasta')
-params.fasta_fai             = WorkflowMain.getGenomeAttribute(params, 'fasta_fai')
-params.bwa                   = WorkflowMain.getGenomeAttribute(params, 'bwa')
-params.centromere            = WorkflowMain.getGenomeAttribute(params, 'centromere')
-params.map_wig               = WorkflowMain.getGenomeAttribute(params, 'map_wig')
-params.chr_bed               = WorkflowMain.getGenomeAttribute(params, 'chr_bed')
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    VALIDATE & PRINT PARAMETER SUMMARY
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-WorkflowMain.initialise(workflow, params, log)
+params.dict                  = getGenomeAttribute('dict')
+params.fasta                 = getGenomeAttribute('fasta')
+params.fasta_fai             = getGenomeAttribute('fasta_fai')
+params.bwa                   = getGenomeAttribute('bwa')
+params.centromere            = getGenomeAttribute('centromere')
+params.map_wig               = getGenomeAttribute('map_wig')
+params.chr_bed               = getGenomeAttribute('chr_bed')
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -37,27 +29,48 @@ WorkflowMain.initialise(workflow, params, log)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { WGS } from './workflows/wgs'
+include { LP_WGS }                           from './workflows/lp_wgs'
+include { PIPELINE_COMPLETION              } from './subworkflows/local/utils_nfcore_lp_wgs_pipeline'
 
 //
 // WORKFLOW: Run main lp-wgs analysis pipeline
 //
-workflow LP_WGS {
-    WGS ()
+workflow {
+    LP_WGS ()
+
+    //
+    // SUBWORKFLOW: Run completion tasks
+    //
+    PIPELINE_COMPLETION(
+        params.email,
+        params.email_on_fail,
+        params.plaintext_email,
+        params.outdir,
+        params.monochrome_logs,
+        params.hook_url,
+        LP_WGS.out.multiqc_report
+    )
+
+
 }
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    RUN ALL WORKFLOWS
+    FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
 //
-// WORKFLOW: Execute a single named workflow for the pipeline
-// See: https://github.com/nf-core/rnaseq/issues/619
+// Get attribute from genome config file e.g. fasta
 //
-workflow {
-    LP_WGS ()
+
+def getGenomeAttribute(attribute) {
+    if (params.genomes && params.genome && params.genomes.containsKey(params.genome)) {
+        if (params.genomes[ params.genome ].containsKey(attribute)) {
+            return params.genomes[ params.genome ][ attribute ]
+        }
+    }
+    return null
 }
 
 /*

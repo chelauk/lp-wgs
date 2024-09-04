@@ -1,5 +1,5 @@
 id: "lp-wgs-methods-description"
-description: "Suggested text and references to use when describing pipeline usage within the methods section of a publication."
+description: "Data were processed using bwa, ACE, ICHOR, a version of ASCAT and MEDICC2"
 section_name: "lp-wgs Methods Description"
 section_href: "https://github.com/chelauk/lp-wgs"
 plot_type: "html"

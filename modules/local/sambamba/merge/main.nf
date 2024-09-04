@@ -2,13 +2,13 @@ process SAMBAMBA_MERGE {
     tag "$meta.id"
     label 'process_medium'
 
-    conda (params.enable_conda ? "bioconda::sambamba=0.8.1" : null)
+    conda     "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/sambamba:0.8.1--hadffe2f_1' :
         'quay.io/biocontainers/sambamba:0.8.1--hadffe2f_1' }"
 
     input:
-    tuple val(meta), path(bam), path(bai)
+    tuple val(meta), path(bam)
 
     output:
     tuple val(meta), path("${meta.id}.bam"), path("${meta.id}.bam.bai"), emit: bam

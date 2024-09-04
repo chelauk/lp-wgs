@@ -34,6 +34,7 @@ process PREP_MEDICC2 {
     def args = task.ext.args ?: ''
     """    
     touch ${patient}.tsv
+    touch ${patient}.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

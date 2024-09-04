@@ -2,10 +2,6 @@ process ACE {
     tag "$meta.id"
     label 'process_medium'
 
-    // TODO nf-core: List required Conda package(s).
-    //               Software MUST be pinned to channel (i.e. "bioconda"), version (i.e. "1.10").
-    //               For Conda, the build (i.e. "h9402c20_2") must be EXCLUDED to support installation on different operating systems.
-    // TODO nf-core: See section in main README for further information regarding finding and adding container addresses to the section below.
     conda "bioconductor-ace:1.16.0--r42hdfd78af_0"
     container "r-ace.sif"
 
@@ -29,7 +25,6 @@ process ACE {
 
     if [ ! -e \$prefix.bam ]; then
         mv $bam \$prefix.bam
-        mv $bai \$prefix.bai
     fi
 
     if [ ! -d "${meta.sample}_${filter_status}" ]; then
@@ -46,10 +41,7 @@ process ACE {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    
-    
-    mkdir $filter_status
-
+    mkdir ${meta.sample}_${filter_status}
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         ace: stub version
