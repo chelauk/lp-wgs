@@ -11,9 +11,6 @@ process RUN_ASCAT {
 
     input:
     tuple val(patient), val(samples), val(ids), path(cna_segments), path(cna_bins)
-    val(ploidy)
-    val(purity)
-
 
     output:
     tuple val(patient), val(samples), path("*rds"), path("*txt"), path("*pdf")
@@ -25,7 +22,7 @@ process RUN_ASCAT {
     def args = task.ext.args ?: ''
     //def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    ascat_lp.R $patient "${samples.join(' ')}" "${ids.join(' ')}" $ploidy $purity  ${workflow.projectDir}/bin
+    forecast_ascat.R $patient "${samples.join(' ')}" "${ids.join(' ')}"
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

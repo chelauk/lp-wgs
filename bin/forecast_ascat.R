@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 library(copynumber)
 library(ggplot2)
 library(cowplot)
@@ -8,19 +10,14 @@ args <- commandArgs(trailingOnly = TRUE)
 patient <- args[1]
 samples <- unlist(strsplit(args[2], " "))
 ids     <- unlist(strsplit(args[3], " "))
-ploidy  <- as.numeric(args[4])
-purity  <- as.numeric(args[5])
-
-source(paste0(bin_dir, "/00_general_functions.R"))
-source(paste0(bin_dir, "/runASCATlp.R"))
 
 # These are the arms of hg38
 arms <- read.table(bin_dir, "/chrArmBoundaries_hg38.txt", header = TRUE)
 
 # log2R data output by QDNAseq.R
-# https://bioconductor.org/packages/release/bioc/vignettes/QDNAseq/inst/doc/QDNAseq.pdf
-# bins <- getBinAnnotations(binSize = binsize, genome = "hg38")
-# readCounts = binReadCounts(bins, bamfiles=bam)
+# https://bioconductor.org/packages/release/bioc/vignettes/QDNAseq/inst/doc/QDNAseq.pdf # nolint: line_length_linter.
+# bins <- getBinAnnotations(binSize = binsize, genome = "hg38") # nolint: commented_code_linter, line_length_linter.
+# readCounts = binReadCounts(bins, bamfiles=bam) # nolint
 # readCountsFiltered = applyFilters(readCounts, residual=TRUE, blacklist=TRUE, mappability = 65, bases = 95)
 # readCountsFiltered = estimateCorrection(readCountsFiltered)
 # readCountsFiltered_XY = applyFilters(readCountsFiltered, residual=TRUE, blacklist=TRUE, mappability = 65, bases = 95, chromosomes=NA)

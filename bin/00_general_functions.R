@@ -318,3 +318,34 @@ tertile_split = function(x) {
                            no = "1st"))
   return(res)
 }
+
+## functions
+explode_ranges <- function(df, step_size) {
+  expanded_df <- data.frame()
+
+  for (i in 1:nrow(df)) {
+    # go through each row
+    Chromosome <- df$Chromosome[i]
+    Start <- df$Start[i]
+    End <- df$End[i]
+    Copies <- df$Copies[i]
+
+    # create a vector with of starts from the Start to end by step size
+    seq_Starts <- seq(Start, End, by = step_size)
+    # create corresponding end vector
+    seq_Ends <- pmin(seq_Starts + step_size - 1, End)
+
+    Chromosome <- rep(Chromosome, length(seq_Starts))
+    Copies <- rep(Copies, length(seq_Starts))
+
+    new_rows <- data.frame(
+      Chromosome = Chromosome,
+      Start = seq_Starts,
+      End = seq_Ends,
+      Copies = Copies
+    )
+    expanded_df <- rbind(expanded_df, new_rows)
+  }
+  return(expanded_df)
+}
+###
