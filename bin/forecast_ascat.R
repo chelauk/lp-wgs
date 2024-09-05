@@ -3,8 +3,8 @@
 library(copynumber)
 library(ggplot2)
 library(cowplot)
-source("scripts/00_general_functions.R")
-source("scripts/runASCATlp.R")
+source("00_general_functions.R")
+source("runASCATlp.R")
 
 args <- commandArgs(trailingOnly = TRUE)
 patient <- args[1]
@@ -12,30 +12,30 @@ samples <- unlist(strsplit(args[2], " "))
 ids     <- unlist(strsplit(args[3], " "))
 
 # These are the arms of hg38
-arms <- read.table(bin_dir, "/chrArmBoundaries_hg38.txt", header = TRUE)
+arms <- read.table("chrArmBoundaries_hg38.txt", header = TRUE)
 
 # log2R data output by QDNAseq.R
 # https://bioconductor.org/packages/release/bioc/vignettes/QDNAseq/inst/doc/QDNAseq.pdf # nolint: line_length_linter.
 # bins <- getBinAnnotations(binSize = binsize, genome = "hg38") # nolint: commented_code_linter, line_length_linter.
 # readCounts = binReadCounts(bins, bamfiles=bam) # nolint
-# readCountsFiltered = applyFilters(readCounts, residual=TRUE, blacklist=TRUE, mappability = 65, bases = 95)
-# readCountsFiltered = estimateCorrection(readCountsFiltered)
-# readCountsFiltered_XY = applyFilters(readCountsFiltered, residual=TRUE, blacklist=TRUE, mappability = 65, bases = 95, chromosomes=NA)
-# copyNumbers = correctBins(readCountsFiltered_XY)
-# copyNumbersNormalized = normalizeBins(copyNumbers)
-# copyNumbersSegmented = segmentBins(copyNumbersNormalized, transformFun="sqrt")
-# copyNumbersSegmented = normalizeSegmentedBins(copyNumbersSegmented)
+# readCountsFiltered = applyFilters(readCounts, residual=TRUE, blacklist=TRUE, mappability = 65, bases = 95) # nolint
+# readCountsFiltered = estimateCorrection(readCountsFiltered) # nolint
+# readCountsFiltered_XY = applyFilters(readCountsFiltered, residual=TRUE, blacklist=TRUE, mappability = 65, bases = 95, chromosomes=NA) # nolint
+# copyNumbers = correctBins(readCountsFiltered_XY) # nolint
+# copyNumbersNormalized = normalizeBins(copyNumbers) # nolint
+# copyNumbersSegmented = segmentBins(copyNumbersNormalized, transformFun="sqrt") # nolint
+# copyNumbersSegmented = normalizeSegmentedBins(copyNumbersSegmented) # nolint
 # copyNumbersCalled = callBins(copyNumbersSegmented,
-#                              method=c("cutoff"),
-#                              cutoffs=log2(c(deletion = 2 - 1.2, loss = 2 - 0.2, gain = 2 + 0.2, amplification = 2 + 1.2)/2))
+#                              method=c("cutoff"), # nolint
+#                              cutoffs=log2(c(deletion = 2 - 1.2, loss = 2 - 0.2, gain = 2 + 0.2, amplification = 2 + 1.2)/2)) # nolint
 
 ## outputBINS
-# print(paste("bins_file:",paste0(patient,"_",sample,"_bins.txt")))
-# exportBins(copyNumbersCalled, file = paste0(patient,"_",sample,"_bins.txt"))
-# lrrs = read.table(paste0(patient, "_",sample,"_bins.txt"), header = TRUE)
-# med_lrrs = median(lrrs[lrrs$chromosome %in% 1:22,5])
-# lrrs[,5] = lrrs[,5] - med_lrrs
-# write.table(lrrs, file = paste0(patient,"_",sample,"_bins.txt"), quote = FALSE, sep = "\t")
+# print(paste("bins_file:",paste0(patient,"_",sample,"_bins.txt"))) # nolint
+# exportBins(copyNumbersCalled, file = paste0(patient,"_",sample,"_bins.txt")) # nolint
+# lrrs = read.table(paste0(patient, "_",sample,"_bins.txt"), header = TRUE) # nolint
+# med_lrrs = median(lrrs[lrrs$chromosome %in% 1:22,5]) # nolint
+# lrrs[,5] = lrrs[,5] - med_lrrs nolint
+# write.table(lrrs, file = paste0(patient,"_",sample,"_bins.txt"), quote = FALSE, sep = "\t") # nolint
 
 
 patient_lrr <- read.table(paste0(id, "_bins.txt"),
@@ -152,6 +152,8 @@ p <- ggplot(plt_df, aes(x = genome.bin, y = Log2ratio, col = Call)) +
         panel.background = element_blank(),
         plot.title = element_text(hjust = 0.5, size = 18)) +
   geom_point(aes(y = mean_segment), color = "#000000")
+
+ggsave(p, paste0(id, "_", "ascat_lp_plot.pdf"))
 
 autosome_index <- chr_pos$chromosome %in% 1:22
 

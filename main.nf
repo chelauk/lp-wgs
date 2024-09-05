@@ -22,6 +22,7 @@ params.bwa                   = getGenomeAttribute('bwa')
 params.centromere            = getGenomeAttribute('centromere')
 params.map_wig               = getGenomeAttribute('map_wig')
 params.chr_bed               = getGenomeAttribute('chr_bed')
+params.chr_arm_boundaries    = getGenomeAttribute('chr_arm_boundaries')
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

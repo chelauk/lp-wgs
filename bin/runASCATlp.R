@@ -1,5 +1,5 @@
 # This function runs an ASCAT style algorithm on log2ratio data only
-runASCATlp <- function(lrrs, fix_ploidy = 2, interval = 0.01,
+runASCATlp <- function(lrrs, fix_ploidy = 2, interval = 0.01, # nolint
                        min_purity = 0.2, max_purity = 1,
                        max_lrr = Inf, no_fit_psit = 2,
                        pad_ploidy = 0) {
@@ -70,7 +70,7 @@ runASCATlp <- function(lrrs, fix_ploidy = 2, interval = 0.01,
         m <- which(test_mat == min(test_mat))
         # If this is the centre of the matrix and of length one, we have a local
         # minima
-        if (m[1] == 5 & length(m) == 1) {
+        if (m[1] == 5 && length(m) == 1) {
           # Record the psi, purity and value
           hit <- c(colnames(test_mat)[2], rownames(test_mat)[2], test_mat[2, 2])
           # Add to the results object
@@ -89,7 +89,7 @@ runASCATlp <- function(lrrs, fix_ploidy = 2, interval = 0.01,
   }
 
   # Alternate version for a single ploidy state
-  find_local_minima_single_ploidy <- function(mat) {
+  find_local_minima_single_ploidy <- function(mat) { # nolint
     # Collect results
     res <- NULL
     # The row numbers to run across, we don't run across the first and last

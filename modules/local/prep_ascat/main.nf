@@ -16,7 +16,7 @@ process PREP_ASCAT {
     output:
     //tuple val(meta), path("1000kbp"), path("500kbp"), path("100kbp"),  emit: ace
     tuple val(meta), path("*.pdf"), path("*txt"), emit: qdnaseq_out
-    tuple val(meta), path("*cna_segments.txt"),  path("*_bins.txt"),  emit: for_ascat
+    tuple val(meta), path("*cna_segments.txt"),  path("*bins.txt"),  emit: for_ascat
     path "versions.yml"             , emit: versions
 
     when:
@@ -30,7 +30,7 @@ process PREP_ASCAT {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        ace: 3.16
+        prep_ascat: 1
     END_VERSIONS
     """
     
@@ -38,11 +38,12 @@ process PREP_ASCAT {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    mkdir $filter_status
-
+    touch "${meta.id}.cna_segments.txt"
+    touch "${meta.id}.bins.txt"
+    touch "${meta.id}.called_segments.pdf"
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        ace: stub version
+        prep_ascat: stub version
     END_VERSIONS
     """
 }

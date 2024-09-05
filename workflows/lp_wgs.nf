@@ -16,6 +16,7 @@ def checkPathParamList = [
     params.fasta,
     params.fasta_fai,
     params.centromere,
+    params.chr_arm_boundaries,
     params.map_wig,
     params.dict
     ]
@@ -53,7 +54,6 @@ include { HMMCOPY_GCCOUNTER           } from '../modules/nf-core/hmmcopy/gccount
 include { HMMCOPY_READCOUNTER         } from '../modules/nf-core/hmmcopy/readcounter/main'
 include { ICHORCNA_RUN                } from '../modules/nf-core/ichorcna/run/main'
 include { SAMTOOLS_VIEW               } from '../modules/nf-core/samtools/view/main'
-
 include { ACE                         } from '../modules/local/ace'
 include { PREP_ASCAT                  } from '../modules/local/prep_ascat/main'
 include { RUN_ASCAT                   } from '../modules/local/ascat_lp/main'
@@ -70,15 +70,16 @@ map_bin = params.map_bin
 //
 // gather prebuilt indices
 //
-    dict                   = params.dict               ? Channel.fromPath(params.dict).collect()      : Channel.empty()
-    fasta                  = params.fasta              ? Channel.fromPath(params.fasta).collect()     : Channel.empty()
-    fasta_fai              = params.fasta_fai          ? Channel.fromPath(params.fasta_fai).collect() : Channel.empty()
-    bwa                    = params.bwa                ? Channel.fromPath(params.bwa).collect()       : Channel.empty()
-    chr_bed                = params.chr_bed            ? Channel.fromPath(params.chr_bed).collect()       : Channel.empty()
-    centromere             = params.centromere         ? Channel.fromPath(params.centromere).collect(): Channel.empty()
+    dict                   = params.dict               ? Channel.fromPath(params.dict).collect()               : Channel.empty()
+    fasta                  = params.fasta              ? Channel.fromPath(params.fasta).collect()              : Channel.empty()
+    fasta_fai              = params.fasta_fai          ? Channel.fromPath(params.fasta_fai).collect()          : Channel.empty()
+    chr_arm_boundaries     = params.chr_arm_boundaries ? Channel.fromPath(params.chr_arm_boundaries).collect() : Channel.empty() 
+    bwa                    = params.bwa                ? Channel.fromPath(params.bwa).collect()                : Channel.empty()
+    chr_bed                = params.chr_bed            ? Channel.fromPath(params.chr_bed).collect()            : Channel.empty()
+    centromere             = params.centromere         ? Channel.fromPath(params.centromere).collect()         : Channel.empty()
     if ( params.map_bin == '10kb' ) {
         gc_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_10kb.wig").collect()   : Channel.empty()
-        map_wig               = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_10kb.wig").collect()   : Channel.empty()
+        map_wig               = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_10kb.wig").collect()  : Channel.empty()
         pon_rds               = params.normal             ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_hg38_10kb_median_normAutosome_median.rds").collect() : Channel.value([]) // optional
     } else if ( params.map_bin == '50kb' ) {
         gc_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_50kb.wig").collect()   : Channel.empty()
@@ -102,8 +103,9 @@ map_bin = params.map_bin
 
 workflow LP_WGS {
     // define filter status
+    if ( params.step != 'ascat' ) {
     filter_status = params.filter_bam == null ? "filter_none" : "filter_" + params.filter_bam_min + "_" + params.filter_bam_max
-        
+    }
 
     // To gather all QC reports for MultiQC
     ch_multiqc_files = Channel.empty()
@@ -211,12 +213,13 @@ workflow LP_WGS {
     if (params.step == 'ascat') {
         bin_for_prep_ascat = map_bin.replace("kb", "")
         PREP_ASCAT( ch_bam_input, bin_for_prep_ascat )
+        //PREP_ASCAT.out.for_ascat.view{"prep_ascat out channel: $it"}
         PREP_ASCAT.out.for_ascat
-            .map{ meta, segments, bins -> tuple( meta.patient, meta.sample, meta.id, cna_segments, cna_bins)}
+            .map{ meta, cna_segments, cna_bins -> tuple( meta.patient, meta.sample, meta.id, cna_segments, cna_bins)}
             .groupTuple()
             .set{ ascat_input }
 
-        RUN_ASCAT( ascat_input, params.ascat_ploidy, params.ascat_purity )
+        RUN_ASCAT( ascat_input, chr_arm_boundaries )
     }
 
 
