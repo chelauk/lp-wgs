@@ -1,36 +1,63 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "https://raw.githubusercontent.com/chelauk/lp-wgs/master/assets/schema_input.json",
-    "title": "lp-wgs pipeline - params.input schema",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/test/test/master/assets/schema_input.json",
+    "title": "Test schema for samplesheets",
     "description": "Schema for the file provided with params.input",
     "type": "array",
     "items": {
         "type": "object",
         "properties": {
+            "patient": {
+                "type": "string",
+                "pattern": "^\\S+$",
+                "errorMessage": "Patient name must be provided and cannot contain spaces",
+                "meta" : ["patient"]
+            },
             "sample": {
                 "type": "string",
                 "pattern": "^\\S+$",
-                "errorMessage": "Sample name must be provided and cannot contain spaces"
+                "errorMessage": "Sample name must be provided and cannot contain spaces",
+                "meta" : ["sample"]
+            },
+            "lane":{
+                "oneOf": [
+                    {
+                        "type": "string",
+                        "pattern": "^\\S+$",
+                        "errorMessage": "Lane must be a non-empty string and cannot contain spaces"
+                    },
+                    {
+                        "type": "integer",
+                        "errorMessage": "Lane must be an integer"
+                    }
+                ],
+                "meta" : ["lane"]
             },
             "fastq_1": {
                 "type": "string",
                 "pattern": "^\\S+\\.f(ast)?q\\.gz$",
+                "format": "file-path",
                 "errorMessage": "FastQ file for reads 1 must be provided, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
             },
             "fastq_2": {
-                "errorMessage": "FastQ file for reads 2 cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'",
-                "anyOf": [
-                    {
-                        "type": "string",
-                        "pattern": "^\\S+\\.f(ast)?q\\.gz$"
-                    },
-                    {
-                        "type": "string",
-                        "maxLength": 0
-                    }
-                ]
+                "type": "string",
+                "pattern": "^\\S+\\.f(ast)?q\\.gz$",
+                "format": "file-path",
+                "errorMessage": "FastQ file for reads 2 must be provided, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+            },
+            "bam": {
+                "type": "string",
+                "pattern": "^\\S+\\.bam$",
+                "format": "file-path",
+                "errorMessage": "Bam file for sample must be provided, cannot contain spaces and must have extension '.bam'"
+            },
+            "bai": {
+                "type": "string",
+                "pattern": "^\\S+\\.bai$",
+                "format": "file-path",
+                "errorMessage": "Bai file for sample must be provided, cannot contain spaces and must have extension '.bai'"
             }
         },
-        "required": ["sample", "fastq_1"]
+        "required": ["patient", "sample"]
     }
 }

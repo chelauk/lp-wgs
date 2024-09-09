@@ -10,7 +10,7 @@ process PREP_ASCAT {
     container "r-ace.sif"
 
     input:
-    tuple val(meta), path(bam), path(bai)
+    tuple val(meta), path(files)
     val(bin)
 
     output:
@@ -25,6 +25,7 @@ process PREP_ASCAT {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def bam = "${files[0]}"
     """
     QDNAseq.R ${meta.patient} ${meta.sample} $bin $bam
 
@@ -37,7 +38,9 @@ process PREP_ASCAT {
     stub:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def bam = "${files[0]}"
     """
+    echo  "QDNAseq.R ${meta.patient} ${meta.sample} $bin $bam"
     touch "${meta.id}.cna_segments.txt"
     touch "${meta.id}.bins.txt"
     touch "${meta.id}.called_segments.pdf"

@@ -29,6 +29,7 @@ process RUN_ASCAT {
     stub:
     def args = task.ext.args ?: ''
     """
+    echo  "forecast_ascat.R $patient ${samples.join(' ')} ${ids.join(' ')} ${chr_arm_boundaries}"
     touch ${patient}.pdf
     touch ${patient}.txt    
 

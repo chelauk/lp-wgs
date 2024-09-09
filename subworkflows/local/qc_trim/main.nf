@@ -14,6 +14,7 @@ workflow QC_TRIM {
     main:
     versions = Channel.empty()
     reports  = Channel.empty()
+
     FASTQC(ch_reads)
     reports  = reports.mix(FASTQC.out.zip.collect{meta, logs -> logs})
     versions = versions.mix(FASTQC.out.versions.first())

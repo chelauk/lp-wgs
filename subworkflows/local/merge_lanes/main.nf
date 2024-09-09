@@ -48,7 +48,6 @@ workflow MERGE_LANES {
                                     [meta,bam]
                                 }
         // STEP 1.5: MERGING AND INDEXING BAM FROM MULTIPLE LANES
-        //bam_multiple.view()
         SAMTOOLS_INDEX(bam_single)
         bam_single = bam_single.join(SAMTOOLS_INDEX.out.bai)
         SAMBAMBA_MERGE(bam_multiple)

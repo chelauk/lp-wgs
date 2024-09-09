@@ -6,7 +6,7 @@
 include { paramsSummaryMultiqc                              } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML                            } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText                            } from '../subworkflows/local/utils_nfcore_lp_wgs_pipeline'
-include { paramsSummaryMap                                  } from 'plugin/nf-validation'
+include { paramsSummaryMap                                  } from 'plugin/nf-schema'
 
 // Check input path parameters to see if they exist
 def checkPathParamList = [
@@ -23,7 +23,7 @@ def checkPathParamList = [
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
 // Check mandatory parameters
-ch_input_sample = extract_csv(file(params.input, checkIfExists: true ))
+//ch_input_sample = extract_csv(file(params.input, checkIfExists: true ))
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     INITIALIZATION
@@ -102,6 +102,11 @@ map_bin = params.map_bin
 */
 
 workflow LP_WGS {
+
+    take:
+    ch_input_sample
+
+    main:
     // define filter status
     if ( params.step != 'ascat' ) {
     filter_status = params.filter_bam == null ? "filter_none" : "filter_" + params.filter_bam_min + "_" + params.filter_bam_max
@@ -213,12 +218,11 @@ workflow LP_WGS {
     if (params.step == 'ascat') {
         bin_for_prep_ascat = map_bin.replace("kb", "")
         PREP_ASCAT( ch_bam_input, bin_for_prep_ascat )
-        //PREP_ASCAT.out.for_ascat.view{"prep_ascat out channel: $it"}
         PREP_ASCAT.out.for_ascat
             .map{ meta, cna_segments, cna_bins -> tuple( meta.patient, meta.sample, meta.id, cna_segments, cna_bins)}
             .groupTuple()
             .set{ ascat_input }
-
+        println(chr_arm_boundaries)
         RUN_ASCAT( ascat_input, chr_arm_boundaries )
     }
 
@@ -328,7 +332,7 @@ def extract_csv(csv_file) {
                     }
                 def fastq_1 = file(row.fastq_1, checkIfExists: true)
                 def fastq_2 = file(row.fastq_2, checkIfExists: true)
-                def CN      = params.sequencing_center ? "CN:${params.sequencing_center}\\t" : ''
+                def CN      = params.seq_center ? "CN:${params.seq_center}\\t" : ''
                 def flowcell    = flowcellLaneFromFastq(fastq_1)
                 //Don't use a random element for ID, it breaks resuming
                 def read_group  = "\"@RG\\tID:${flowcell}.${row.sample}.${row.lane}\\t${CN}PU:${row.lane}\\tSM:${row.patient}_${row.sample}\\tLB:${row.sample}\\tDS:${params.fasta}\\tPL:${params.seq_platform}\""

@@ -30,14 +30,29 @@ params.chr_arm_boundaries    = getGenomeAttribute('chr_arm_boundaries')
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { LP_WGS }                           from './workflows/lp_wgs'
+include { PIPELINE_INITIALISATION          } from './subworkflows/local/utils_nfcore_lp_wgs_pipeline' 
+include { LP_WGS                           } from './workflows/lp_wgs'
 include { PIPELINE_COMPLETION              } from './subworkflows/local/utils_nfcore_lp_wgs_pipeline'
 
 //
 // WORKFLOW: Run main lp-wgs analysis pipeline
 //
 workflow {
-    LP_WGS ()
+    //
+    // SUBWORKFLOW: Run initialisation tasks
+    //
+
+    PIPELINE_INITIALISATION(
+        params.version,
+        params.help,
+        params.validate_params,
+        params.monochrome_logs,
+        args,
+        params.outdir,
+        params.input
+    )
+
+    LP_WGS (PIPELINE_INITIALISATION.out.samplesheet)
 
     //
     // SUBWORKFLOW: Run completion tasks
