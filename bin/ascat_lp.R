@@ -3,16 +3,29 @@
 library(copynumber)
 library(ggplot2)
 library(cowplot)
-source('00_general_functions.R')
-source('runASCATlp.R')
 
 args <- commandArgs(trailingOnly = TRUE)
 patient <- args[1]
 samples <- unlist(strsplit(args[2]," "))
 ids     <- unlist(strsplit(args[3]," "))
+ploidy  <- as.numeric(args[4])
+purity  <- as.numeric(args[5])
+bin_dir <- args[6]
+
+source(paste0(bin_dir,"/00_general_functions.R"))
+source(paste0(bin_dir,"/runASCATlp.R"))
+
+# create output dir
+if (!dir.exists("./plots")) {
+  # Create the directory if it does not exist
+  dir.create("./plots")
+  message("Directory created: ", "./plots")
+} else {
+  message("Directory already exists: ", "./plots")
+}
 
 # GRCh38 arms
-arms <- read.table("chrArmBoundaries_hg38.txt")
+arms <- read.table(paste0(bin_dir,"/chrArmBoundaries_hg38.txt"))
 
 files <- list.files('.', pattern = "_bins.txt")
 
@@ -176,7 +189,6 @@ lapply(per_patient_ms_ascat, function(i) {
                         Log2ratio = cna_data$bins,
                         mean_segment = cna_data$segs,
                         Call = as.factor(cna_data$CN))
-
     # Max CN
     maxCN = 2
     minCN = -2
@@ -217,10 +229,10 @@ lapply(per_patient_ms_ascat, function(i) {
             panel.background = element_blank(),
             plot.title = element_text(hjust = 0.5, size = 18)) +
       geom_point(aes(y = mean_segment), color="#000000")
-    ggsave(filename = paste0(sample_name,"_multiregion_seg_cna_profile.png"),
+    ggsave(filename = paste0("./plots/",sample_name,"_multiregion_seg_cna_profile.png"),
            plot = p, width = 15, height = 5)
 
-    write.table(cn_output, file = paste0(sample_name,"_multiregion_seg_cna_calls.txt"),
+    write.table(cn_output, file = paste0("./plots/",sample_name,"_multiregion_seg_cna_calls.txt"),
                 row.names = T, col.names = T, quote = F)
 
     # Calculate ploidy vector
@@ -238,7 +250,7 @@ lapply(per_patient_ms_ascat, function(i) {
 
     if(median(cna_data$CN) != round(metrics$Ploidy)) {warnings("Median CN and mean ploidy mismatch!")}
 
-    write.table(metrics, file = paste0(sample_name,"_multiregion_seg_metrics.txt"),
+    write.table(metrics, file = paste0("./plots/",sample_name,"_multiregion_seg_metrics.txt"),
                 row.names = F, col.names = T, quote = F, sep = "\t")
 
     # Make plot
@@ -267,8 +279,7 @@ lapply(per_patient_ms_ascat, function(i) {
             axis.text.y = element_text(size = 60),
             legend.position = "none",
             plot.margin = margin(0.4, 0.1, 0.4, 0.1, "in"))
-    #print(p2)
-    pdf(paste0(sample_name,"_multiregion_seg_cna_profile_separate.pdf"),
+    pdf(paste0("./plots/",sample_name,"_multiregion_seg_cna_profile_separate.pdf"),
         height = 5, width = 24, useDingbats=FALSE)
     dev.off()
 

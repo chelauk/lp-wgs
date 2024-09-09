@@ -7,7 +7,7 @@ process RUN_ASCAT {
     //               For Conda, the build (i.e. "h9402c20_2") must be EXCLUDED to support installation on different operating systems.
     // TODO nf-core: See section in main README for further information regarding finding and adding container addresses to the section below.
     conda "bioconductor-ace:1.16.0--r42hdfd78af_0"
-    container "ascatlp.0.1_latest.sif"
+    //container "ascatlp.0.1_latest.sif"
 
     input:
     tuple val(patient), val(samples), val(ids), path(cna_segments), path(bins)
@@ -16,7 +16,7 @@ process RUN_ASCAT {
 
 
     output:
-    tuple val(patient), val(samples), path("*rds"), path("*txt"), path("*pdf")
+    tuple val(patient), val(samples), path("plots")
 
     when:
     task.ext.when == null || task.ext.when
