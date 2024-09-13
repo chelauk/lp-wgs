@@ -22,6 +22,8 @@ params.bwa                   = getGenomeAttribute('bwa')
 params.centromere            = getGenomeAttribute('centromere')
 params.map_wig               = getGenomeAttribute('map_wig')
 params.chr_bed               = getGenomeAttribute('chr_bed')
+params.medicc_arms           = getGenomeAttribute('medicc_arms')
+params.medicc_genes          = getGenomeAttribute('medicc_genes')
 params.chr_arm_boundaries    = getGenomeAttribute('chr_arm_boundaries')
 
 /*
@@ -30,7 +32,7 @@ params.chr_arm_boundaries    = getGenomeAttribute('chr_arm_boundaries')
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { PIPELINE_INITIALISATION          } from './subworkflows/local/utils_nfcore_lp_wgs_pipeline' 
+include { PIPELINE_INITIALISATION          } from './subworkflows/local/utils_nfcore_lp_wgs_pipeline'
 include { LP_WGS                           } from './workflows/lp_wgs'
 include { PIPELINE_COMPLETION              } from './subworkflows/local/utils_nfcore_lp_wgs_pipeline'
 

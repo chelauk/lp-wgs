@@ -9,7 +9,7 @@ process HMMCOPY_GCCOUNTER {
 
     input:
     tuple val(meta), path(fasta)
-    val map_bin
+    val bin
 
     output:
     path("*.wig"), emit: wig
@@ -27,7 +27,7 @@ process HMMCOPY_GCCOUNTER {
     gcCounter \\
         $args \\
         $args2 \\
-        ${fasta} > gc_${prefix}_${map_bin}.wig
+        ${fasta} > gc_${prefix}_${bin}kb.wig
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

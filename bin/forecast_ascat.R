@@ -1,18 +1,16 @@
 #!/usr/bin/env Rscript
-
 library(copynumber)
 library(ggplot2)
 library(cowplot)
-source("00_general_functions.R")
-source("runASCATlp.R")
 
 args <- commandArgs(trailingOnly = TRUE)
-patient <- args[1]
-samples <- unlist(strsplit(args[2], " "))
-ids     <- unlist(strsplit(args[3], " "))
-
+id     <- args[1]
+ploidy <- as.integer(args[2])
+bin_dir <- args[3]
 # These are the arms of hg38
 arms <- read.table("chrArmBoundaries_hg38.txt", header = TRUE)
+source(paste0(bin_dir,"/00_general_functions.R"))
+source(paste0(bin_dir,"/runASCATlp.R"))
 
 # log2R data output by QDNAseq.R
 # https://bioconductor.org/packages/release/bioc/vignettes/QDNAseq/inst/doc/QDNAseq.pdf # nolint: line_length_linter.
@@ -36,7 +34,6 @@ arms <- read.table("chrArmBoundaries_hg38.txt", header = TRUE)
 # med_lrrs = median(lrrs[lrrs$chromosome %in% 1:22,5]) # nolint
 # lrrs[,5] = lrrs[,5] - med_lrrs nolint
 # write.table(lrrs, file = paste0(patient,"_",sample,"_bins.txt"), quote = FALSE, sep = "\t") # nolint
-
 
 patient_lrr <- read.table(paste0(id, "_bins.txt"),
                           header = TRUE, stringsAsFactors = FALSE)
@@ -69,7 +66,7 @@ expanded_segs <- rep(sample_seg[, 6], times = sample_seg$n.probes)
 names(expanded_segs) <- rep(id, length(expanded_segs))
 
 # runAscat
-mid_pld <- 3.1
+mid_pld <- ploidy 
 expand  <- 1.6
 mp      <- 1
 
@@ -78,8 +75,8 @@ bins_auto <- p_mat[autosome_index]
 segs_auto <- expanded_segs[autosome_index]
 sn <- id
 ps <- FALSE
-pr <- 1000
-pp <- 1000
+pr <- 1000  # irrelevant because preset (ps) is FALSE
+pp <- 1000  # irrelevant because preset (ps) is FALSE
 
 res <- runASCATlp(lrrs = segs_auto, fix_ploidy = mid_pld, pad_ploidy = expand,
                   interval = 0.01, min_purity = 0.01, max_lrr = Inf,
@@ -153,7 +150,7 @@ p <- ggplot(plt_df, aes(x = genome.bin, y = Log2ratio, col = Call)) +
         plot.title = element_text(hjust = 0.5, size = 18)) +
   geom_point(aes(y = mean_segment), color = "#000000")
 
-ggsave(p, paste0(id, "_", "ascat_lp_plot.pdf"))
+ggsave(paste0(id,"_ascat_lp_plot.pdf"), plot=p)
 
 autosome_index <- chr_pos$chromosome %in% 1:22
 
@@ -163,7 +160,7 @@ ploidy_expected <- median(cna_data$CN) * ploidy_expected
 ploidy_expected <- round(ploidy_expected)
 
 # Get output metrics
-metrics <- data.frame(Sample = sample_name, Purity = cna_data$Purity,
+metrics <- data.frame(Sample = cna_data$sample_name, Purity = cna_data$Purity,
                       PsiT = cna_data$PsiT,
                       Ploidy = signif(mean(cna_data$CN[autosome_index]),
                                       digits = 4),
@@ -176,7 +173,6 @@ metrics <- data.frame(Sample = sample_name, Purity = cna_data$Purity,
 cn_out <- data.frame(res$CN)
 
 # output ascat calls
-colnames(cn_out) <- names(ascat)[i]
-rownames(cn_out) <- patient_lrr$feature
-write.table(cn_out, file = paste0(id, "_cna_ploidy_search_calls.txt"),
+write.table(cn_out, file = paste0(id,"_cna_ploidy_search_calls.txt"),
             quote = FALSE)
+

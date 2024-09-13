@@ -4,11 +4,13 @@ library("ACE")
 library("QDNAseq.hg38")
 library("tidyverse")
 options(scipen = 999) # prevent scientific notation
-source("./bindir/00_general_functions.R") # import functions
 
 args <- commandArgs(trailingOnly = TRUE)
 patient <- args[1]
+input_ploidy <- as.integer(args[2])
+bin_dir <- args[3]
 
+source(paste0(bin_dir,"/00_general_functions.R")) # import functions
 # find ace rds output
 my_rds <- list.files(".", recursive = TRUE, pattern = "*1000kbp.rds$")
 
@@ -26,7 +28,7 @@ medicc2_params <- "medicc2_params.txt"
 for (my_object in object_name) {
   # get ace output and best fits using minima
   current_object <- get(paste0(patient, "_", my_object))
-  model1 <- singlemodel(current_object, QDNAseqobjectsample = 1, ploidy = 2)
+  model1 <- singlemodel(current_object, QDNAseqobjectsample = 1, ploidy = input_ploidy)
   # model1 is an object with different minima, trouble is there are
   # options either bestfit or lastminima we need to be able to adjust ploidy
   bestfit1 <- model1$minima[tail(which(model1$rerror == min(model1$rerror)), 1)]
@@ -37,6 +39,7 @@ for (my_object in object_name) {
   assign(paste0(patient, "_", my_object, "_segments"),
          getadjustedsegments(current_object,
                              QDNAseqobjectsample = 1,
+                             ploidy = input_ploidy,
                              cellularity = bestfit1))
 }
 

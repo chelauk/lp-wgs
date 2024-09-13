@@ -10,7 +10,9 @@ process PREP_MEDICC2 {
     container "r-ace.sif"
 
     input:
-    tuple val(patient), val(samples), val(ids), path(ace_out)    
+    tuple val(patient), val(samples), val(ids), path(ace_out)
+	val(ploidy)
+	path(bin_dir)
 
     output:
     tuple val(patient), path("*tsv"), emit: for_medicc
@@ -23,7 +25,7 @@ process PREP_MEDICC2 {
     script:
     def args = task.ext.args ?: ''
     """
-    prep_medicc.R $patient
+    prep_medicc.R $patient $ploidy $bin_dir
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -32,7 +34,9 @@ process PREP_MEDICC2 {
     """
     stub:
     def args = task.ext.args ?: ''
-    """    
+    """   
+	echo "prep_medicc.R $patient $ploidy $bin_dir"
+
     touch ${patient}.tsv
     touch ${patient}.txt
 

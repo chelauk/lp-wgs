@@ -1,16 +1,17 @@
 process RUN_ASCAT {
-    tag "$patient"
+    tag "${meta.id}"
     label 'process_medium'
 
     conda "bioconductor-ace:1.16.0--r42hdfd78af_0"
-    container "ascatlp.0.1_latest.sif"
+    container "forecast_lp_ascat.sif"
     
     input:
-    tuple val(patient), val(samples), val(ids), path(cna_segments), path(cna_bins)
-    path(chr_arm_boundaries)
+    tuple val(meta), path(cna_segments), path(cna_bins)
+    val(ploidy)
+	path(chr_arm_boundaries)
 
     output:
-    tuple val(patient), val(samples), path("*txt"), path("*pdf")
+    tuple val(meta), path("*txt"), path("*pdf")
 
     when:
     task.ext.when == null || task.ext.when
@@ -18,7 +19,7 @@ process RUN_ASCAT {
     script:
     def args = task.ext.args ?: ''
     """
-    forecast_ascat.R $patient "${samples.join(' ')}" "${ids.join(' ')}" ${chr_arm_boundaries}
+    forecast_ascat.R ${meta.id} ${ploidy} ${projectDir}/bin/
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -29,9 +30,9 @@ process RUN_ASCAT {
     stub:
     def args = task.ext.args ?: ''
     """
-    echo  "forecast_ascat.R $patient ${samples.join(' ')} ${ids.join(' ')} ${chr_arm_boundaries}"
-    touch ${patient}.pdf
-    touch ${patient}.txt    
+    echo  "forecast_ascat.R ${meta.id} ${ploidy} ${chr_arm_boundaries}"
+    touch ${meta.id}.pdf
+    touch ${meta.id}.txt    
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

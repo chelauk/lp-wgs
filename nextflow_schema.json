@@ -208,14 +208,6 @@
             "default": 150,
             "description": "Usually use defaults but these can be altered"
         },
-        "ascat_ploidy": {
-            "type": "number",
-            "description": "required if running ascat"
-        },
-        "ascat_purity": {
-            "type": "number",
-            "description": "required if running ascat"
-        },
         "genome": {
             "type": "string",
             "default": "GATK.GRCh38"
@@ -230,15 +222,11 @@
             "type": "string"
         },
         "bin": {
-            "type": "string",
-            "default": "default"
+            "type": "integer",
+            "default": 1000
         },
         "normal": {
             "type": "string"
-        },
-        "map_bin": {
-            "type": "string",
-            "default": "10kb"
         },
         "ichor_purity": {
             "type": "string"
@@ -279,8 +267,8 @@
             "type": "string"
         },
         "ploidy": {
-            "type": "string",
-            "default": "default"
+            "type": "integer",
+            "default": 2
         },
         "insertsizemetrics": {
             "type": "string"

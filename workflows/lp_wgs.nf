@@ -22,8 +22,6 @@ def checkPathParamList = [
     ]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
-// Check mandatory parameters
-//ch_input_sample = extract_csv(file(params.input, checkIfExists: true ))
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     INITIALIZATION
@@ -62,38 +60,21 @@ include { MEDICC2                     } from '../modules/local/medicc2/main'
 include { PICARD_COLLECTALIGNMENTSUMMARYMETRICS } from '../modules/local/picard/collectalignmentmummarymetrics/main'
 
 //
-// value channels
-//
-
-map_bin = params.map_bin
-
-//
 // gather prebuilt indices
 //
     dict                   = params.dict               ? Channel.fromPath(params.dict).collect()               : Channel.empty()
     fasta                  = params.fasta              ? Channel.fromPath(params.fasta).collect()              : Channel.empty()
     fasta_fai              = params.fasta_fai          ? Channel.fromPath(params.fasta_fai).collect()          : Channel.empty()
-    chr_arm_boundaries     = params.chr_arm_boundaries ? Channel.fromPath(params.chr_arm_boundaries).collect() : Channel.empty() 
+    chr_arm_boundaries     = params.chr_arm_boundaries ? Channel.fromPath(params.chr_arm_boundaries).collect() : Channel.empty()
     bwa                    = params.bwa                ? Channel.fromPath(params.bwa).collect()                : Channel.empty()
     chr_bed                = params.chr_bed            ? Channel.fromPath(params.chr_bed).collect()            : Channel.empty()
     centromere             = params.centromere         ? Channel.fromPath(params.centromere).collect()         : Channel.empty()
-    if ( params.map_bin == '10kb' ) {
-        gc_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_10kb.wig").collect()   : Channel.empty()
-        map_wig               = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_10kb.wig").collect()  : Channel.empty()
-        pon_rds               = params.normal             ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_hg38_10kb_median_normAutosome_median.rds").collect() : Channel.value([]) // optional
-    } else if ( params.map_bin == '50kb' ) {
-        gc_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_50kb.wig").collect()   : Channel.empty()
-        map_wig               = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_50kb.wig").collect()   : Channel.empty()
-        pon_rds               = params.normal             ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_hg38_50kb_median_normAutosome_median.rds").collect() : Channel.value([]) // optional Channel.empty()
-    } else if ( params.map_bin == '500kb') {
-        gc_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_500kb.wig").collect()   : Channel.empty()
-        map_wig               = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_500kb.wig").collect()   : Channel.empty()
-        pon_rds               = params.normal             ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_500kb_median_normAutosome_mapScoreFiltered_median.rds").collect() : Channel.value([]) // optional Channel.empty()
-    } else  if ( params.map_bin == '1000kb' ){
-        gc_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_1000kb.wig").collect()   : Channel.empty()
-        map_wig               = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_1000kb.wig").collect()   : Channel.empty()
-        pon_rds               = params.normal             ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_1Mb_median_normAutosome_mapScoreFiltered_median.rds").collect() : Channel.value([]) // optional Channel.empty()
-    }
+    medicc_arms            = params.medicc_arms        ? Channel.fromPath(params.medicc_arms).collect()        : Channel.empty()
+    medicc_genes           = params.medicc_genes       ? Channel.fromPath(params.medicc_genes).collect()       : Channel.empty()
+    gc_wig                 = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_${params.bin}kb.wig").collect()   : Channel.empty()
+	map_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_${params.bin}kb.wig").collect()   : Channel.empty()
+	pon_rds                = params.map_wig            ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_hg38_${params.bin}kb_median_normAutosome_median.rds").collect() : Channel.value([]) // optional Channel.empty()
+    normal_wig             = params.normal_wig         ? Channel.fromPath(params.normal_wig).collect()         : Channel.value([]) // empty value channel necessary
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -110,7 +91,7 @@ workflow LP_WGS {
     // define filter status
     if ( params.step != 'ascat' ) {
     filter_status = params.filter_bam == null ? "filter_none" : "filter_" + params.filter_bam_min + "_" + params.filter_bam_max
-    }
+	}
 
     // To gather all QC reports for MultiQC
     ch_multiqc_files = Channel.empty()
@@ -138,26 +119,29 @@ workflow LP_WGS {
     sort_bam = true
     // Gather index for mapping given the chosen aligner
     ch_map_index = bwa
+    // bin_dir for Rscripts
+    bin_dir = Channel.fromPath("$projectDir/bin")
 
     if ( params.step == 'fastq' ) {
         fastq_input = ch_input_sample
         QC_TRIM ( fastq_input, ch_map_index, sort_bam)
         versions = versions.mix(QC_TRIM.out.versions)
         reports  = reports.mix(QC_TRIM.out.reports)
-        BWA_MEM( QC_TRIM.out.reads,   ch_map_index.map{ it -> [[id:it[0].baseName], it] }, sort_bam) // If aligner is bwa-mem
+        BWA_MEM( QC_TRIM.out.reads, ch_map_index.map{ it -> [[id:it[0].baseName], it] }, sort_bam) // If aligner is bwa-mem
         versions = versions.mix(BWA_MEM.out.versions.first())
+        MERGE_LANES ( BWA_MEM.out.bam )
+        versions = versions.mix(MERGE_LANES.out.versions.first())
         if ( params.filter_bam == null ) {
-            MERGE_LANES ( BWA_MEM.out.bam )
             ch_bam_input = MERGE_LANES.out.bam
-            versions = versions.mix(MERGE_LANES.out.versions.first())
             } else if ( params.filter_bam != null  ) {
                 ch_filter_input = MERGE_LANES.out.bam
                 SAMTOOLS_VIEW ( ch_filter_input, params.filter_bam_min, params.filter_bam_max )
                 ch_bam_input = SAMTOOLS_VIEW.out.bam
-                versions = versions.mix(SAMTOOLS_VIEW.out.versions.first()) 
+                versions = versions.mix(SAMTOOLS_VIEW.out.versions.first())
             }
         }
-    if ( params.step == 'bam' || params.step == 'ascat' ) { ch_bam_input = ch_input_sample }
+    if ( params.step == 'bam' || params.step == 'ascat' ) {
+        ch_bam_input = ch_input_sample }
     if ( params.step == 'bam'  &&  params.filter_bam != null ){
         ch_filter_input = ch_input_sample
         SAMTOOLS_VIEW ( ch_filter_input, params.filter_bam_min, params.filter_bam_max )
@@ -185,11 +169,11 @@ workflow LP_WGS {
 
     // run hmmcopygccounter
     if ( params.call_gc ) {
-        HMMCOPY_GCCOUNTER(fasta.map{ it -> [[id:it[0].baseName], it] }, map_bin )
+        HMMCOPY_GCCOUNTER(fasta.map{ it -> [[id:it[0].baseName], it] }, params.bin )
         gc_wig = HMMCOPY_GCCOUNTER.out.wig
         versions = versions.mix(HMMCOPY_GCCOUNTER.out.versions)
-        } else { 
-            gc_wig = gc_wig 
+        } else {
+            gc_wig = gc_wig
         }
 
     // run hmmcopyreadcounter
@@ -197,17 +181,15 @@ workflow LP_WGS {
         HMMCOPY_READCOUNTER( ch_bam_input )
         versions = versions.mix(HMMCOPY_READCOUNTER.out.versions)
     }
-
+    
     // run ichorcna
-    panel_of_normals = pon_rds
-    normal_wig = []
     if  ( params.step != 'ascat' ) {
         ICHORCNA_RUN(
             HMMCOPY_READCOUNTER.out.wig,
             normal_wig,
             gc_wig,
             map_wig,
-            panel_of_normals,
+            pon_rds,
             centromere,
             filter_status
         )
@@ -216,14 +198,8 @@ workflow LP_WGS {
 
     // run PREP_ASCAT
     if (params.step == 'ascat') {
-        bin_for_prep_ascat = map_bin.replace("kb", "")
-        PREP_ASCAT( ch_bam_input, bin_for_prep_ascat )
-        PREP_ASCAT.out.for_ascat
-            .map{ meta, cna_segments, cna_bins -> tuple( meta.patient, meta.sample, meta.id, cna_segments, cna_bins)}
-            .groupTuple()
-            .set{ ascat_input }
-        println(chr_arm_boundaries)
-        RUN_ASCAT( ascat_input, chr_arm_boundaries )
+        PREP_ASCAT( ch_bam_input, params.bin )
+        RUN_ASCAT( PREP_ASCAT.out.for_ascat, params.ploidy, chr_arm_boundaries )
     }
 
 
@@ -239,11 +215,11 @@ workflow LP_WGS {
             .set{ prep_medicc2_input }
 
         // run prep_medicc
-        PREP_MEDICC2(prep_medicc2_input)
+        PREP_MEDICC2(prep_medicc2_input, params.ploidy, bin_dir)
         versions = versions.mix(PREP_MEDICC2.out.versions)
 
         // run medicc2
-        MEDICC2(PREP_MEDICC2.out.for_medicc)
+        MEDICC2(PREP_MEDICC2.out.for_medicc, medicc_arms, medicc_genes)
     }
 
     //
@@ -268,7 +244,7 @@ workflow LP_WGS {
     ch_multiqc_files                      = ch_multiqc_files.mix(reports)
     ch_multiqc_files                      = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml', sort: true))
 
-    
+
 
     MULTIQC (
         ch_multiqc_files.collect(),

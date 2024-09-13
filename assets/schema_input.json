@@ -33,6 +33,12 @@
                 ],
                 "meta" : ["lane"]
             },
+            "predicted_ploidy" :{
+                "type" : "integer",
+                "errorMessage": "predicted_ploidy must be an integer",
+                "default" : 2,
+                "meta" : ["predicted_ploidy"]
+            },
             "fastq_1": {
                 "type": "string",
                 "pattern": "^\\S+\\.f(ast)?q\\.gz$",

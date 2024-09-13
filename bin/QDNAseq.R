@@ -52,8 +52,7 @@ copy_numbers_segmented <- normalizeSegmentedBins(copy_numbers_segmented)
 # times, we can just create a variable with this data frame.
 
 template <- objectsampletotemplate(copy_numbers_segmented, index = 1)
-sqmodel <- squaremodel(template, penalty = 0.5, penploidy = 0.5,
-                       printplots = FALSE)
+sqmodel <- squaremodel(template, penalty = 0.5, penploidy = 0.5)
 pdf(paste0(patient, "_", sample, "_sky_on_fire.pdf"))
 sqmodel$matrixplot + ggtitle(paste0(patient, "_", sample, "_Sky on fire"))
 dev.off()
