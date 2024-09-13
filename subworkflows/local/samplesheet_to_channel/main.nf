@@ -8,7 +8,7 @@ workflow SAMPLESHEET_TO_CHANNEL {
    main:
     ch_from_samplesheet
         .map {
-            meta, fastq_1, fastq_2, bam, bai ->
+            meta, fastq_1, fastq_2, bam, bai, rds ->
             if ( fastq_1 ) {
                 CN       = seq_center
                 flowcell = flowcellInfoFromFastq(fastq_1)
@@ -23,7 +23,7 @@ workflow SAMPLESHEET_TO_CHANNEL {
                 meta = meta + [ bam:true ]
                 meta.remove('lane')
                 meta = meta + [ id: meta.patient + "_" + meta.sample ]
-                return [ meta, [ bam, bai ]]
+                return [ meta, [ bam, bai, rds ]]
             }
         }
         .set { ch_samplesheet }

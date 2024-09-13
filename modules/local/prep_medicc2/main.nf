@@ -10,8 +10,7 @@ process PREP_MEDICC2 {
     container "r-ace.sif"
 
     input:
-    tuple val(patient), val(samples), val(ids), path(ace_out)
-	val(ploidy)
+    tuple val(patient), val(samples), val(ids), val(ploidy),  path(ace_out)
 	path(bin_dir)
 
     output:
@@ -25,7 +24,7 @@ process PREP_MEDICC2 {
     script:
     def args = task.ext.args ?: ''
     """
-    prep_medicc.R $patient $ploidy $bin_dir
+    prep_medicc.R $patient "${ploidy.join(' ')}" $bin_dir
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

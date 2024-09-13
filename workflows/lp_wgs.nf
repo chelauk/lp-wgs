@@ -202,25 +202,34 @@ workflow LP_WGS {
         RUN_ASCAT( PREP_ASCAT.out.for_ascat, params.ploidy, chr_arm_boundaries )
     }
 
-
     // run ACE
     if (params.step != 'ascat') {
-        ACE(ch_bam_input, filter_status)
-        versions = versions.mix(ACE.out.versions)
-
-        ACE.out.ace
-            .map{ meta, ace -> [meta.patient, meta.sample, meta.id, ace]}
-            .groupTuple()
-            .dump(tag: 'med_input')
-            .set{ prep_medicc2_input }
-
-        // run prep_medicc
-        PREP_MEDICC2(prep_medicc2_input, params.ploidy, bin_dir)
-        versions = versions.mix(PREP_MEDICC2.out.versions)
-
-        // run medicc2
-        MEDICC2(PREP_MEDICC2.out.for_medicc, medicc_arms, medicc_genes)
+	ACE(ch_bam_input, filter_status)
+    versions = versions.mix(ACE.out.versions)
+    
+    ACE.out.ace
+        .map{ meta, ace -> [meta.patient, meta.sample, meta.id, meta.predicted_ploidy, ace]}
+        .groupTuple()
+		.view{ "prep_medicc2_input: $it" }
+        .set{ prep_medicc2_input }
     }
+
+    if ( params.step == 'ascat' ) {
+	ch_bam_input
+		.map{ meta , files ->  
+		 meta = meta + [ id: meta.patient + "_" + meta.sample ]
+		 [meta.patient, meta.sample, meta.id, meta.predicted_ploidy, files[2]] 
+		 }
+		.groupTuple()
+		.view{ "prep_medicc2_input: $it" }
+		.set{ prep_medicc2_input }
+	}
+    //run prep_medicc
+    PREP_MEDICC2(prep_medicc2_input, bin_dir)
+       versions = versions.mix(PREP_MEDICC2.out.versions)
+
+    // run medicc2
+    MEDICC2(PREP_MEDICC2.out.for_medicc, medicc_arms, medicc_genes)
 
     //
     // Collate and save software versions

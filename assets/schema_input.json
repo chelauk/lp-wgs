@@ -62,7 +62,11 @@
                 "pattern": "^\\S+\\.bai$",
                 "format": "file-path",
                 "errorMessage": "Bai file for sample must be provided, cannot contain spaces and must have extension '.bai'"
-            }
+            },
+			"rds": {
+				"type": "string",
+				"format": "directory-path"
+			}
         },
         "required": ["patient", "sample"]
     }

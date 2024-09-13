@@ -7,7 +7,7 @@ options(scipen = 999) # prevent scientific notation
 
 args <- commandArgs(trailingOnly = TRUE)
 patient <- args[1]
-input_ploidy <- as.integer(args[2])
+input_ploidys <- as.integer(unlist(strsplit(args[2]," ")))
 bin_dir <- args[3]
 
 source(paste0(bin_dir,"/00_general_functions.R")) # import functions
@@ -25,21 +25,21 @@ for (i in seq_along(my_rds)) {
 # run get adjustedsegments and get output, name as $sample
 # medicc2 parameter info will be stored
 medicc2_params <- "medicc2_params.txt"
-for (my_object in object_name) {
+for (i in seq_along(object_name)) {
   # get ace output and best fits using minima
-  current_object <- get(paste0(patient, "_", my_object))
-  model1 <- singlemodel(current_object, QDNAseqobjectsample = 1, ploidy = input_ploidy)
+  current_object <- get(paste0(patient, "_", object_name[i]))
+  model1 <- singlemodel(current_object, QDNAseqobjectsample = 1, ploidy = input_ploidys[i])
   # model1 is an object with different minima, trouble is there are
   # options either bestfit or lastminima we need to be able to adjust ploidy
   bestfit1 <- model1$minima[tail(which(model1$rerror == min(model1$rerror)), 1)]
   # I need to work on this
-  log_txt <- paste0(patient, "_", my_object, " cellularity: ", bestfit1,
+  log_txt <- paste0(patient, "_", object_name[i], " cellularity: ", bestfit1,
                     ", ploidy: ", model1$ploidy, "\n")
   cat(log_txt, file = medicc2_params, append = TRUE)
-  assign(paste0(patient, "_", my_object, "_segments"),
+  assign(paste0(patient, "_", object_name[i], "_segments"),
          getadjustedsegments(current_object,
                              QDNAseqobjectsample = 1,
-                             ploidy = input_ploidy,
+                             ploidy = input_ploidys[i],
                              cellularity = bestfit1))
 }
 
