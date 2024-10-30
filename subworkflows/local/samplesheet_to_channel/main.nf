@@ -5,7 +5,7 @@ workflow SAMPLESHEET_TO_CHANNEL {
     seq_platform                    //
     step                            //
 
-   main:
+    main:
     ch_from_samplesheet
         .map {
             meta, fastq_1, fastq_2, bam, bai, rds ->
@@ -21,13 +21,12 @@ workflow SAMPLESHEET_TO_CHANNEL {
                 }
             else if ( bam ) {
 			    if (rds) {
-                  meta = meta + [ bam:true ]
-				  meta = meta + [ rds:true ]
-                  meta.remove('lane')
-                  meta = meta + [ id: meta.patient + "_" + meta.sample ]
-                  return [ meta, [ bam, bai, rds ]]
-				  }
-				  else {
+                    meta = meta + [ bam:true ]
+				    meta = meta + [ rds:true ]
+                    meta.remove('lane')
+                    meta = meta + [ id: meta.patient + "_" + meta.sample ]
+                    return [ meta, [ bam, bai, rds ]]
+				} else {
                     meta = meta + [ bam:true ]
                     meta.remove('lane')
                     meta = meta + [ id: meta.patient + "_" + meta.sample ]

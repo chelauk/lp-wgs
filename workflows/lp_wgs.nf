@@ -105,7 +105,7 @@ workflow LP_WGS {
 
     // To gather mosdepth reports
     mosdepth_reports = Channel.empty()
-    
+
 	ch_multiqc_config                     = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
     ch_multiqc_custom_config              = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
     ch_multiqc_logo                       = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
@@ -140,12 +140,12 @@ workflow LP_WGS {
             }
         }
     if ( params.step == 'bam' || params.step == 'ascat' ) {
-        ch_bam_input = ch_input_sample 
+        ch_bam_input = ch_input_sample
 	}
     if ( params.step == 'bam'  &&  params.filter_bam != null && params.tech != "nanopore"){
         ch_filter_input = ch_input_sample
                             .map { meta, files ->
-							       [meta, files[0], files[1]] }
+							    [meta, files[0], files[1]] }
         SAMTOOLS_VIEW ( ch_filter_input, params.filter_bam_min, params.filter_bam_max )
         ch_bam_input = SAMTOOLS_VIEW.out.bam
         versions = versions.mix(SAMTOOLS_VIEW.out.versions.first())
@@ -153,16 +153,16 @@ workflow LP_WGS {
     if ( params.step == 'bam'  &&  params.filter_bam != null && params.tech == "nanopore"){
         ch_filter_input = ch_input_sample
                             .map { meta, files ->
-							       [meta, files[0], files[1]] }
+							    [meta, files[0], files[1]] }
         SAMTOOLS_NVIEW ( ch_filter_input, params.filter_bam_min, params.filter_bam_max )
         ch_bam_input = SAMTOOLS_NVIEW.out.bam
-		                             .map{ meta, bam, bai -> [ meta, [ bam, bai]] }
+		                            .map{ meta, bam, bai -> [ meta, [ bam, bai]] }
 		versions = versions.mix(SAMTOOLS_NVIEW.out.versions.first())
     }
     if (( params.step != 'ascat' ) && ( params.tech == 'illumina' )) {
 		ch_bam_input = ch_bam_input
-		                 .map{ meta, files ->
-						      [meta, files[0], files[1]] }
+		                .map{ meta, files ->
+						    [meta, files[0], files[1]] }
 		PICARD_COLLECTALIGNMENTSUMMARYMETRICS ( ch_bam_input , fasta, dict,filter_status)
         versions = versions.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.versions.first())
         reports  = reports.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.metrics.collect{meta, report -> report})
@@ -197,7 +197,7 @@ workflow LP_WGS {
         HMMCOPY_READCOUNTER( ch_bam_input )
         versions = versions.mix(HMMCOPY_READCOUNTER.out.versions)
     }
-    
+
     // run ichorcna
     if  ( params.step != 'ascat' ) {
         ICHORCNA_RUN(
@@ -211,13 +211,11 @@ workflow LP_WGS {
         )
         versions= versions.mix(ICHORCNA_RUN.out.versions)
     }
-    
+
     // run PREP_ASCAT
     if (params.step == 'ascat') {
 		PREP_ASCAT( ch_bam_input, params.bin )
         PREP_ASCAT.out.for_ascat.view()
-		println(params.ploidy)
-		println(chr_arm_boundaries)
 		RUN_ASCAT( PREP_ASCAT.out.for_ascat, params.ploidy, chr_arm_boundaries )
     }
 
@@ -225,9 +223,9 @@ workflow LP_WGS {
     if (params.step != 'ascat') {
 	ACE(ch_bam_input, filter_status)
     versions = versions.mix(ACE.out.versions)
-    
+
     ACE.out.ace
-        .map{ meta, ace -> 
+        .map{ meta, ace ->
 		// If meta.predicted_ploidy is null, set it to 2
 		meta.predicted_ploidy = meta.predicted_ploidy ?: 2
 		[meta.patient, meta.sample, meta.id, meta.predicted_ploidy, ace]
@@ -239,14 +237,14 @@ workflow LP_WGS {
 
     if ( params.step == 'ascat' ) {
 	ch_bam_input
-		.map{ meta , files ->  
+		.map{ meta , files ->
 		 meta = meta + [ id: meta.patient + "_" + meta.sample ]
 		 // If meta.predicted_ploidy is null, set it to 2
 		 meta.predicted_ploidy = meta.predicted_ploidy ?: 2
-		 [meta.patient, meta.sample, meta.id, meta.predicted_ploidy, files] 
+		 [meta.patient, meta.sample, meta.id, meta.predicted_ploidy, files]
 		 }
 		.groupTuple()
-		.map { patient, sample, id, ploidy, files ->  
+		.map { patient, sample, id, ploidy, files ->
 		  files = files.flatten()
 		  [patient, sample, id, ploidy, files ]
 		  }
@@ -254,12 +252,12 @@ workflow LP_WGS {
 		.set{ prep_medicc2_input }
 	}
 
-    
+
     //prep_medicc2_input.view{"prep medicc input: $it"}
 	//run prep_medicc
     PREP_MEDICC2(prep_medicc2_input, bin_dir)
        versions = versions.mix(PREP_MEDICC2.out.versions)
-    
+
     // run medicc2
     MEDICC2(PREP_MEDICC2.out.for_medicc, medicc_arms, medicc_genes)
 
