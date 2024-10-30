@@ -9,7 +9,7 @@ process PICARD_COLLECTINSERTSIZEMETRICS {
 
     input:
     tuple val(meta), path(bam), path(bai)
-    val (filter_status)
+    val filter_status
 
     output:
     tuple val(meta), path("*.txt"),  emit: size_metrics

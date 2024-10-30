@@ -18,7 +18,9 @@ def checkPathParamList = [
     params.centromere,
     params.chr_arm_boundaries,
     params.map_wig,
-    params.dict
+    params.dict,
+	params.medicc_arms,
+	params.medicc_genes
     ]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
@@ -52,6 +54,7 @@ include { HMMCOPY_GCCOUNTER           } from '../modules/nf-core/hmmcopy/gccount
 include { HMMCOPY_READCOUNTER         } from '../modules/nf-core/hmmcopy/readcounter/main'
 include { ICHORCNA_RUN                } from '../modules/nf-core/ichorcna/run/main'
 include { SAMTOOLS_VIEW               } from '../modules/nf-core/samtools/view/main'
+include { SAMTOOLS_NVIEW              } from '../modules/nf-core/samtools/view_nanopore/main'
 include { ACE                         } from '../modules/local/ace'
 include { PREP_ASCAT                  } from '../modules/local/prep_ascat/main'
 include { RUN_ASCAT                   } from '../modules/local/ascat_lp/main'
@@ -64,7 +67,7 @@ include { PICARD_COLLECTALIGNMENTSUMMARYMETRICS } from '../modules/local/picard/
 //
     dict                   = params.dict               ? Channel.fromPath(params.dict).collect()               : Channel.empty()
     fasta                  = params.fasta              ? Channel.fromPath(params.fasta).collect()              : Channel.empty()
-    fasta_fai              = params.fasta_fai          ? Channel.fromPath(params.fasta_fai).collect()          : Channel.empty()
+	fasta_fai              = params.fasta_fai          ? Channel.fromPath(params.fasta_fai).collect()          : Channel.empty()
     chr_arm_boundaries     = params.chr_arm_boundaries ? Channel.fromPath(params.chr_arm_boundaries).collect() : Channel.empty()
     bwa                    = params.bwa                ? Channel.fromPath(params.bwa).collect()                : Channel.empty()
     chr_bed                = params.chr_bed            ? Channel.fromPath(params.chr_bed).collect()            : Channel.empty()
@@ -90,7 +93,7 @@ workflow LP_WGS {
     main:
     // define filter status
     if ( params.step != 'ascat' ) {
-    filter_status = params.filter_bam == null ? "filter_none" : "filter_" + params.filter_bam_min + "_" + params.filter_bam_max
+	filter_status = params.filter_bam == null ? "filter_none" : "filter_" + params.filter_bam_min + "_" + params.filter_bam_max
 	}
 
     // To gather all QC reports for MultiQC
@@ -100,18 +103,13 @@ workflow LP_WGS {
     versions         = Channel.empty()
     ch_multiqc_files = Channel.empty()
 
-    ch_multiqc_config                     = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
+    // To gather mosdepth reports
+    mosdepth_reports = Channel.empty()
+    
+	ch_multiqc_config                     = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
     ch_multiqc_custom_config              = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
     ch_multiqc_logo                       = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
     ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-
-    // To gather all QC reports for MultiQC
-    reports  = Channel.empty()
-    // To gather software versions for MultiQC
-    versions = Channel.empty()
-    // To gather mosdepth reports
-    mosdepth_reports = Channel.empty()
-
 
     //
     // FASTQC, FASTP and BWA
@@ -120,7 +118,7 @@ workflow LP_WGS {
     // Gather index for mapping given the chosen aligner
     ch_map_index = bwa
     // bin_dir for Rscripts
-    bin_dir = Channel.fromPath("$projectDir/bin")
+    bin_dir = Channel.fromPath("$projectDir/bin").collect()
 
     if ( params.step == 'fastq' ) {
         fastq_input = ch_input_sample
@@ -135,24 +133,40 @@ workflow LP_WGS {
             ch_bam_input = MERGE_LANES.out.bam
             } else if ( params.filter_bam != null  ) {
                 ch_filter_input = MERGE_LANES.out.bam
+				ch_filter_input.view()
                 SAMTOOLS_VIEW ( ch_filter_input, params.filter_bam_min, params.filter_bam_max )
                 ch_bam_input = SAMTOOLS_VIEW.out.bam
                 versions = versions.mix(SAMTOOLS_VIEW.out.versions.first())
             }
         }
     if ( params.step == 'bam' || params.step == 'ascat' ) {
-        ch_bam_input = ch_input_sample }
-    if ( params.step == 'bam'  &&  params.filter_bam != null ){
+        ch_bam_input = ch_input_sample 
+	}
+    if ( params.step == 'bam'  &&  params.filter_bam != null && params.tech != "nanopore"){
         ch_filter_input = ch_input_sample
+                            .map { meta, files ->
+							       [meta, files[0], files[1]] }
         SAMTOOLS_VIEW ( ch_filter_input, params.filter_bam_min, params.filter_bam_max )
         ch_bam_input = SAMTOOLS_VIEW.out.bam
         versions = versions.mix(SAMTOOLS_VIEW.out.versions.first())
     }
-    if ( params.step != 'ascat' ) {
-        PICARD_COLLECTALIGNMENTSUMMARYMETRICS ( ch_bam_input , fasta, dict,filter_status)
+    if ( params.step == 'bam'  &&  params.filter_bam != null && params.tech == "nanopore"){
+        ch_filter_input = ch_input_sample
+                            .map { meta, files ->
+							       [meta, files[0], files[1]] }
+        SAMTOOLS_NVIEW ( ch_filter_input, params.filter_bam_min, params.filter_bam_max )
+        ch_bam_input = SAMTOOLS_NVIEW.out.bam
+		                             .map{ meta, bam, bai -> [ meta, [ bam, bai]] }
+		versions = versions.mix(SAMTOOLS_NVIEW.out.versions.first())
+    }
+    if (( params.step != 'ascat' ) && ( params.tech == 'illumina' )) {
+		ch_bam_input = ch_bam_input
+		                 .map{ meta, files ->
+						      [meta, files[0], files[1]] }
+		PICARD_COLLECTALIGNMENTSUMMARYMETRICS ( ch_bam_input , fasta, dict,filter_status)
         versions = versions.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.versions.first())
         reports  = reports.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.metrics.collect{meta, report -> report})
-        PICARD_COLLECTINSERTSIZEMETRICS ( ch_bam_input ,filter_status)
+		PICARD_COLLECTINSERTSIZEMETRICS ( ch_bam_input ,filter_status)
         versions = versions.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.versions.first())
         reports  = reports.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.size_metrics.collect{meta, report -> report})
         MOSDEPTH(
@@ -178,6 +192,8 @@ workflow LP_WGS {
 
     // run hmmcopyreadcounter
     if ( params.step != 'ascat' ) {
+	    ch_bam_input = ch_bam_input
+		                 .map { meta, files -> [ meta, files[0], files[1]]}
         HMMCOPY_READCOUNTER( ch_bam_input )
         versions = versions.mix(HMMCOPY_READCOUNTER.out.versions)
     }
@@ -195,11 +211,14 @@ workflow LP_WGS {
         )
         versions= versions.mix(ICHORCNA_RUN.out.versions)
     }
-
+    
     // run PREP_ASCAT
     if (params.step == 'ascat') {
-        PREP_ASCAT( ch_bam_input, params.bin )
-        RUN_ASCAT( PREP_ASCAT.out.for_ascat, params.ploidy, chr_arm_boundaries )
+		PREP_ASCAT( ch_bam_input, params.bin )
+        PREP_ASCAT.out.for_ascat.view()
+		println(params.ploidy)
+		println(chr_arm_boundaries)
+		RUN_ASCAT( PREP_ASCAT.out.for_ascat, params.ploidy, chr_arm_boundaries )
     }
 
     // run ACE
@@ -208,9 +227,13 @@ workflow LP_WGS {
     versions = versions.mix(ACE.out.versions)
     
     ACE.out.ace
-        .map{ meta, ace -> [meta.patient, meta.sample, meta.id, meta.predicted_ploidy, ace]}
+        .map{ meta, ace -> 
+		// If meta.predicted_ploidy is null, set it to 2
+		meta.predicted_ploidy = meta.predicted_ploidy ?: 2
+		[meta.patient, meta.sample, meta.id, meta.predicted_ploidy, ace]
+			}
         .groupTuple()
-		.view{ "prep_medicc2_input: $it" }
+		.filter { tuple -> tuple[1].size() > 1 }
         .set{ prep_medicc2_input }
     }
 
@@ -218,16 +241,25 @@ workflow LP_WGS {
 	ch_bam_input
 		.map{ meta , files ->  
 		 meta = meta + [ id: meta.patient + "_" + meta.sample ]
-		 [meta.patient, meta.sample, meta.id, meta.predicted_ploidy, files[2]] 
+		 // If meta.predicted_ploidy is null, set it to 2
+		 meta.predicted_ploidy = meta.predicted_ploidy ?: 2
+		 [meta.patient, meta.sample, meta.id, meta.predicted_ploidy, files] 
 		 }
 		.groupTuple()
-		.view{ "prep_medicc2_input: $it" }
+		.map { patient, sample, id, ploidy, files ->  
+		  files = files.flatten()
+		  [patient, sample, id, ploidy, files ]
+		  }
+		.filter { tuple -> tuple[1].size() > 1 }
 		.set{ prep_medicc2_input }
 	}
-    //run prep_medicc
+
+    
+    //prep_medicc2_input.view{"prep medicc input: $it"}
+	//run prep_medicc
     PREP_MEDICC2(prep_medicc2_input, bin_dir)
        versions = versions.mix(PREP_MEDICC2.out.versions)
-
+    
     // run medicc2
     MEDICC2(PREP_MEDICC2.out.for_medicc, medicc_arms, medicc_genes)
 

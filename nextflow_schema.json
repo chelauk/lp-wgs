@@ -270,6 +270,12 @@
             "type": "integer",
             "default": 2
         },
+		"medicc_arms" : {
+			"type" : "string"
+		},
+		"medicc_genes" : {
+			"type" : "string"
+		},
         "insertsizemetrics": {
             "type": "string"
         },

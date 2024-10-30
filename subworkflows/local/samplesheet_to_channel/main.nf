@@ -20,10 +20,19 @@ workflow SAMPLESHEET_TO_CHANNEL {
                 return [ meta + [ fastq:true ], [ fastq_1, fastq_2 ] ]
                 }
             else if ( bam ) {
-                meta = meta + [ bam:true ]
-                meta.remove('lane')
-                meta = meta + [ id: meta.patient + "_" + meta.sample ]
-                return [ meta, [ bam, bai, rds ]]
+			    if (rds) {
+                  meta = meta + [ bam:true ]
+				  meta = meta + [ rds:true ]
+                  meta.remove('lane')
+                  meta = meta + [ id: meta.patient + "_" + meta.sample ]
+                  return [ meta, [ bam, bai, rds ]]
+				  }
+				  else {
+                    meta = meta + [ bam:true ]
+                    meta.remove('lane')
+                    meta = meta + [ id: meta.patient + "_" + meta.sample ]
+                    return [ meta, [ bam, bai ]]
+					}
             }
         }
         .set { ch_samplesheet }

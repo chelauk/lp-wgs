@@ -14,7 +14,7 @@
                 "meta" : ["patient"]
             },
             "sample": {
-                "type": "string",
+                "type": ["integer", "string"],
                 "pattern": "^\\S+$",
                 "errorMessage": "Sample name must be provided and cannot contain spaces",
                 "meta" : ["sample"]
