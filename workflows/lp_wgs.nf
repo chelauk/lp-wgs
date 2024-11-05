@@ -131,6 +131,7 @@ workflow LP_WGS {
         versions = versions.mix(MERGE_LANES.out.versions.first())
         if ( params.filter_bam == null ) {
             ch_bam_input = MERGE_LANES.out.bam
+            ch_bam_input.view{"ch_bam_input $it"}
             } else if ( params.filter_bam != null  ) {
                 ch_filter_input = MERGE_LANES.out.bam
 				ch_filter_input.view()
@@ -161,8 +162,8 @@ workflow LP_WGS {
     }
     if (( params.step != 'ascat' ) && ( params.tech == 'illumina' )) {
 		ch_bam_input = ch_bam_input
-		                .map{ meta, files ->
-						    [meta, files[0], files[1]] }
+//		                .map{ meta, files ->
+//						    [meta, files[0], files[1]] }
 		PICARD_COLLECTALIGNMENTSUMMARYMETRICS ( ch_bam_input , fasta, dict,filter_status)
         versions = versions.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.versions.first())
         reports  = reports.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.metrics.collect{meta, report -> report})
@@ -191,9 +192,12 @@ workflow LP_WGS {
         }
 
     // run hmmcopyreadcounter
-    if ( params.step != 'ascat' ) {
+    if ( params.step != 'ascat' && params.step != 'bam') {
+        HMMCOPY_READCOUNTER( ch_bam_input )
+        versions = versions.mix(HMMCOPY_READCOUNTER.out.versions)
+    } else if ( params.step == 'bam') {
 	    ch_bam_input = ch_bam_input
-		                 .map { meta, files -> [ meta, files[0], files[1]]}
+		                .map { meta, files -> [ meta, files[0], files[1]]}
         HMMCOPY_READCOUNTER( ch_bam_input )
         versions = versions.mix(HMMCOPY_READCOUNTER.out.versions)
     }

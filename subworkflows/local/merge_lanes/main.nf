@@ -13,7 +13,7 @@ workflow MERGE_LANES {
 
     main:
     versions = Channel.empty()
-    
+
         bam_bwa
             .map{meta, bam ->
                 meta.id = meta.patient + "_" + meta.sample
@@ -23,7 +23,7 @@ workflow MERGE_LANES {
                 single:   it[1].size() == 1
                 multiple: it[1].size() > 1
             }.set{ bam_bwa_to_sort }
-        
+
         bam_multiple = bam_bwa_to_sort.multiple
                                 .map{
                                     info,bam ->
@@ -35,7 +35,7 @@ workflow MERGE_LANES {
                                     meta.status  = info[4]
                                     [meta,bam]
                                 }
-        
+
         bam_single = bam_bwa_to_sort.single
                                 .map{
                                     info,bam ->
