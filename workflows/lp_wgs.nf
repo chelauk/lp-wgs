@@ -160,7 +160,7 @@ workflow LP_WGS {
 		                            .map{ meta, bam, bai -> [ meta, [ bam, bai]] }
 		versions = versions.mix(SAMTOOLS_NVIEW.out.versions.first())
     }
-    if (( params.step != 'ascat' ) && ( params.tech == 'illumina' )) {
+    if (( !params.step == 'ascat' ) && ( params.tech == 'illumina' )) {
 		ch_bam_input = ch_bam_input
 //		                .map{ meta, files ->
 //						    [meta, files[0], files[1]] }
