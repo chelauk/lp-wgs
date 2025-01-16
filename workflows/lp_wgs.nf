@@ -53,7 +53,6 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoft
 include { HMMCOPY_GCCOUNTER           } from '../modules/nf-core/hmmcopy/gccounter/main'
 include { HMMCOPY_READCOUNTER         } from '../modules/nf-core/hmmcopy/readcounter/main'
 include { ICHORCNA_RUN                } from '../modules/nf-core/ichorcna/run/main'
-include { SAMTOOLS_VIEW               } from '../modules/nf-core/samtools/view/main'
 include { SAMTOOLS_NVIEW              } from '../modules/nf-core/samtools/view_nanopore/main'
 include { ACE                         } from '../modules/local/ace'
 include { PREP_ASCAT                  } from '../modules/local/prep_ascat/main'
@@ -131,10 +130,8 @@ workflow LP_WGS {
         versions = versions.mix(MERGE_LANES.out.versions.first())
         if ( params.filter_bam == null ) {
             ch_bam_input = MERGE_LANES.out.bam
-            ch_bam_input.view{"ch_bam_input $it"}
             } else if ( params.filter_bam != null  ) {
                 ch_filter_input = MERGE_LANES.out.bam
-				ch_filter_input.view()
                 SAMTOOLS_VIEW ( ch_filter_input, params.filter_bam_min, params.filter_bam_max )
                 ch_bam_input = SAMTOOLS_VIEW.out.bam
                 versions = versions.mix(SAMTOOLS_VIEW.out.versions.first())
@@ -160,17 +157,20 @@ workflow LP_WGS {
 		                            .map{ meta, bam, bai -> [ meta, [ bam, bai]] }
 		versions = versions.mix(SAMTOOLS_NVIEW.out.versions.first())
     }
-    if (( !params.step == 'ascat' ) && ( params.tech == 'illumina' )) {
-		ch_bam_input = ch_bam_input
-//		                .map{ meta, files ->
-//						    [meta, files[0], files[1]] }
+	log.info "params.step: ${params.step}"
+	log.info "params.tech: ${params.tech}"
+    if (( params.step != 'ascat' ) && ( params.tech == 'illumina' )) {
+	    log.info '###### WE ENTERED THE LOOP#####'
+	    ch_bam_input = ch_bam_input
+		ch_bam_input.view{ "ch_bam_input: $it" }
 		PICARD_COLLECTALIGNMENTSUMMARYMETRICS ( ch_bam_input , fasta, dict,filter_status)
         versions = versions.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.versions.first())
         reports  = reports.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.metrics.collect{meta, report -> report})
 		PICARD_COLLECTINSERTSIZEMETRICS ( ch_bam_input ,filter_status)
         versions = versions.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.versions.first())
         reports  = reports.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.size_metrics.collect{meta, report -> report})
-        MOSDEPTH(
+        
+		MOSDEPTH(
             ch_bam_input,
             chr_bed,
             fasta.map{ it -> [[id:it[0].baseName], it] },
@@ -219,7 +219,6 @@ workflow LP_WGS {
     // run PREP_ASCAT
     if (params.step == 'ascat') {
 		PREP_ASCAT( ch_bam_input, params.bin )
-        PREP_ASCAT.out.for_ascat.view()
 		RUN_ASCAT( PREP_ASCAT.out.for_ascat, params.ploidy, chr_arm_boundaries )
     }
 
@@ -257,7 +256,6 @@ workflow LP_WGS {
 	}
 
 
-    //prep_medicc2_input.view{"prep medicc input: $it"}
 	//run prep_medicc
     PREP_MEDICC2(prep_medicc2_input, bin_dir)
        versions = versions.mix(PREP_MEDICC2.out.versions)
