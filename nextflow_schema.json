@@ -66,6 +66,7 @@
                     "description": "Path to the reference genome FASTA file.",
                     "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have the appropriate alignment index available this will be generated for you automatically. Combine with `--save_reference` to save alignment index for future runs.",
                     "fa_icon": "fas fa-file-code"
+                }
             }
         },
         "max_job_request_options": {
