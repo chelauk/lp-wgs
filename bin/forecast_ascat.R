@@ -150,7 +150,17 @@ p <- ggplot(plt_df, aes(x = genome.bin, y = Log2ratio, col = Call)) +
         plot.title = element_text(hjust = 0.5, size = 18)) +
   geom_point(aes(y = mean_segment), color = "#000000")
 
-ggsave(paste0(id,"_ascat_lp_plot.pdf"), plot=p)
+# add HER2 annoation
+p <- p + geom_vline(xintercept = 1910, colour = 'darkgreen', linetype = 'longdash') +
+        annotate("label", x = 1910, y = 10, label = "ERBB2", size = 4, 
+		          color = "black", fill = "lightblue")
+# add MET annotation
+p <- p + geom_vline(xintercept = 1085,  colour = 'darkgreen', linetype = 'longdash') +
+		annotate("label", x = 1085, y = 10, label = "MET", size = 4, 
+				 color = "black", fill = "lightblue")
+
+
+ggsave(paste0(id, "_ascat_lp_plot.pdf"), plot = p, width = 297, height = 210, units = "mm")
 
 autosome_index <- chr_pos$chromosome %in% 1:22
 
