@@ -84,9 +84,6 @@ workflow {
 
 def getGenomeAttribute(attribute) {
     if (params.genomes && params.genome && params.genomes.containsKey(params.genome)) {
-        println("params.genomes: " + params.genomes)
-		println("params.genome: " + params.genome)
-        println("attribute: " + attribute)
 		if (params.genomes[ params.genome ].containsKey(attribute)) {
             return params.genomes[ params.genome ][ attribute ]
         }
