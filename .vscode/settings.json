@@ -9,6 +9,7 @@
         "nextflow",
         "NFCORE",
         "NFVALIDATION",
+        "sambamba",
         "SAMPLESHEET",
         "SUBWORKFLOWS"
     ]

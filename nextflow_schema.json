@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://raw.githubusercontent.com/fht/lp-wgs/master/nextflow_schema.json",
+    "$id": "https://raw.githubusercontent.com/chelauk/lp-wgs/main/nextflow_schema.json",
     "title": "fht/lp-wgs pipeline parameters",
     "description": "An open-source shallow whole genome sequence analysis",
     "type": "object",
@@ -29,78 +29,6 @@
                     "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure.",
                     "fa_icon": "fas fa-folder-open",
                     "default": "results"
-                },
-                "email": {
-                    "type": "string",
-                    "description": "Email address for completion summary.",
-                    "fa_icon": "fas fa-envelope",
-                    "help_text": "Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits. If set in your user config file (`~/.nextflow/config`) then you don't need to specify this on the command line for every run.",
-                    "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$"
-                },
-                "multiqc_title": {
-                    "type": "string",
-                    "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
-                    "fa_icon": "fas fa-file-signature"
-                }
-            }
-        },
-        "reference_gnome_options": {
-            "title": "Reference genome options",
-            "type": "object",
-            "fa_icon": "fas fa-dna",
-            "description": "Options for the reference genome used in the pipeline.",
-            "properties": {
-                "genome" : {
-                    "type": "string",
-                    "description": "Reference genome to use for alignment and variant calling",
-                    "default": "GATK.GRCh38",
-                    "fa_icon": "fas fa-dna",
-                    "help_text": "The reference genome to use for alignment and variant calling. This should be a string that matches the name of a reference genome in the pipeline's configuration file. If you are using a custom reference genome, you can specify it here."
-                },
-                "fasta": {
-                    "type": "string",
-                    "format": "file-path",
-                    "exists": true,
-                    "mimetype": "text/plain",
-                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
-                    "description": "Path to the reference genome FASTA file.",
-                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have the appropriate alignment index available this will be generated for you automatically. Combine with `--save_reference` to save alignment index for future runs.",
-                    "fa_icon": "fas fa-file-code"
-                }
-            }
-        },
-        "max_job_request_options": {
-            "title": "Max job request options",
-            "type": "object",
-            "fa_icon": "fab fa-acquisitions-incorporated",
-            "description": "Set the top limit for requested resources for any single job.",
-            "help_text": "If you are running on a smaller system, a pipeline step requesting more resources than are available may cause the Nextflow to stop the run with an error. These options allow you to cap the maximum resources requested by any single job so that the pipeline will run on your system.\n\nNote that you can not _increase_ the resources requested by any job using these options. For that you will need your own configuration file. See [the nf-core website](https://nf-co.re/usage/configuration) for details.",
-            "properties": {
-                "max_cpus": {
-                    "type": "integer",
-                    "description": "Maximum number of CPUs that can be requested for any single job.",
-                    "default": 16,
-                    "fa_icon": "fas fa-microchip",
-                    "hidden": true,
-                    "help_text": "Use to set an upper-limit for the CPU requirement for each process. Should be an integer e.g. `--max_cpus 1`"
-                },
-                "max_memory": {
-                    "type": "string",
-                    "description": "Maximum amount of memory that can be requested for any single job.",
-                    "default": "128.GB",
-                    "fa_icon": "fas fa-memory",
-                    "pattern": "^\\d+(\\.\\d+)?\\.?\\s*(K|M|G|T)?B$",
-                    "hidden": true,
-                    "help_text": "Use to set an upper-limit for the memory requirement for each process. Should be a string in the format integer-unit e.g. `--max_memory '8.GB'`"
-                },
-                "max_time": {
-                    "type": "string",
-                    "description": "Maximum amount of time that can be requested for any single job.",
-                    "default": "240.h",
-                    "fa_icon": "far fa-clock",
-                    "pattern": "^(\\d+\\.?\\s*(s|m|h|d|day)\\s*)+$",
-                    "hidden": true,
-                    "help_text": "Use to set an upper-limit for the time requirement for each process. Should be a string in the format integer-unit e.g. `--max_time '2.h'`"
                 }
             }
         },
@@ -111,79 +39,11 @@
             "description": "Less common options for the pipeline, typically set in a config file.",
             "help_text": "These options are common to all nf-core pipelines and allow you to customise some of the core preferences for how the pipeline runs.\n\nTypically these options would be set in a Nextflow config file loaded for all pipeline runs, such as `~/.nextflow/config`.",
             "properties": {
-                "help": {
-                    "type": "boolean",
-                    "description": "Display help text.",
-                    "fa_icon": "fas fa-question-circle",
-                    "hidden": true
-                },
                 "version": {
                     "type": "boolean",
                     "description": "Display version and exit.",
                     "fa_icon": "fas fa-question-circle",
                     "hidden": true
-                },
-                "publish_dir_mode": {
-                    "type": "string",
-                    "default": "copy",
-                    "description": "Method used to save pipeline results to output directory.",
-                    "help_text": "The Nextflow `publishDir` option specifies which intermediate files should be saved to the output directory. This option tells the pipeline what method should be used to move these files. See [Nextflow docs](https://www.nextflow.io/docs/latest/process.html#publishdir) for details.",
-                    "fa_icon": "fas fa-copy",
-                    "enum": ["symlink", "rellink", "link", "copy", "copyNoFollow", "move"],
-                    "hidden": true
-                },
-                "email_on_fail": {
-                    "type": "string",
-                    "description": "Email address for completion summary, only when pipeline fails.",
-                    "fa_icon": "fas fa-exclamation-triangle",
-                    "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$",
-                    "help_text": "An email address to send a summary email to when the pipeline is completed - ONLY sent if the pipeline does not exit successfully.",
-                    "hidden": true
-                },
-                "plaintext_email": {
-                    "type": "boolean",
-                    "description": "Send plain-text email instead of HTML.",
-                    "fa_icon": "fas fa-remove-format",
-                    "hidden": true
-                },
-                "max_multiqc_email_size": {
-                    "type": "string",
-                    "description": "File size limit when attaching MultiQC reports to summary emails.",
-                    "pattern": "^\\d+(\\.\\d+)?\\.?\\s*(K|M|G|T)?B$",
-                    "default": "25.MB",
-                    "fa_icon": "fas fa-file-upload",
-                    "hidden": true
-                },
-                "monochrome_logs": {
-                    "type": "boolean",
-                    "description": "Do not use coloured log outputs.",
-                    "fa_icon": "fas fa-palette",
-                    "hidden": true
-                },
-                "hook_url": {
-                    "type": "string",
-                    "description": "Incoming hook URL for messaging service",
-                    "fa_icon": "fas fa-people-group",
-                    "help_text": "Incoming hook URL for messaging service. Currently, MS Teams and Slack are supported.",
-                    "hidden": true
-                },
-                "multiqc_config": {
-                    "type": "string",
-                    "format": "file-path",
-                    "description": "Custom config file to supply to MultiQC.",
-                    "fa_icon": "fas fa-cog",
-                    "hidden": true
-                },
-                "multiqc_logo": {
-                    "type": "string",
-                    "description": "Custom logo file to supply to MultiQC. File name must also be set in the MultiQC config file",
-                    "fa_icon": "fas fa-image",
-                    "hidden": true
-                },
-                "multiqc_methods_description": {
-                    "type": "string",
-                    "description": "Custom MultiQC yaml file containing HTML including a methods description.",
-                    "fa_icon": "fas fa-cog"
                 },
                 "validate_params": {
                     "type": "boolean",
@@ -200,38 +60,46 @@
             "$ref": "#/$defs/input_output_options"
         },
         {
-            "$ref": "#/$defs/max_job_request_options"
-        },
-        {
             "$ref": "#/$defs/generic_options"
         }
     ],
     "properties": {
+        "tech": {
+            "type": "string",
+            "default": "illumina"
+        },
         "sort": {
             "type": "boolean",
             "default": true
         },
         "step": {
             "type": "string",
-            "default": "fastq",
-            "description": "run from fastq or from bam"
+            "default": "fastq"
         },
         "call_gc": {
             "type": "string"
         },
         "filter_bam": {
-            "type": "boolean",
-            "description": "filter bams (used for circulating DNA)"
+            "type": "string"
         },
         "filter_bam_min": {
             "type": "integer",
-            "default": 90,
-            "description": "Usually use defaults but these can be altered"
+            "default": 90
         },
         "filter_bam_max": {
             "type": "integer",
-            "default": 150,
-            "description": "Usually use defaults but these can be altered"
+            "default": 150
+        },
+        "ploidy": {
+            "type": "integer",
+            "default": 2
+        },
+        "bin": {
+            "type": "integer",
+            "default": 1000
+        },
+        "insertsizemetrics": {
+            "type": "string"
         },
         "genome": {
             "type": "string",
@@ -246,10 +114,6 @@
         "save_reference": {
             "type": "string"
         },
-        "bin": {
-            "type": "integer",
-            "default": 1000
-        },
         "normal": {
             "type": "string"
         },
@@ -259,16 +123,83 @@
         "ichor_purity_manual": {
             "type": "string"
         },
-        "schema_ignore_params": {
+        "validationShowHiddenParams": {
+            "type": "boolean",
+            "default": true
+        },
+        "validationSchemaIgnoreParams": {
+            "type": "boolean",
+            "default": true
+        },
+        "seq_center": {
             "type": "string",
-            "default": "genomes"
+            "default": "FHT_GF"
+        },
+        "seq_platform": {
+            "type": "string",
+            "default": "ILLUMINA"
+        },
+        "library": {
+            "type": "string",
+            "default": "default"
+        },
+        "multiqc_config": {
+            "type": "string"
+        },
+        "multiqc_title": {
+            "type": "string"
+        },
+        "multiqc_logo": {
+            "type": "string"
+        },
+        "max_multiqc_email_size": {
+            "type": "string",
+            "default": "25.MB"
+        },
+        "multiqc_methods_description": {
+            "type": "string"
         },
         "tracedir": {
             "type": "string",
             "default": "results/Reports/pipeline_info"
         },
+        "publish_dir_mode": {
+            "type": "string",
+            "default": "copy"
+        },
+        "email": {
+            "type": "string"
+        },
+        "email_on_fail": {
+            "type": "string"
+        },
+        "plaintext_email": {
+            "type": "boolean"
+        },
+        "monochrome_logs": {
+            "type": "boolean"
+        },
+        "hook_url": {
+            "type": "string"
+        },
         "show_hidden_params": {
             "type": "boolean"
+        },
+        "schema_ignore_params": {
+            "type": "string",
+            "default": "genomes"
+        },
+        "max_memory": {
+            "type": "string",
+            "default": "128.GB"
+        },
+        "max_cpus": {
+            "type": "integer",
+            "default": 16
+        },
+        "max_time": {
+            "type": "string",
+            "default": "240.h"
         },
         "dict": {
             "type": "string"
@@ -291,30 +222,11 @@
         "chr_bed": {
             "type": "string"
         },
-        "ploidy": {
-            "type": "integer",
-            "default": 2
-        },
-		"medicc_arms" : {
-			"type" : "string"
-		},
-		"medicc_genes" : {
-			"type" : "string"
-		},
-        "insertsizemetrics": {
+        "medicc_arms": {
             "type": "string"
         },
-        "validationShowHiddenParams": {
-            "type": "boolean",
-            "default": true
-        },
-        "seq_center": {
-            "type": "string",
-            "default": "FHT_GF"
-        },
-        "seq_platform": {
-            "type": "string",
-            "default": "ILLUMINA"
+        "medicc_genes": {
+            "type": "string"
         },
         "chr_arm_boundaries": {
             "type": "string"
