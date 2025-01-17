@@ -41,9 +41,9 @@ process HMMCOPY_GCCOUNTER {
     """
     echo -e "gcCounter \\
             $args \\
-            ${fasta} > gc_${prefix}_${map_bin}.wig"
+            ${fasta} > gc_${prefix}_${bin}.wig"
     
-    touch gc_${prefix}_${map_bin}.wig
+    touch gc_${prefix}_${bin}.wig
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

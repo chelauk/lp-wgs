@@ -2,7 +2,7 @@
 
 **lp-wgs** is a bioinformatics analysis pipeline for shallow whole genome sequence analyses.
 
-The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) 
+The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules)
 
 ## Pipeline summary
 
@@ -19,30 +19,30 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 11. ACE cna calls and tumour cell fraction ([`ACE`](https://bioconductor.org/packages/release/bioc/html/ACE.html))
 
 
-Bin options for ICHOR include 1000kb,500kb,100kb and 10kb these are set with the --map_bin parameter
+Bin options for ICHOR include 1000kb,500kb,100kb and 10kb these are set with the --bin parameter
 for ichor the normal fraction and ploids and subclone fractions can be set, see [`here`](https://github.com/broadinstitute/ichorCNA/wiki/Parameter-tuning-and-settings) for low tumour fractions
 setting
 
        --ichor_purity cf_dna
 * will set these parameters for ichor automatically
 
-        --normal "c(0.95, 0.99, 0.995, 0.999)"  
-        --ploidy "c(2)"  
-        --maxCN 3  
-        --estimateScPrevalence FALSE   
-        --scStates "c()"   
-        --chrs "c(1:22)"   
-        --chrTrain "c(1:22)" 
+        --normal "c(0.95, 0.99, 0.995, 0.999)"
+        --ploidy "c(2)"
+        --maxCN 3
+        --estimateScPrevalence FALSE
+        --scStates "c()"
+        --chrs "c(1:22)"
+        --chrTrain "c(1:22)"
 
-* otherwise you can set 
+* otherwise you can set
 
        --ichor_purity_manual  c(0.95, 0.99, 0.995, 0.999)
   which will set this parameter for ichor
-  
+
        --normal "c(0.95, 0.99, 0.995, 0.999)"
 
 
-9. ACE Absolute Copy number Estimation using low-coverage whole genome sequencing data ([`ACE`](https://github.com/tgac-vumc/ACE)). The default script for ACE is 
+9. ACE Absolute Copy number Estimation using low-coverage whole genome sequencing data ([`ACE`](https://github.com/tgac-vumc/ACE)). The default script for ACE is
 ```
 library(ACE)
 args <- commandArgs(trailingOnly = TRUE)
@@ -113,7 +113,7 @@ nextflow run /path/to/lp-wgs \
 		-resume
  ```
  note that when starting with fastq you need to add `--step fastq`
- 
+
  note with regard to the reference path it needs to match this pattern:
 ```
             bwa                   = "${params.igenomes_base}/Homo_sapiens/GATK/GRCh38/Sequence/BWAIndex/"
