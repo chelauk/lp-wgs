@@ -157,12 +157,7 @@ workflow LP_WGS {
 		                            .map{ meta, bam, bai -> [ meta, [ bam, bai]] }
 		versions = versions.mix(SAMTOOLS_NVIEW.out.versions.first())
     }
-	log.info "params.step: ${params.step}"
-	log.info "params.tech: ${params.tech}"
     if (( params.step != 'ascat' ) && ( params.tech == 'illumina' )) {
-	    log.info '###### WE ENTERED THE LOOP#####'
-	    ch_bam_input = ch_bam_input
-		ch_bam_input.view{ "ch_bam_input: $it" }
 		PICARD_COLLECTALIGNMENTSUMMARYMETRICS ( ch_bam_input , fasta, dict,filter_status)
         versions = versions.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.versions.first())
         reports  = reports.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.metrics.collect{meta, report -> report})
