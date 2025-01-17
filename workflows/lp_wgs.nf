@@ -49,7 +49,7 @@ include { MERGE_LANES                 } from '../subworkflows/local/merge_lanes/
 include { MOSDEPTH                    } from '../modules/nf-core/mosdepth/main'
 include { PICARD_COLLECTINSERTSIZEMETRICS } from '../modules/nf-core/picard/collectinsertsizemetrics/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
-include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
+//include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 include { HMMCOPY_GCCOUNTER           } from '../modules/nf-core/hmmcopy/gccounter/main'
 include { HMMCOPY_READCOUNTER         } from '../modules/nf-core/hmmcopy/readcounter/main'
 include { ICHORCNA_RUN                } from '../modules/nf-core/ichorcna/run/main'
@@ -164,7 +164,7 @@ workflow LP_WGS {
 		PICARD_COLLECTINSERTSIZEMETRICS ( ch_bam_input ,filter_status)
         versions = versions.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.versions.first())
         reports  = reports.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.size_metrics.collect{meta, report -> report})
-        
+
 		MOSDEPTH(
             ch_bam_input,
             chr_bed,
