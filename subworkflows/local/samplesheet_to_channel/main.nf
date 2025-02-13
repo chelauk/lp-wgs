@@ -15,7 +15,10 @@ workflow SAMPLESHEET_TO_CHANNEL {
                 def ID = "${flowcell[0]}:${flowcell[1]}:${flowcell[3]}"
                 def PU = "${flowcell[2]}:${meta.patient}_${meta.sample}"
                 def read_group  = "\"@RG\\tID:${ID}\\tCN:${CN}\\tPU:${PU}\\tSM:${meta.patient}_${meta.sample}\\tLB:${params.library}\\tDS:${params.fasta}\\tPL:${params.seq_platform}\""
-                meta = meta + [ id: meta.patient + "_" + meta.sample + "_" + meta.lane ]
+                if (meta.lane) { 
+				    meta = meta + [ id: meta.patient + "_" + meta.sample + "_" + meta.lane ] }
+					else {
+                    meta = meta + [ id: meta.patient + "_" + meta.sample ] } 
                 meta = meta + [ rg: read_group ]
                 return [ meta + [ fastq:true ], [ fastq_1, fastq_2 ] ]
                 }
