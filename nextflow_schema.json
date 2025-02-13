@@ -80,7 +80,7 @@
             "type": "string"
         },
         "filter_bam": {
-            "type": "string"
+            "type": "boolean"
         },
         "filter_bam_min": {
             "type": "integer",

@@ -29,8 +29,8 @@ process SAMTOOLS_NVIEW {
       awk 'function abs(v) { return v < 0 ? -v : v} \
       { if (\$0 ~ /^@/) {print} \
       else { if ( length(\$10) > 90 && length(\$10) <= 150 ) {print}}}' | \
-      samtools view -b > COLT_004_13.filtered.bam
-      samtools index COLT_004_13.filtered.bam
+      samtools view -b > ${meta.id}.filtered.bam
+      samtools index ${meta.id}.filtered.bam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
