@@ -34,7 +34,11 @@ process SAMBAMBA_MERGE {
     //def prefix = task.ext.prefix ?: "${meta.id}"
     //if ("$bam" == "${prefix}.bam") error "Input and output names are the same, use \"task.ext.prefix\" to disambiguate!"
     """
-    echo -e "sambamba merge --nthreads=${task.cpus} ${prefix}.bam $bam"
+    echo -e "sambamba merge \\
+    --nthreads=4 /dev/stdout ${bam.join(' ')} | \\
+    sambamba sort --tmpdir . -o ${meta.id}.bam /dev/stdin
+
+    sambamba index -t ${task.cpus} ${meta.id}.bam "
     touch ${meta.id}.bam
     touch ${meta.id}.bam.bai
     cat <<-END_VERSIONS > versions.yml

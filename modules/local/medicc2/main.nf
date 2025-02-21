@@ -51,13 +51,11 @@ process MEDICC2 {
     def plot_style = task.attempt == 1 ? 'heatmap' : 'auto'
     def args = task.ext.args ?: ''
     """
-    if [ ! -d medicc2_output ]; then
-        mkdir medicc2_output
-    fi
+    mkdir -p medicc2_output
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        medicc2: stub version
+    medicc2: stub version
     END_VERSIONS
     """
 }

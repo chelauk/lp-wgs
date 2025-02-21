@@ -33,7 +33,7 @@ process PREP_MEDICC2 {
     """
     stub:
     def args = task.ext.args ?: ''
-    """   
+    """
 	echo "prep_medicc.R $patient $ploidy $bin_dir"
 
     touch ${patient}.tsv
@@ -42,6 +42,6 @@ process PREP_MEDICC2 {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         ace: stub version
-    END_VERSIONS
+END_VERSIONS
     """
 }

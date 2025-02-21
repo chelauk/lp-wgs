@@ -64,17 +64,17 @@ process ICHORCNA_RUN {
     if [ ! -d $filter_status ]; then
     mkdir -p $filter_status
     fi
-    echo -e 'runIchorCNA.R \\
-        $args \\
-        $args2 \\
-        $args3 \\
-        --WIG ${wig} \\
-        --id ${prefix} \\
-        --gcWig ${gc_wig} \\
-        --mapWig ${map_wig} \\
-        ${pon} \\
-        ${centro} \\
-        --outDir ${filter_status}'
+    echo -e 'runIchorCNA.R "
+    echo '$args' 
+    echo '$args2' 
+    echo '$args3' 
+    echo "    --WIG ${wig} "
+    echo "    --id ${prefix} "
+    echo "    --gcWig ${gc_wig} "
+    echo "    --mapWig ${map_wig} "
+    echo "    ${pon} "
+    echo "    ${centro} "
+    echo "    --outDir ${filter_status}'
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
