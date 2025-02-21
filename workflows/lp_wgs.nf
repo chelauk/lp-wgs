@@ -125,6 +125,7 @@ workflow LP_WGS {
         QC_TRIM ( fastq_input, ch_map_index, sort_bam)
         versions = versions.mix(QC_TRIM.out.versions)
         reports  = reports.mix(QC_TRIM.out.reports)
+        QC_TRIM.out.reads.view{ "Trimmed reads: $it" }
         BWA_MEM( QC_TRIM.out.reads, ch_map_index.map{ it -> [[id:it[0].baseName], it] }, sort_bam) // If aligner is bwa-mem
         versions = versions.mix(BWA_MEM.out.versions.first())
         MERGE_LANES ( BWA_MEM.out.bam )
