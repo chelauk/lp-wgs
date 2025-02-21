@@ -122,6 +122,7 @@ workflow LP_WGS {
 
     if ( params.step == 'fastq' ) {
         fastq_input = ch_input_sample
+        fastq_input.view{ "Input fastq files: $it" }
         QC_TRIM ( fastq_input, ch_map_index, sort_bam)
         versions = versions.mix(QC_TRIM.out.versions)
         reports  = reports.mix(QC_TRIM.out.reports)
