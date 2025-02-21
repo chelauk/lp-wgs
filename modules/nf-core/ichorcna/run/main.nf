@@ -4,7 +4,7 @@ process ICHORCNA_RUN {
 
     // WARN: Version information not provided by tool on CLI. Please update version string below when bumping container versions.
     conda "bioconda::r-ichorcna=0.3.2"
-    container "ichorcna_1_1.sif"
+    container "ichor_1_2.sif"
 
     input:
     tuple val(meta), path(wig)
