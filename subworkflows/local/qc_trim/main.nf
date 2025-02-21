@@ -21,7 +21,8 @@ workflow QC_TRIM {
 
     save_trimmed_fail = false
     save_merged = false
-    FASTP(
+    ch_reads.view{"ch_reads before it goes into FASTP: $it"}
+	FASTP(
         ch_reads,
         [],  // default adapter sequences
         save_trimmed_fail,
@@ -35,6 +36,7 @@ workflow QC_TRIM {
     // BWA_MEM(FASTP.out.reads,   ch_map_index.map{ it -> [[id:it[0].baseName], it] }, sort) // If aligner is bwa-mem
     // Get the bam files from the aligner
 
+    FASTP.out.reads.view{"ch_reads after it comes out of FASTP: $it"}
     emit:
     reads          = FASTP.out.reads // channel: [ [meta], reads ]
     versions    // channel: fastqc, fastp versions
