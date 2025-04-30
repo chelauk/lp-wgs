@@ -32,12 +32,18 @@ process PICARD_COLLECTINSERTSIZEMETRICS {
         avail_mem = task.memory.giga
     }
     """
-    
     bam_link=\$( readlink $bam )
-    ln -s \$bam_link ${prefix}_${filter_status}_${args}.bam 
-    bai_link=\$( readlink $bai )
-    ln -s \$bai_link ${prefix}_${filter_status}_${args}.bam.bai 
+    if [ ! -e ${prefix}_${filter_status}_${args}.bam ]
+    then
+      ln -s $bam_link ${prefix}_${filter_status}_${args}.bam
+    fi
     
+    bai_link=\$( readlink $bai )
+    if [ ! -e ${prefix}_${filter_status}_${args}.bam.bai ]
+    then
+      ln -s $bai_link ${prefix}_${filter_status}_${args}.bam.bai
+    fi
+
     picard \\
     CollectInsertSizeMetrics \\
     I=$bam \\

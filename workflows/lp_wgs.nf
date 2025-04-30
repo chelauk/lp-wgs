@@ -160,15 +160,19 @@ workflow LP_WGS {
 		versions = versions.mix(SAMTOOLS_NVIEW.out.versions.first())
     }
     if (( params.step != 'ascat' ) && ( params.tech == 'illumina' )) {
-		PICARD_COLLECTALIGNMENTSUMMARYMETRICS ( ch_bam_input , fasta, dict,filter_status)
+		
+	    bam_input = ch_bam_input                
+		               .map { meta, files -> [ meta, files[0], files[1]]}
+		PICARD_COLLECTALIGNMENTSUMMARYMETRICS ( bam_input , fasta, dict,filter_status)
         versions = versions.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.versions.first())
         reports  = reports.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.metrics.collect{meta, report -> report})
-		PICARD_COLLECTINSERTSIZEMETRICS ( ch_bam_input ,filter_status)
+		PICARD_COLLECTINSERTSIZEMETRICS ( bam_input ,filter_status)
         versions = versions.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.versions.first())
         reports  = reports.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.size_metrics.collect{meta, report -> report})
 
+		
 		MOSDEPTH(
-            ch_bam_input,
+            bam_input,
             chr_bed,
             fasta.map{ it -> [[id:it[0].baseName], it] },
             filter_status

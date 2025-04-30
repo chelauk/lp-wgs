@@ -54,7 +54,7 @@ workflow {
         params.input
     )
 
-    LP_WGS (PIPELINE_INITIALISATION.out.samplesheet)
+	LP_WGS (PIPELINE_INITIALISATION.out.samplesheet)
 
     //
     // SUBWORKFLOW: Run completion tasks

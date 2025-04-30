@@ -42,7 +42,8 @@ process ICHORCNA_RUN {
         --id ${prefix} \\
         --gcWig ${gc_wig} \\
         --mapWig ${map_wig} \\
-        --genomeBuild "hg38" \\
+        --genomeBuild hg38 \\
+        --genomeStyle UCSC \\
         ${pon} \\
         ${centro} \\
         --outDir $filter_status
