@@ -7,6 +7,7 @@ args <- commandArgs(trailingOnly = TRUE)
 id     <- args[1]
 ploidy <- as.integer(args[2])
 bin_dir <- args[3]
+
 # These are the arms of hg38
 arms <- read.table("chrArmBoundaries_hg38.txt", header = TRUE)
 source(paste0(bin_dir,"/00_general_functions.R"))
@@ -94,7 +95,7 @@ res$segs <- expanded_segs
 res$bins <- patient_lrr[, 5]
 res$sample_name <- id
 
-# prepating ggplot
+# preparing ggplot
 cna_data    <- res
 
 sample_name <- cna_data$samplename
@@ -141,7 +142,7 @@ p <- ggplot(plt_df, aes(x = genome.bin, y = Log2ratio, col = Call)) +
                                           (table(plt_df$Chromosome) / 2))) +
   geom_vline(xintercept = c(1, cumsum(table(plt_df$Chromosome))),
              lty = "dotted") +
-  ggtitle(paste0("Low pass calls - ", sample_name, ", purity=",
+  ggtitle(paste0(id, " Low pass calls - ", sample_name, ", purity=",
                  cna_data$Purity, ", psit = ", cna_data$PsiT)) +
   scale_y_continuous(limits = c(-2, 2), oob = scales::squish) +
   theme(panel.grid.major = element_blank(),
@@ -149,16 +150,6 @@ p <- ggplot(plt_df, aes(x = genome.bin, y = Log2ratio, col = Call)) +
         panel.background = element_blank(),
         plot.title = element_text(hjust = 0.5, size = 18)) +
   geom_point(aes(y = mean_segment), color = "#000000")
-
-# add HER2 annoation
-p <- p + geom_vline(xintercept = 1910, colour = 'darkgreen', linetype = 'longdash') +
-        annotate("label", x = 1910, y = 10, label = "ERBB2", size = 4, 
-		          color = "black", fill = "lightblue")
-# add MET annotation
-p <- p + geom_vline(xintercept = 1085,  colour = 'darkgreen', linetype = 'longdash') +
-		annotate("label", x = 1085, y = 10, label = "MET", size = 4, 
-				 color = "black", fill = "lightblue")
-
 
 ggsave(paste0(id, "_ascat_lp_plot.pdf"), plot = p, width = 297, height = 210, units = "mm")
 

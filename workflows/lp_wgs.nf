@@ -122,7 +122,7 @@ workflow LP_WGS {
 
     if ( params.step == 'fastq' ) {
         fastq_input = ch_input_sample
-        //fastq_input.view{ "Input fastq files: $it" }
+        fastq_input.view{ "Input fastq files: $it" }
         QC_TRIM ( fastq_input, ch_map_index, sort_bam)
         versions = versions.mix(QC_TRIM.out.versions)
         reports  = reports.mix(QC_TRIM.out.reports)
@@ -132,7 +132,8 @@ workflow LP_WGS {
         versions = versions.mix(MERGE_LANES.out.versions.first())
         if ( params.filter_bam == null ) {
             ch_bam_input = MERGE_LANES.out.bam
-            } else if ( params.filter_bam != null  ) {
+            //ch_bam_input.view{ "SAMBAMBA output: $it" } 
+			} else if ( params.filter_bam != null  ) {
                 ch_filter_input = MERGE_LANES.out.bam
                 SAMTOOLS_VIEW ( ch_filter_input, params.filter_bam_min, params.filter_bam_max )
                 ch_bam_input = SAMTOOLS_VIEW.out.bam
@@ -149,7 +150,7 @@ workflow LP_WGS {
         SAMTOOLS_VIEW ( ch_filter_input, params.filter_bam_min, params.filter_bam_max )
         ch_bam_input = SAMTOOLS_VIEW.out.bam
         versions = versions.mix(SAMTOOLS_VIEW.out.versions.first())
-    }
+		}
     if ( params.step == 'bam'  &&  params.filter_bam != null && params.tech == "nanopore"){
         ch_filter_input = ch_input_sample
                             .map { meta, files ->
@@ -159,26 +160,27 @@ workflow LP_WGS {
 		                            .map{ meta, bam, bai -> [ meta, [ bam, bai]] }
 		versions = versions.mix(SAMTOOLS_NVIEW.out.versions.first())
     }
-    if (( params.step != 'ascat' ) && ( params.tech == 'illumina' )) {
+    if ((  params.step != 'ascat' ) && ( params.tech == 'illumina' )) {
 		
-	    bam_input = ch_bam_input                
-		               .map { meta, files -> [ meta, files[0], files[1]]}
-		PICARD_COLLECTALIGNMENTSUMMARYMETRICS ( bam_input , fasta, dict,filter_status)
+	    //bam_input = ch_bam_input                
+		//               .map { meta, files -> [ meta, files[0], files[1]]}
+		//PICARD_COLLECTALIGNMENTSUMMARYMETRICS ( bam_input , fasta, dict,filter_status)
+		PICARD_COLLECTALIGNMENTSUMMARYMETRICS ( ch_bam_input , fasta, dict,filter_status)
         versions = versions.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.versions.first())
         reports  = reports.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.metrics.collect{meta, report -> report})
-		PICARD_COLLECTINSERTSIZEMETRICS ( bam_input ,filter_status)
+		PICARD_COLLECTINSERTSIZEMETRICS ( ch_bam_input ,filter_status)
         versions = versions.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.versions.first())
         reports  = reports.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.size_metrics.collect{meta, report -> report})
 
 		
 		MOSDEPTH(
-            bam_input,
+            ch_bam_input,
             chr_bed,
             fasta.map{ it -> [[id:it[0].baseName], it] },
             filter_status
         )
-        mosdepth_reports = mosdepth_reports.mix(MOSDEPTH.out.global_txt,
-                                        MOSDEPTH.out.regions_txt)
+       mosdepth_reports = mosdepth_reports.mix(MOSDEPTH.out.global_txt,
+                                               MOSDEPTH.out.regions_txt)
         reports  = reports.mix(mosdepth_reports.collect{meta, report -> report})
         versions = versions.mix(MOSDEPTH.out.versions.first())
     }
@@ -193,15 +195,18 @@ workflow LP_WGS {
         }
 
     // run hmmcopyreadcounter
-    if ( params.step != 'ascat' && params.step != 'bam') {
-        HMMCOPY_READCOUNTER( ch_bam_input )
-        versions = versions.mix(HMMCOPY_READCOUNTER.out.versions)
-    } else if ( params.step == 'bam') {
-	    ch_bam_input = ch_bam_input
-		                .map { meta, files -> [ meta, files[0], files[1]]}
-        HMMCOPY_READCOUNTER( ch_bam_input )
-        versions = versions.mix(HMMCOPY_READCOUNTER.out.versions)
-    }
+    // if ( params.step != 'ascat' && params.step != 'bam') {
+	//	HMMCOPY_READCOUNTER( ch_bam_input )
+    //    versions = versions.mix(HMMCOPY_READCOUNTER.out.versions)
+    //} else if ( params.step == 'bam') {
+	//    ch_bam_input = ch_bam_input
+	//	                .map { meta, files -> [ meta, files[0], files[1]]}
+    //    HMMCOPY_READCOUNTER( ch_bam_input )
+    //    versions = versions.mix(HMMCOPY_READCOUNTER.out.versions)
+    //}
+
+    HMMCOPY_READCOUNTER( ch_bam_input )
+    versions = versions.mix(HMMCOPY_READCOUNTER.out.versions)
 
     // run ichorcna
     if  ( params.step != 'ascat' ) {
@@ -218,7 +223,9 @@ workflow LP_WGS {
     }
 
     // run PREP_ASCAT
+
     if (params.step == 'ascat') {
+	    println("bin " + params.bin)
 		PREP_ASCAT( ch_bam_input, params.bin )
 		RUN_ASCAT( PREP_ASCAT.out.for_ascat, params.ploidy, chr_arm_boundaries )
     }
@@ -238,10 +245,11 @@ workflow LP_WGS {
 		.filter { tuple -> tuple[1].size() > 1 }
         .set{ prep_medicc2_input }
     }
-
+    
     if ( params.step == 'ascat' ) {
-	ch_bam_input
-		.map{ meta , files ->
+	prep_medicc2_input = ch_bam_input
+    /*
+    .map{ meta , files ->
 		 meta = meta + [ id: meta.patient + "_" + meta.sample ]
 		 // If meta.predicted_ploidy is null, set it to 2
 		 meta.predicted_ploidy = meta.predicted_ploidy ?: 2
@@ -254,15 +262,17 @@ workflow LP_WGS {
 		  }
 		.filter { tuple -> tuple[1].size() > 1 }
 		.set{ prep_medicc2_input }
+		*/
 	}
+	
 
 
 	//run prep_medicc
-    PREP_MEDICC2(prep_medicc2_input, bin_dir)
-       versions = versions.mix(PREP_MEDICC2.out.versions)
+    //PREP_MEDICC2(prep_medicc2_input, bin_dir)
+    //   versions = versions.mix(PREP_MEDICC2.out.versions)
 
     // run medicc2
-    MEDICC2(PREP_MEDICC2.out.for_medicc, medicc_arms, medicc_genes)
+    //MEDICC2(PREP_MEDICC2.out.for_medicc, medicc_arms, medicc_genes)
 
     //
     // Collate and save software versions

@@ -22,7 +22,7 @@ workflow SAMPLESHEET_TO_CHANNEL {
                 meta += [ bam: true, id: "${meta.patient}_${meta.sample}" ]
                 if (rds) meta += [ rds: true ]
                 meta.remove('lane')
-                return [ meta, rds ? [ bam, bai, rds ] : [ bam, bai ] ]
+				return [meta, *(rds ? [bam, bai, rds] : [bam, bai])] // spread operator.. need to read :-)
             }
         }
         .set { ch_samplesheet }

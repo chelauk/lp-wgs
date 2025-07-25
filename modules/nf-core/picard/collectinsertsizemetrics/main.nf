@@ -12,7 +12,7 @@ process PICARD_COLLECTINSERTSIZEMETRICS {
     val filter_status
 
     output:
-    tuple val(meta), path("*.txt"),  emit: size_metrics
+    tuple val(meta), path("*.txt"), emit: size_metrics
     tuple val(meta), path("*.pdf"), emit: size_plots
     tuple val(meta), path("*.bam"), path("*.bai"), emit: bams
     path "versions.yml"                           , emit: versions
@@ -35,13 +35,13 @@ process PICARD_COLLECTINSERTSIZEMETRICS {
     bam_link=\$( readlink $bam )
     if [ ! -e ${prefix}_${filter_status}_${args}.bam ]
     then
-      ln -s $bam_link ${prefix}_${filter_status}_${args}.bam
+      ln -s \$bam_link ${prefix}_${filter_status}_${args}.bam
     fi
     
     bai_link=\$( readlink $bai )
     if [ ! -e ${prefix}_${filter_status}_${args}.bam.bai ]
     then
-      ln -s $bai_link ${prefix}_${filter_status}_${args}.bam.bai
+      ln -s \$bai_link ${prefix}_${filter_status}_${args}.bam.bai
     fi
 
     picard \\
