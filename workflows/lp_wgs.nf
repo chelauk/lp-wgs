@@ -268,11 +268,11 @@ workflow LP_WGS {
 
 
 	//run prep_medicc
-    //PREP_MEDICC2(prep_medicc2_input, bin_dir)
-    //   versions = versions.mix(PREP_MEDICC2.out.versions)
+    PREP_MEDICC2(prep_medicc2_input, bin_dir)
+       versions = versions.mix(PREP_MEDICC2.out.versions)
 
     // run medicc2
-    //MEDICC2(PREP_MEDICC2.out.for_medicc, medicc_arms, medicc_genes)
+    MEDICC2(PREP_MEDICC2.out.for_medicc, medicc_arms, medicc_genes)
 
     //
     // Collate and save software versions
