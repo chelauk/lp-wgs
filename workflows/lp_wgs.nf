@@ -199,23 +199,12 @@ workflow LP_WGS {
     }
     // run hmmcopygccounter
     if ( params.call_gc ) {
-        HMMCOPY_GCCOUNTER(fasta.map{ it -> [[id:it[0].baseName], it] }, params.bin )
+        HMMCOPY_GCCOUNTER(fasta, params.bin )
         gc_wig = HMMCOPY_GCCOUNTER.out.wig
         versions = versions.mix(HMMCOPY_GCCOUNTER.out.versions)
         } else {
             gc_wig = gc_wig
         }
-
-    // run hmmcopyreadcounter
-    // if ( params.step != 'ascat' && params.step != 'bam') {
-    //    HMMCOPY_READCOUNTER( ch_bam_input )
-    //    versions = versions.mix(HMMCOPY_READCOUNTER.out.versions)
-    //} else if ( params.step == 'bam') {
-    //    ch_bam_input = ch_bam_input
-    //                    .map { meta, files -> [ meta, files[0], files[1]]}
-    //    HMMCOPY_READCOUNTER( ch_bam_input )
-    //    versions = versions.mix(HMMCOPY_READCOUNTER.out.versions)
-    //}
 
     HMMCOPY_READCOUNTER( ch_bam_input )
     versions = versions.mix(HMMCOPY_READCOUNTER.out.versions)
@@ -260,25 +249,8 @@ workflow LP_WGS {
     
     if ( params.step == 'ascat' ) {
     prep_medicc2_input = ch_bam_input
-    /*
-    .map{ meta , files ->
-         meta = meta + [ id: meta.patient + "_" + meta.sample ]
-         // If meta.predicted_ploidy is null, set it to 2
-         meta.predicted_ploidy = meta.predicted_ploidy ?: 2
-         [meta.patient, meta.sample, meta.id, meta.predicted_ploidy, files]
-         }
-        .groupTuple()
-        .map { patient, sample, id, ploidy, files ->
-          files = files.flatten()
-          [patient, sample, id, ploidy, files ]
-          }
-        .filter { tuple -> tuple[1].size() > 1 }
-        .set{ prep_medicc2_input }
-        */
     }
     
-
-
     //run prep_medicc
     PREP_MEDICC2(prep_medicc2_input, bin_dir)
        versions = versions.mix(PREP_MEDICC2.out.versions)
