@@ -10,7 +10,6 @@ process ACE {
     val(filter_status)
 
     output:
-    //tuple val(meta), path("1000kbp"), path("500kbp"), path("100kbp"),  emit: ace
     tuple val(meta), path("${meta.sample}_${filter_status}"),  emit: ace
     path "versions.yml"             , emit: versions
 

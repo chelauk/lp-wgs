@@ -8,9 +8,8 @@ options(scipen = 999) # prevent scientific notation
 args <- commandArgs(trailingOnly = TRUE)
 patient <- args[1]
 input_ploidys <- as.integer(unlist(strsplit(args[2]," ")))
-bin_dir <- args[3]
 
-source(paste0(bin_dir,"/00_general_functions.R")) # import functions
+source(paste0("bin/00_general_functions.R")) # import functions
 # find ace rds output
 my_rds <- list.files(".", recursive = TRUE, pattern = "*1000kbp.rds$")
 

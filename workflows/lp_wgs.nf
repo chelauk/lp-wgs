@@ -55,7 +55,7 @@ include { HMMCOPY_READCOUNTER         } from '../modules/nf-core/hmmcopy/readcou
 include { ICHORCNA_RUN                } from '../modules/nf-core/ichorcna/run/main'
 include { SAMTOOLS_VIEW               } from '../modules/nf-core/samtools/view/'
 include { SAMTOOLS_NVIEW              } from '../modules/nf-core/samtools/view_nanopore/main'
-include { ACE                         } from '../modules/local/ace'
+include { ACE                         } from '../modules/local/ace/main'
 include { PREP_ASCAT                  } from '../modules/local/prep_ascat/main'
 include { RUN_ASCAT                   } from '../modules/local/ascat_lp/main'
 include { PREP_MEDICC2                } from '../modules/local/prep_medicc2/main'
@@ -115,7 +115,7 @@ workflow LP_WGS {
     // bin_dir for Rscripts
     bin_dir = Channel.fromPath("$projectDir/bin").collect()
 
-        // Mapping step
+    // Mapping step
     println( params.step )
     if ( params.step == 'mapping' ) {
         // 1. QC and Trim with fastqc and fastp ( QC_TRIM subworkflow )
@@ -210,7 +210,7 @@ workflow LP_WGS {
     versions = versions.mix(HMMCOPY_READCOUNTER.out.versions)
 
     // run ichorcna
-    if  ( params.step != 'ascat' ) {
+    if (params.tools.split(',').contains('ichor')) {
         ICHORCNA_RUN(
             HMMCOPY_READCOUNTER.out.wig,
             normal_wig,
@@ -225,17 +225,15 @@ workflow LP_WGS {
 
     // run PREP_ASCAT
 
-    if (params.step == 'ascat') {
-        println("bin " + params.bin)
+    if (params.tools.split(',').contains('ascat')) {
         PREP_ASCAT( ch_bam_input, params.bin )
         RUN_ASCAT( PREP_ASCAT.out.for_ascat, params.ploidy, chr_arm_boundaries )
     }
 
     // run ACE
-    if (params.step != 'ascat') {
+    if (params.tools.split(',').contains('ace')) {
     ACE(ch_bam_input, filter_status)
     versions = versions.mix(ACE.out.versions)
-
     ACE.out.ace
         .map{ meta, ace ->
         // If meta.predicted_ploidy is null, set it to 2
@@ -243,14 +241,11 @@ workflow LP_WGS {
         [meta.patient, meta.sample, meta.id, meta.predicted_ploidy, ace]
             }
         .groupTuple()
+        .view()
         .filter { tuple -> tuple[1].size() > 1 }
         .set{ prep_medicc2_input }
     }
-    
-    if ( params.step == 'ascat' ) {
-    prep_medicc2_input = ch_bam_input
-    }
-    
+
     //run prep_medicc
     PREP_MEDICC2(prep_medicc2_input, bin_dir)
        versions = versions.mix(PREP_MEDICC2.out.versions)
