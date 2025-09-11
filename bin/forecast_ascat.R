@@ -152,11 +152,6 @@ p <- ggplot(plt_df, aes(x = genome.bin, y = Log2ratio, col = Call)) +
   geom_point(aes(y = mean_segment), color = "#000000")
 
 
-# add MET annotation
-p <- p + geom_vline(xintercept = 1040,  colour = 'darkgreen', linetype = 'longdash') +
-		annotate("label", x = 1040, y = 10, label = "MET", size = 4, 
-				 color = "black", fill = "lightblue")
-
 ggsave(paste0(id, "_ascat_lp_plot.pdf"), plot = p, width = 297, height = 210, units = "mm")
 
 autosome_index <- chr_pos$chromosome %in% 1:22
@@ -175,7 +170,6 @@ metrics <- data.frame(Sample = cna_data$sample_name, Purity = cna_data$Purity,
                                                 cna_data$CN != ploidy_expected))
                       / length(cna_data$CN),
                       digits = 4))
-
 
 cn_out <- data.frame(res$CN)
 

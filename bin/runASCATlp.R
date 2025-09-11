@@ -16,6 +16,9 @@ runASCATlp = function(lrrs, fix_ploidy = 2, interval = 0.01,
   #
   # Here we calculate sum of squared differences from integer values
   # We also penalise non-positive values (<1)
+  
+  # lrr = log R ratio (signal intensity in the case of chips)
+  # lrrs = segment log ratio 
   fit_lrr = function(lrrs, rho, psit, gamma = 1) {
     
     # Calculate average ploidy of all cells
