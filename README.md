@@ -6,18 +6,18 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 
 ## Pipeline summary
 
-1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
-2. Trim Reads ([`Fastp`](https://github.com/OpenGene/fastp))
-3. Align Reads ([`bwa`](https://github.com/lh3/bwa)) (optional: begin from this stage)
-4. Filter Bam ([`samtools`](https://https://www.htslib.org/)) (optional: if it is set with --filter-bam the default is 90<=fragment size<=150, this can be set with --filter_bam_min and --filter_bam_max)
-5. Coverage ([`mosdepth`](https://github.com/brentp/mosdepth))
-6. Alignment QC with ([`picard`](https://broadinstitute.github.io/picard/))
-7. GC counts ([`HMMcopy`](http://compbio.bccrc.ca/software/hmmcopy/))
-8. read counts ([`HMMcopy`](http://compbio.bccrc.ca/software/hmmcopy/))
-9. ICHOR cna calls and tumour cell fraction ([`ICHOR`](https://github.com/broadinstitute/ichorCNA/wiki))
+1.  Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
+2.  Trim Reads ([`Fastp`](https://github.com/OpenGene/fastp))
+3.  Align Reads ([`bwa`](https://github.com/lh3/bwa)) (optional: begin from this stage)
+4.  Filter Bam ([`samtools`](https://https://www.htslib.org/)) (optional: if it is set with --filter-bam the default is 90<=fragment size<=150, this can be set with --filter_bam_min and --filter_bam_max)
+5.  Coverage ([`mosdepth`](https://github.com/brentp/mosdepth))
+6.  Alignment QC with ([`picard`](https://broadinstitute.github.io/picard/))
+7.  GC counts ([`HMMcopy`](http://compbio.bccrc.ca/software/hmmcopy/))
+8.  read counts ([`HMMcopy`](http://compbio.bccrc.ca/software/hmmcopy/))
+9.  ICHOR cna calls and tumour cell fraction ([`ICHOR`](https://github.com/broadinstitute/ichorCNA/wiki))
 10. Segmentation and log read ratios QDNAseq ([`QDNAseq`](https://bioconductor.org/packages/release/bioc/html/QDNAseq.html))
 11. ACE cna calls and tumour cell fraction ([`ACE`](https://bioconductor.org/packages/release/bioc/html/ACE.html))
-
+12. ASCAT cna calls and purity/ploidy estimation ([`lpASCAT`](https://github.com/cresswell-lab/ASCATlp))
 
 Bin options for ICHOR include 1000kb,500kb,100kb and 10kb these are set with the --bin parameter
 for ichor the normal fraction and ploids and subclone fractions can be set, see [`here`](https://github.com/broadinstitute/ichorCNA/wiki/Parameter-tuning-and-settings) for low tumour fractions
@@ -72,8 +72,11 @@ step5-->step8(counter HMMCOPY)
 step13-->step9(CNA ICHOR)
 step8-->step9(CNA ICHOR)
 step5-->step10(DNA ACE)
+step5-->step14(segmentation and log read ratios)
 step10-->step11(copy number output)
 step9-->step11(copy number output)
+step14-->step15(ASCATlp)
+step15-->step11(copy number output)
 step3-->step12(multiqc)
 step6-->step12(multiqc)
 ```
