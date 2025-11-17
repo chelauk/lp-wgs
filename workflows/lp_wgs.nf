@@ -185,9 +185,8 @@ workflow LP_WGS {
 
             } else if (params.tech == "nanopore"){
                 // 2. run the nanopore tech branch
+                ch_input_sample.view{"input_channel: $it"}
                 ch_bam_input = ch_input_sample
-                                .map { meta, files ->
-                                [meta, files[0], files[1]] }
                 if ( params.filter_bam ) {
                     ch_filter_input = ch_bam_input
                         SAMTOOLS_NVIEW ( ch_filter_input, params.filter_bam_min, params.filter_bam_max )
