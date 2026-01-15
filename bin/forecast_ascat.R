@@ -56,8 +56,8 @@ colnames(p_mat) <- id
 sample_seg <- pcf(data.frame(chr = chr_pos$chromosome,
                              pos = chr_pos$start,
                              p_mat),
-                  arms = getPQ(chr_pos, arms),
-                  gamma = 10, fast = FALSE)
+                             arms = getPQ(chr_pos, arms),
+                             gamma = 10, fast = FALSE)
 
 colnames(sample_seg)[7] <- sample_seg$sampleID[1]
 sample_seg$sampleID <- NULL
@@ -134,23 +134,21 @@ chrs_lab[chr_out] <- ""
 
 # Make the plot
 p <- ggplot(plt_df, aes(x = genome.bin, y = Log2ratio, col = Call)) +
-  geom_hline(yintercept = c(-2, -1, 0, 1, 2), lty = c("solid"), lwd = 0.2) +
-  geom_point() +
-  scale_colour_manual(values = cols) +
-  scale_x_continuous(name = "Chromosomes", labels = chrs_lab,
-                     breaks = as.vector(c(1, cumsum(table(plt_df$Chromosome))[-24]) + # nolint: line_length_linter.
-                                          (table(plt_df$Chromosome) / 2))) +
-  geom_vline(xintercept = c(1, cumsum(table(plt_df$Chromosome))),
-             lty = "dotted") +
-  ggtitle(paste0(id, " Low pass calls - ", sample_name, ", purity=",
-                 cna_data$Purity, ", psit = ", cna_data$PsiT)) +
-  scale_y_continuous(limits = c(-2, 2), oob = scales::squish) +
-  theme(panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.background = element_blank(),
-        plot.title = element_text(hjust = 0.5, size = 18)) +
-  geom_point(aes(y = mean_segment), color = "#000000")
-
+       geom_hline(yintercept = c(-2, -1, 0, 1, 2), lty = c("solid"), lwd = 0.2) +
+       geom_point() +
+       scale_colour_manual(values = cols) +
+       scale_x_continuous(name = "Chromosomes", labels = chrs_lab,
+                          breaks = as.vector(c(1, cumsum(table(plt_df$Chromosome))[-24]) + # nolint: line_length_linter.
+                          (table(plt_df$Chromosome) / 2))) +
+       geom_vline(xintercept = c(1, cumsum(table(plt_df$Chromosome))), lty = "dotted") +
+       ggtitle(paste0(id, " Low pass calls - ", sample_name, ", purity=",
+                      cna_data$Purity, ", psit = ", cna_data$PsiT)) +
+       scale_y_continuous(limits = c(-2, 2), oob = scales::squish) +
+       theme(panel.grid.major = element_blank(),
+             panel.grid.minor = element_blank(),
+             panel.background = element_blank(),
+             plot.title = element_text(hjust = 0.5, size = 18)) +
+       geom_point(aes(y = mean_segment), color = "#000000")
 
 ggsave(paste0(id, "_ascat_lp_plot.pdf"), plot = p, width = 297, height = 210, units = "mm")
 

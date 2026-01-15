@@ -28,10 +28,12 @@ runASCATlp = function(lrrs, fix_ploidy = 2, interval = 0.01,
     n = ((psi*(2^(lrrs/gamma))) - (2 * (1 - rho))) / rho
     
     # Calculate what we will compare to
-    int_n = abs(round(n))
+    # int_n = abs(round(n))
+    int_n <- round(n)
     
     # Penalise zeros by setting the bottom to 1
-    int_n[which(int_n==0)] = 1
+    # int_n[which(int_n==0)] = 1
+    int_n[int_n < 1] <- 1
     
     # Calculate squared difference
     fit = (n - int_n) ^ 2
@@ -47,53 +49,122 @@ runASCATlp = function(lrrs, fix_ploidy = 2, interval = 0.01,
   # Do we want to remove very high lrrs?
   lrrs_for_fit = lrrs[lrrs < max_lrr]
   
+  flat_sd   <- sd(lrrs_for_fit, na.rm=TRUE)
+  flat_max  <- max(abs(lrrs_for_fit), na.rm=TRUE)
+  
+  # tune thresholds to your bin size / noise level
+  if (is.finite(flat_sd) && is.finite(flat_max) && flat_sd < 0.02 && flat_max < 0.06) {
+    output <- list(
+      CN     = rep(2L, length(lrrs)),
+      Purity = 0.0,
+      Psi    = 2.0,
+      PsiT   = fix_ploidy,
+      contCN = rep(2.0, length(lrrs)),
+      fit    = NULL,
+      allsol = NULL
+    )
+    return(output)
+  }
+  
   if(!preset) {
-  
-  # The range of purities and ploidies we want to search
-  rhos   = seq(min_purity, max_purity+interval, by = interval)
-  psits  = seq(fix_ploidy - pad_ploidy, fix_ploidy + pad_ploidy, by = interval)
-  
-  # Run across them all and test their fit
-  fits = lapply(rhos, function(r) {
     
-    psit_fits =  lapply(psits, function(p) {
-      
-      fit = fit_lrr(lrrs_for_fit, rho = r, psit = p)
-      
+    # The range of purities and ploidies we want to search
+    rhos   = seq(min_purity, max_purity+interval, by = interval)
+    psits  = seq(fix_ploidy - pad_ploidy, fix_ploidy + pad_ploidy, by = interval)
+    
+    # Run across them all and test their fit
+    #fits = lapply(rhos, function(r) {
+    #  
+    #  psit_fits =  lapply(psits, function(p) {
+    #    
+    #    fit = fit_lrr(lrrs_for_fit, rho = r, psit = p)
+    #    
+    #  })
+    #  
+    #})
+    
+    fits <- lapply(rhos, function(r) {
+      psit_fits <- lapply(psits, function(p) {
+        fit_lrr(lrrs_for_fit, rho = r, psit = p)
+      })
+      unlist(psit_fits)
     })
     
-  })
-  
-  # Create a matrix from the result
-  fit_mat = do.call(rbind, lapply(fits, function(r) {unlist(r)}))
-  
-  # Name the columns of the fit matrix, to visual fits, make a heatmap of this
-  colnames(fit_mat) = psits
-  rownames(fit_mat) = rhos
-  
-  # A function for finding local minima - a 3x3 matrix in which the centre is the minima
-  find_local_minima = function(mat) {
+    # Create a matrix from the result
+    #fit_mat = do.call(rbind, lapply(fits, function(r) {unlist(r)}))
+    fit_mat <- do.call(rbind, fits)
+    colnames(fit_mat) <- psits
+    rownames(fit_mat) <- rhos
     
-    # Create the object for storing the results
-    res = NULL
+    # Name the columns of the fit matrix, to visual fits, make a heatmap of this
+    colnames(fit_mat) = psits
+    rownames(fit_mat) = rhos
     
-    # The column numbers to run across, we don't run across the first and last
-    for(c in 2:(ncol(mat)-1)) {
+    # A function for finding local minima - a 3x3 matrix in which the centre is the minima
+    find_local_minima = function(mat) {
+      
+      # Create the object for storing the results
+      res = NULL
+      
+      # The column numbers to run across, we don't run across the first and last
+      for(c in 2:(ncol(mat)-1)) {
+        
+        # The row numbers to run across, we don't run across the first and last
+        for(r in 2:(nrow(mat)-1)) {
+          
+          # Create a temporary matrix to test for local minima
+          test_mat = mat[(r-1):(r+1),(c-1):(c+1)]
+          
+          # Which entry in the matrix is equal to the minimum in the matrix
+          m = which(test_mat==min(test_mat))
+          
+          # If this is the centre of the matrix and of length one, we have a local minima
+          if(m[1]==5 & length(m)==1) {
+            
+            # Record the psi, purity and value
+            hit = c(colnames(test_mat)[2], rownames(test_mat)[2], test_mat[2,2])
+            
+            # Add to the results object
+            res = rbind(res, hit)
+            
+          }
+          
+        }
+        
+      }
+      
+      # Process it as a data frame
+      res = data.frame(psit = as.numeric(res[,1]), purity = as.numeric(res[,2]), 
+                       dist = round(as.numeric(res[,3]), digits = 5), 
+                       stringsAsFactors = FALSE)
+      
+      # Order by the distance measured
+      res = res[order(res$dist),]
+      
+      return(res)
+      
+    }
+    
+    # Alternate version for a single ploidy state
+    find_local_minima_single_ploidy = function(mat) {
+      
+      # Collect results
+      res = NULL
       
       # The row numbers to run across, we don't run across the first and last
       for(r in 2:(nrow(mat)-1)) {
         
         # Create a temporary matrix to test for local minima
-        test_mat = mat[(r-1):(r+1),(c-1):(c+1)]
+        test_mat = mat[(r-1):(r+1),1]
         
         # Which entry in the matrix is equal to the minimum in the matrix
         m = which(test_mat==min(test_mat))
         
         # If this is the centre of the matrix and of length one, we have a local minima
-        if(m[1]==5 & length(m)==1) {
+        if(m[1]==2 & length(m)==1) {
           
           # Record the psi, purity and value
-          hit = c(colnames(test_mat)[2], rownames(test_mat)[2], test_mat[2,2])
+          hit = c(psits, names(test_mat)[2], test_mat[2])
           
           # Add to the results object
           res = rbind(res, hit)
@@ -102,83 +173,49 @@ runASCATlp = function(lrrs, fix_ploidy = 2, interval = 0.01,
         
       }
       
-    }
-    
-    # Process it as a data frame
-    res = data.frame(psit = as.numeric(res[,1]), purity = as.numeric(res[,2]), 
-                     dist = round(as.numeric(res[,3]), digits = 5), 
-                     stringsAsFactors = FALSE)
-    
-    # Order by the distance measured
-    res = res[order(res$dist),]
-    
-    return(res)
-    
-  }
-  
-  # Alternate version for a single ploidy state
-  find_local_minima_single_ploidy = function(mat) {
-    
-    # Collect results
-    res = NULL
-    
-    # The row numbers to run across, we don't run across the first and last
-    for(r in 2:(nrow(mat)-1)) {
+      # Process it as a data frame
+      res = data.frame(psit = as.numeric(res[,1]), purity = as.numeric(res[,2]), 
+                       dist = round(as.numeric(res[,3]), digits = 5), 
+                       stringsAsFactors = FALSE)
       
-      # Create a temporary matrix to test for local minima
-      test_mat = mat[(r-1):(r+1),1]
+      # Order by the distance measured
+      res = res[order(res$dist),]
       
-      # Which entry in the matrix is equal to the minimum in the matrix
-      m = which(test_mat==min(test_mat))
-      
-      # If this is the centre of the matrix and of length one, we have a local minima
-      if(m[1]==2 & length(m)==1) {
-        
-        # Record the psi, purity and value
-        hit = c(psits, names(test_mat)[2], test_mat[2])
-        
-        # Add to the results object
-        res = rbind(res, hit)
-        
-      }
+      return(res)
       
     }
     
-    # Process it as a data frame
-    res = data.frame(psit = as.numeric(res[,1]), purity = as.numeric(res[,2]), 
-                     dist = round(as.numeric(res[,3]), digits = 5), 
-                     stringsAsFactors = FALSE)
+    # If we are doing a search on a single ploidy, just find the minimum distance
+    if(ncol(fit_mat)==1) {
+      
+      # Which cellularity is correct?
+      lms = find_local_minima_single_ploidy(fit_mat)
+      
+    } else {
+      
+      # Get local minimas
+      lms = find_local_minima(fit_mat)
+      
+    }
     
-    # Order by the distance measured
-    res = res[order(res$dist),]
+    # Get best fit
+    # NEW: break ties by preferring lowest purity
+    if (nrow(lms) == 0) {
+      best_fit <- data.frame(psit = no_fit_psit, purity = min_purity, dist = Inf)
+    } else {
+      eps <- 1e-4
+      best_dist <- min(lms$dist)
+      cand <- lms[lms$dist <= best_dist + eps, ]
+      best_fit <- cand[which.min(cand$purity), ]
+    }
     
-    return(res)
+    # Catch samples without a local minima solution
+    if(nrow(lms)==0) {
+      
+      best_fit = data.frame(psit = no_fit_psit, purity = 1, dist = Inf)
+      
+    }
     
-  }
-  
-  # If we are doing a search on a single ploidy, just find the minimum distance
-  if(ncol(fit_mat)==1) {
-    
-    # Which cellularity is correct?
-    lms = find_local_minima_single_ploidy(fit_mat)
-    
-  } else {
-    
-    # Get local minimas
-    lms = find_local_minima(fit_mat)
-    
-  }
-  
-  # Get best fit
-  best_fit = lms[1,]
-  
-  # Catch samples without a local minima solution
-  if(nrow(lms)==0) {
-    
-    best_fit = data.frame(psit = no_fit_psit, purity = 1, dist = Inf)
-    
-  }
-  
   }
   
   if(preset) {
