@@ -215,7 +215,6 @@ workflow LP_WGS {
             normal_wig,
             gc_wig,
             map_wig,
-            pon_rds,
             centromere,
             filter_status
         )
