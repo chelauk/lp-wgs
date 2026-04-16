@@ -172,9 +172,11 @@ workflow LP_WGS {
         ch_bam_input = ch_input_sample
         // 1. run the illumina tech branch
         if ( params.tech == "illumina"){
-            ch_bam_input = ch_input_sample
-                            .map { meta, files ->
-                                  [meta, files[0], files[1]] }
+            ch_input_sample
+              .view{"bam input: $it"}
+              .set{ ch_bam_input }
+            //                .map { meta, files ->
+            //                      [meta, files[0], files[1]] }
             if ( params.filter_bam ) {
                ch_filter_input = ch_bam_input
                SAMTOOLS_VIEW ( ch_filter_input, params.filter_bam_min, params.filter_bam_max )

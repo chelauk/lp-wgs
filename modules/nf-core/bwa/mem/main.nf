@@ -23,16 +23,17 @@ process BWA_MEM {
     def args = task.ext.args ?: ''
     def args2 = task.ext.args2 ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def cpus    = (task.cpus && task.cpus != 1) ? (task.cpus.intdiv(2)) : 1
     def samtools_command = sort_bam ? 'sort' : 'view'
     """
     INDEX=`find -L ./ -name "*.amb" | sed 's/\\.amb\$//'`
 
     bwa mem \\
         $args \\
-        -t $task.cpus \\
+        -t ${cpus} \\
         \$INDEX \\
         $reads \\
-        | samtools $samtools_command $args2 --threads $task.cpus -o ${prefix}.bam -
+        | samtools $samtools_command $args2 --threads ${cpus} -o ${prefix}.bam -
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

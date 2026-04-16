@@ -14,16 +14,20 @@ workflow QC_TRIM {
     main:
     versions = Channel.empty()
     reports  = Channel.empty()
-
-    FASTQC(ch_reads)
+    
+    ch_reads
+        .map{ meta, fastq_1, fastq_2 -> [meta, [fastq_1,fastq_2]] }
+        .view{"ch_reads before it goes into FASTP: $it"}
+        .set{ ch_reads_for_qc }
+    
+    FASTQC(ch_reads_for_qc)
     reports  = reports.mix(FASTQC.out.zip.collect{meta, logs -> logs})
     versions = versions.mix(FASTQC.out.versions.first())
 
     save_trimmed_fail = false
     save_merged = false
-    //ch_reads.view{"ch_reads before it goes into FASTP: $it"}
 	FASTP(
-        ch_reads,
+        ch_reads_for_qc,
         [],  // default adapter sequences
         save_trimmed_fail,
         save_merged
