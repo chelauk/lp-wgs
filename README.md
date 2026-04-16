@@ -109,13 +109,13 @@ nextflow run /path/to/lp-wgs \
 		--input input_fastq.csv  \
 		--outdir results \
 		--igenomes_base /path/to/reference \
-		--step 'fastq' \
+		--step 'mapping' \
 		-c local.config \
 		-with-tower \
 		-profile singularity \
 		-resume
  ```
- note that when starting with fastq you need to add `--step fastq`
+ note that when starting with fastq you need to add `--step mapping`
 
  note with regard to the reference path it needs to match this pattern:
 ```
@@ -129,11 +129,11 @@ or you can modify the genomes.config file yourself
 
 2. Starting from bam example csv:
 ```
-patient,sample,fastq_1 ,fastq_2
-patient1,sample1,./data/patient1_sample1.bam
-patient1,sample2,./data/patient1_sample2.bam
-patient2,sample1,./data/patient2_sample1.bam
-patient2,sample2,./data/patient2_sample2.bam
+patient,sample,bam,bai
+patient1,sample1,./data/patient1_sample1.bam,./data/patient1_sample1.bam.bai
+patient1,sample2,./data/patient1_sample2.bam,./data/patient1_sample2.bam.bai
+patient2,sample1,./data/patient2_sample1.bam,./data/patient2_sample1.bam.bai
+patient2,sample2,./data/patient2_sample2.bam,./data/patient2_sample2.bam.bai
 ```
 example sbatch script:
 ```
@@ -149,7 +149,7 @@ nextflow run /path/to/lp-wgs \
 		--input input_fastq.csv  \
 		--outdir results \
 		--igenomes_base /path/to/reference \
-		--step 'bam' \
+		--step 'calling' \
 		-c local.config \
 		-with-tower \
 		-profile singularity \
