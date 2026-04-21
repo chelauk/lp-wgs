@@ -27,6 +27,62 @@ normalize_chr <- function(x) {
   gsub("^chr", "", as.character(x), ignore.case = TRUE)
 }
 
+derive_arm_labels <- function(chr_pos, arms_table, genome) {
+  chrom <- normalize_chr(chr_pos$chromosome)
+  start <- chr_pos$start
+
+  # Mouse chromosomes are effectively acrocentric/telocentric here, so
+  # segment per chromosome instead of forcing a p/q split.
+  if (startsWith(genome, "mm")) {
+    return(rep("p", length(chrom)))
+  }
+
+  arm_col <- names(arms_table)[tolower(names(arms_table)) %in% c("arm", "chromosome_arm")]
+  start_col <- names(arms_table)[tolower(names(arms_table)) %in% c("start", "chromstart", "arm_start")]
+  end_col <- names(arms_table)[tolower(names(arms_table)) %in% c("end", "stop", "chromend", "arm_end")]
+
+  if (length(arm_col) > 0 && length(start_col) > 0 && length(end_col) > 0) {
+    arm_chr <- normalize_chr(arms_table[[1]])
+    arm_start <- as.numeric(arms_table[[start_col[1]]])
+    arm_end <- as.numeric(arms_table[[end_col[1]]])
+    arm_name <- tolower(as.character(arms_table[[arm_col[1]]]))
+
+    derived <- rep(NA_character_, length(chrom))
+    for (i in seq_along(chrom)) {
+      hit <- which(
+        arm_chr == chrom[i] &
+        !is.na(arm_start) &
+        !is.na(arm_end) &
+        arm_start <= start[i] &
+        arm_end >= start[i]
+      )
+      if (length(hit) > 0) {
+        derived[i] <- substr(arm_name[hit[1]], 1, 1)
+      }
+    }
+    if (all(derived %in% c("p", "q"), na.rm = TRUE) && !anyNA(derived)) {
+      return(derived)
+    }
+  }
+
+  boundary <- suppressWarnings(as.numeric(arms_table[[2]]))
+  if (all(is.na(boundary))) {
+    stop("Could not derive chromosome arms from chr_arm_boundaries")
+  }
+
+  boundary_map <- setNames(boundary, normalize_chr(arms_table[[1]]))
+  p_boundary <- unname(boundary_map[chrom])
+  if (anyNA(p_boundary)) {
+    missing_chr <- unique(chrom[is.na(p_boundary)])
+    stop(sprintf(
+      "Missing chr_arm_boundaries entries for chromosome(s): %s",
+      paste(missing_chr, collapse = ", ")
+    ))
+  }
+
+  ifelse(start <= p_boundary, "p", "q")
+}
+
 if (ncol(arms) < 2) {
   stop("chr_arm_boundaries must have at least two columns")
 }
@@ -75,7 +131,7 @@ colnames(p_mat) <- id
 sample_seg <- pcf(data.frame(chr = chr_pos$chromosome,
                              pos = chr_pos$start,
                              p_mat),
-                             arms = getPQ(chr_pos, arms),
+                             arms = derive_arm_labels(chr_pos, arms, genome),
                              gamma = 10, fast = FALSE)
 
 colnames(sample_seg)[7] <- sample_seg$sampleID[1]
