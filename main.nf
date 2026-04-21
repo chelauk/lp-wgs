@@ -21,10 +21,16 @@ params.fasta_fai             = getGenomeAttribute('fasta_fai')
 params.bwa                   = getGenomeAttribute('bwa')
 params.centromere            = getGenomeAttribute('centromere')
 params.map_wig               = getGenomeAttribute('map_wig')
+params.map_wig_file          = getGenomeAttribute('map_wig_file')
+params.gc_wig                = getGenomeAttribute('gc_wig')
+params.pon_rds               = getGenomeAttribute('pon_rds')
 params.chr_bed               = getGenomeAttribute('chr_bed')
 params.medicc_arms           = getGenomeAttribute('medicc_arms')
 params.medicc_genes          = getGenomeAttribute('medicc_genes')
 params.chr_arm_boundaries    = getGenomeAttribute('chr_arm_boundaries')
+params.qdnaseq_genome        = getGenomeAttribute('qdnaseq_genome')
+params.qdnaseq_package       = getGenomeAttribute('qdnaseq_package')
+params.hmmcopy_chromosomes   = getGenomeAttribute('hmmcopy_chromosomes')
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -52,9 +58,9 @@ chr_bed                = params.chr_bed            ? Channel.fromPath(params.chr
 centromere             = params.centromere         ? Channel.fromPath(params.centromere).collect()         : Channel.empty()
 medicc_arms            = params.medicc_arms        ? Channel.fromPath(params.medicc_arms).collect()        : Channel.empty()
 medicc_genes           = params.medicc_genes       ? Channel.fromPath(params.medicc_genes).collect()       : Channel.empty()
-gc_wig                 = params.map_wig            ? Channel.fromPath("${params.map_wig}/gc_hg38_${params.bin}kb.wig").collect()   : Channel.empty()
-map_wig                = params.map_wig            ? Channel.fromPath("${params.map_wig}/map_hg38_${params.bin}kb.wig").collect()   : Channel.empty()
-pon_rds                = params.map_wig            ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_hg38_${params.bin}kb_median_normAutosome_median.rds").collect() : Channel.value([]) // optional Channel.empty()
+gc_wig                 = params.gc_wig             ? Channel.fromPath(params.gc_wig).collect() : params.map_wig ? Channel.fromPath("${params.map_wig}/gc_hg38_${params.bin}kb.wig").collect() : Channel.empty()
+map_wig                = params.map_wig_file       ? Channel.fromPath(params.map_wig_file).collect() : params.map_wig ? Channel.fromPath("${params.map_wig}/map_hg38_${params.bin}kb.wig").collect() : Channel.empty()
+pon_rds                = params.pon_rds            ? Channel.fromPath(params.pon_rds).collect() : params.map_wig ? Channel.fromPath("${params.map_wig}/HD_ULP_PoN_hg38_${params.bin}kb_median_normAutosome_median.rds").collect() : Channel.value([]) // optional Channel.empty()
 normal_wig             = params.normal_wig         ? Channel.fromPath(params.normal_wig).collect()         : Channel.value([]) // empty value channel necessary
 
 //

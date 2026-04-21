@@ -3,12 +3,13 @@
 library(ACE)
 args <- commandArgs(trailingOnly = TRUE)
 output_folder <- args[1]
+genome <- if (length(args) >= 2) args[2] else "hg38"
 ploidy <- c(2, 3, 4)
 
 
 runACE(
   outputdir = output_folder, filetype = "bam",
-  binsizes = 1000, genome = "hg38", ploidies = ploidy
+  binsizes = 1000, genome = genome, ploidies = ploidy
 )
 
 # runACE(inputdir = "./", outputdir, filetype = 'rds', genome = 'hg19',

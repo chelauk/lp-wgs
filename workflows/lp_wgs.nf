@@ -88,6 +88,15 @@ workflow LP_WGS {
     normal_wig
 
     main:
+    selected_tools = params.tools.split(',').collect { it.trim() }.findAll { it }
+
+    if (params.qdnaseq_genome?.startsWith('mm')) {
+        unsupported_tools = selected_tools.intersect(['ichor', 'ascat', 'medicc'])
+        if (unsupported_tools) {
+            exit 1, "Genome '${params.genome}' is configured as mouse (${params.qdnaseq_genome}), but these tools are still human-specific in this pipeline: ${unsupported_tools.join(', ')}. For mouse, use --tools ace or add mouse-specific implementations/resources for those branches."
+        }
+    }
+
     // define filter status
     filter_status = params.filter_bam ? "filter_${params.filter_bam_min}_${params.filter_bam_max}" : "filter_none"
 
@@ -197,7 +206,6 @@ workflow LP_WGS {
                     versions = versions.mix(SAMTOOLS_NVIEW.out.versions.first())
                 }
         }
-    }
     // run hmmcopygccounter
     if ( params.call_gc ) {
         HMMCOPY_GCCOUNTER(fasta, params.bin )
@@ -211,7 +219,7 @@ workflow LP_WGS {
     versions = versions.mix(HMMCOPY_READCOUNTER.out.versions)
 
     // run ichorcna
-    if (params.tools.split(',').contains('ichor')) {
+    if (selected_tools.contains('ichor')) {
         ICHORCNA_RUN(
             HMMCOPY_READCOUNTER.out.wig,
             normal_wig,
@@ -225,13 +233,13 @@ workflow LP_WGS {
 
     // run PREP_ASCAT
 
-    if (params.tools.split(',').contains('ascat')) {
+    if (selected_tools.contains('ascat')) {
         PREP_ASCAT( ch_call_input, params.bin )
         RUN_ASCAT( PREP_ASCAT.out.for_ascat, params.ploidy, chr_arm_boundaries )
     }
 
     // run ACE
-    if (params.tools.split(',').contains('ace')) {
+    if (selected_tools.contains('ace')) {
     ACE(ch_call_input, filter_status)
     versions = versions.mix(ACE.out.versions)
     ACE.out.ace
@@ -247,11 +255,13 @@ workflow LP_WGS {
     }
 
     //run prep_medicc
-    PREP_MEDICC2(prep_medicc2_input, bin_dir)
+    if (selected_tools.contains('medicc')) {
+        PREP_MEDICC2(prep_medicc2_input, bin_dir)
         versions = versions.mix(PREP_MEDICC2.out.versions)
 
-    // run medicc2
-    MEDICC2(PREP_MEDICC2.out.for_medicc, medicc_arms, medicc_genes)
+        // run medicc2
+        MEDICC2(PREP_MEDICC2.out.for_medicc, medicc_arms, medicc_genes)
+    }
 
     //
     // Collate and save software versions

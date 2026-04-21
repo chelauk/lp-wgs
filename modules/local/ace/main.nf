@@ -19,6 +19,7 @@ process ACE {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def genome = params.qdnaseq_genome ?: 'hg38'
     """
     prefix=$prefix
 
@@ -29,7 +30,7 @@ process ACE {
     if [ ! -d "${meta.sample}_${filter_status}" ]; then
     mkdir "${meta.sample}_${filter_status}"
     fi
-    ace.R ${meta.sample}_${filter_status}
+    ace.R ${meta.sample}_${filter_status} ${genome}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -39,8 +40,10 @@ process ACE {
     stub:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def genome = params.qdnaseq_genome ?: 'hg38'
     """
     mkdir ${meta.sample}_${filter_status}
+    echo "ace.R ${meta.sample}_${filter_status} ${genome}"
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         ace: stub version
