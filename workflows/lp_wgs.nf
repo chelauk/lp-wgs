@@ -116,7 +116,6 @@ workflow LP_WGS {
     bin_dir = Channel.fromPath("$projectDir/bin").collect()
 
     // Mapping step
-    println( params.step )
     if ( params.step == 'mapping' ) {
         // 1. QC and Trim with fastqc and fastp ( QC_TRIM subworkflow )
         QC_TRIM ( ch_input_sample, ch_map_index, sort_bam)
@@ -140,7 +139,7 @@ workflow LP_WGS {
                 ch_bam_input = SAMTOOLS_VIEW.out.bam
                 versions = versions.mix(SAMTOOLS_VIEW.out.versions.first())
             }
-        
+
         PICARD_COLLECTALIGNMENTSUMMARYMETRICS (
             ch_bam_input,
             fasta,
@@ -154,8 +153,8 @@ workflow LP_WGS {
             filter_status
             )
         versions = versions.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.versions.first())
-        reports  = reports.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.size_metrics.collect{meta, report -> report}) 
-      
+        reports  = reports.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.size_metrics.collect{meta, report -> report})
+
         MOSDEPTH(
             ch_bam_input,
             chr_bed,
@@ -165,38 +164,39 @@ workflow LP_WGS {
         //reports  = reports.mix(MOSDEPTH.out.reports.collect{meta, report -> report})
         versions = versions.mix(MOSDEPTH.out.versions.first())
     }
-    
+
     // Calling step
 
-    else if ( params.step == 'calling' ) {
-        ch_bam_input = ch_input_sample
-        // 1. run the illumina tech branch
-        if ( params.tech == "illumina"){
-            ch_input_sample
-              .view{"bam input: $it"}
-              .set{ ch_bam_input }
-            //                .map { meta, files ->
-            //                      [meta, files[0], files[1]] }
+    ch_call_input = params.step == 'calling' \
+    ? ch_input_sample \
+    : ch_bam_input
+
+    // 1. run the illumina tech branch
+    if ( params.tech == "illumina"){
+        ch_call_input
+            .view{"bam input: $it"}
+            .set{ ch_call_input }
+        //                .map { meta, files ->
+        //                      [meta, files[0], files[1]] }
+        if ( params.filter_bam ) {
+            ch_filter_input = ch_call_input
+            SAMTOOLS_VIEW ( ch_filter_input, params.filter_bam_min, params.filter_bam_max )
+            ch_bam_input = SAMTOOLS_VIEW.out.bam
+            versions = versions.mix(SAMTOOLS_VIEW.out.versions.first())
+        }
+
+
+        } else if (params.tech == "nanopore"){
+            // 2. run the nanopore tech branch
+            ch_call_input.view{"input_channel: $it"}
             if ( params.filter_bam ) {
-               ch_filter_input = ch_bam_input
-               SAMTOOLS_VIEW ( ch_filter_input, params.filter_bam_min, params.filter_bam_max )
-               ch_bam_input = SAMTOOLS_VIEW.out.bam
-               versions = versions.mix(SAMTOOLS_VIEW.out.versions.first())
-            }
-
-
-            } else if (params.tech == "nanopore"){
-                // 2. run the nanopore tech branch
-                ch_input_sample.view{"input_channel: $it"}
-                ch_bam_input = ch_input_sample
-                if ( params.filter_bam ) {
-                    ch_filter_input = ch_bam_input
-                        SAMTOOLS_NVIEW ( ch_filter_input, params.filter_bam_min, params.filter_bam_max )
-                        ch_bam_input = SAMTOOLS_NVIEW.out.bam
-                                         .map{ meta, bam, bai -> [ meta, [ bam, bai]] }
-                        versions = versions.mix(SAMTOOLS_NVIEW.out.versions.first())
-                     }
-            }
+                ch_filter_input = ch_bam_input
+                    SAMTOOLS_NVIEW ( ch_filter_input, params.filter_bam_min, params.filter_bam_max )
+                    ch_bam_input = SAMTOOLS_NVIEW.out.bam
+                                    .map{ meta, bam, bai -> [ meta, [ bam, bai]] }
+                    versions = versions.mix(SAMTOOLS_NVIEW.out.versions.first())
+                }
+        }
     }
     // run hmmcopygccounter
     if ( params.call_gc ) {
@@ -207,7 +207,7 @@ workflow LP_WGS {
             gc_wig = gc_wig
         }
 
-    HMMCOPY_READCOUNTER( ch_bam_input )
+    HMMCOPY_READCOUNTER( ch_call_input )
     versions = versions.mix(HMMCOPY_READCOUNTER.out.versions)
 
     // run ichorcna
@@ -226,13 +226,13 @@ workflow LP_WGS {
     // run PREP_ASCAT
 
     if (params.tools.split(',').contains('ascat')) {
-        PREP_ASCAT( ch_bam_input, params.bin )
+        PREP_ASCAT( ch_call_input, params.bin )
         RUN_ASCAT( PREP_ASCAT.out.for_ascat, params.ploidy, chr_arm_boundaries )
     }
 
     // run ACE
     if (params.tools.split(',').contains('ace')) {
-    ACE(ch_bam_input, filter_status)
+    ACE(ch_call_input, filter_status)
     versions = versions.mix(ACE.out.versions)
     ACE.out.ace
         .map{ meta, ace ->
@@ -248,7 +248,7 @@ workflow LP_WGS {
 
     //run prep_medicc
     PREP_MEDICC2(prep_medicc2_input, bin_dir)
-       versions = versions.mix(PREP_MEDICC2.out.versions)
+        versions = versions.mix(PREP_MEDICC2.out.versions)
 
     // run medicc2
     MEDICC2(PREP_MEDICC2.out.for_medicc, medicc_arms, medicc_genes)
