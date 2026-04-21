@@ -10,15 +10,32 @@ args <- commandArgs(trailingOnly = TRUE)
 if (!require(QDNAseq)) stop("Package 'QDNAseq' missing\n.")
 if (!require(CGHcall)) stop("Package 'CGHcall' missing\n.")
 if (!require(ggplot2)) stop("Package 'ggplot2' missing\n.")
-if (!require(QDNAseq.hg38)) stop("Package 'QDNAseq.hg38' missing\n.")
 if (!require(ACE)) stop("Package 'ACE' missing\n.")
 
 patient <- args[1]
 sample  <- args[2]
 binsize <- as.numeric(args[3])
 bam     <- args[4]
+genome  <- if (length(args) >= 5) args[5] else "hg38"
+qdnaseq_package <- if (length(args) >= 6) args[6] else paste0("QDNAseq.", genome)
 
-bins <- getBinAnnotations(binSize = binsize, genome = "hg38")
+if (!require(qdnaseq_package, character.only = TRUE)) {
+  stop(sprintf("Package '%s' missing\n.", qdnaseq_package))
+}
+
+autosomes <- switch(
+  genome,
+  hg38 = as.character(1:22),
+  hg19 = as.character(1:22),
+  mm10 = as.character(1:19),
+  stop(sprintf("Unsupported QDNAseq genome '%s'", genome))
+)
+
+normalize_chr <- function(x) {
+  gsub("^chr", "", as.character(x), ignore.case = TRUE)
+}
+
+bins <- getBinAnnotations(binSize = binsize, genome = genome)
 
 # These steps are taken directly from the QDNAseq tutorial
 read_counts <- binReadCounts(bins, bamfiles = bam)
@@ -103,7 +120,7 @@ call <- factor(call, levels = c("-2", "-1", "0", "1", "2"))
 
 segs <- read.table(paste0(patient, "_", sample, "_cna_segments.txt"),
                    header = TRUE)
-med_lrrs <- median(lrrs[lrrs$chromosome %in% 1:22, 5])
+med_lrrs <- median(lrrs[normalize_chr(lrrs$chromosome) %in% autosomes, 5])
 
 # Adjust the lrrs _and_ the segment lrrs by this value
 lrrs[, 5] <- lrrs[, 5] - med_lrrs

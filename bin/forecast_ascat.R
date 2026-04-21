@@ -7,11 +7,30 @@ args <- commandArgs(trailingOnly = TRUE)
 id     <- args[1]
 ploidy <- as.integer(args[2])
 bin_dir <- args[3]
+chr_arm_boundaries <- args[4]
+genome <- if (length(args) >= 5) args[5] else "hg38"
 
-# These are the arms of hg38
-arms <- read.table("chrArmBoundaries_hg38.txt", header = TRUE)
+arms <- read.table(chr_arm_boundaries, header = TRUE)
 source(paste0(bin_dir,"/00_general_functions.R"))
 source(paste0(bin_dir,"/runASCATlp.R"))
+
+autosomes <- switch(
+  genome,
+  hg38 = as.character(1:22),
+  hg19 = as.character(1:22),
+  mm10 = as.character(1:19),
+  stop(sprintf("Unsupported ASCAT genome '%s'", genome))
+)
+chromosome_levels <- c(autosomes, "X", "Y")
+
+normalize_chr <- function(x) {
+  gsub("^chr", "", as.character(x), ignore.case = TRUE)
+}
+
+if (ncol(arms) < 2) {
+  stop("chr_arm_boundaries must have at least two columns")
+}
+arms[, 1] <- normalize_chr(arms[, 1])
 
 # log2R data output by QDNAseq.R
 # https://bioconductor.org/packages/release/bioc/vignettes/QDNAseq/inst/doc/QDNAseq.pdf # nolint: line_length_linter.
@@ -44,7 +63,7 @@ chr_pos <- patient_lrr[, 2:4]
 bin_row <- patient_lrr[, 1]
 
 # chr_pos
-chr_pos$chromosome <- factor(chr_pos$chromosome, levels = c(1:22, "X", "Y"))
+chr_pos$chromosome <- factor(normalize_chr(chr_pos$chromosome), levels = chromosome_levels)
 
 # Take only the lrr data
 p_mat <- cbind(patient_lrr[, 5])
@@ -71,7 +90,7 @@ mid_pld <- ploidy
 expand  <- 1.6
 mp      <- 1
 
-autosome_index <- chr_pos$chromosome %in% 1:22
+autosome_index <- as.character(chr_pos$chromosome) %in% autosomes
 bins_auto <- p_mat[autosome_index]
 segs_auto <- expanded_segs[autosome_index]
 sn <- id
@@ -127,10 +146,7 @@ lines_vertical <- data.frame(x1 = c(1, cumsum(table(plt_df$Chromosome))),
                              y2 = max_cn)
 
 # Remove any chromosome labels due to congestion?
-chr_out <- c(19, 21)
-
-chrs_lab <- c(1:22, "X", "Y")
-chrs_lab[chr_out] <- ""
+chrs_lab <- chromosome_levels
 
 # Make the plot
 p <- ggplot(plt_df, aes(x = genome.bin, y = Log2ratio, col = Call)) +
@@ -138,8 +154,10 @@ p <- ggplot(plt_df, aes(x = genome.bin, y = Log2ratio, col = Call)) +
        geom_point() +
        scale_colour_manual(values = cols) +
        scale_x_continuous(name = "Chromosomes", labels = chrs_lab,
-                          breaks = as.vector(c(1, cumsum(table(plt_df$Chromosome))[-24]) + # nolint: line_length_linter.
-                          (table(plt_df$Chromosome) / 2))) +
+                          breaks = {
+                            chrom_sizes <- as.numeric(table(plt_df$Chromosome))
+                            c(1, head(cumsum(chrom_sizes), -1)) + (chrom_sizes / 2)
+                          }) +
        geom_vline(xintercept = c(1, cumsum(table(plt_df$Chromosome))), lty = "dotted") +
        ggtitle(paste0(id, " Low pass calls - ", sample_name, ", purity=",
                       cna_data$Purity, ", psit = ", cna_data$PsiT)) +
@@ -152,7 +170,7 @@ p <- ggplot(plt_df, aes(x = genome.bin, y = Log2ratio, col = Call)) +
 
 ggsave(paste0(id, "_ascat_lp_plot.pdf"), plot = p, width = 297, height = 210, units = "mm")
 
-autosome_index <- chr_pos$chromosome %in% 1:22
+autosome_index <- as.character(chr_pos$chromosome) %in% autosomes
 
 ploidy_expected <- rep(1, times = length(cna_data$CN))
 ploidy_expected[!autosome_index] <- 0.5
@@ -174,4 +192,3 @@ cn_out <- data.frame(res$CN)
 # output ascat calls
 write.table(cn_out, file = paste0(id,"_cna_ploidy_search_calls.txt"),
             quote = FALSE)
-

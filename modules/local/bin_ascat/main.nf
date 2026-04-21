@@ -18,8 +18,9 @@ process BIN_ASCAT {
 
     script:
     def args = task.ext.args ?: ''
+    def genome = params.qdnaseq_genome ?: 'hg38'
     """
-    forecast_ascat.R ${meta.id} ${ploidy} ${projectDir}/bin/
+    forecast_ascat.R ${meta.id} ${ploidy} ${projectDir}/bin/ ${chr_arm_boundaries} ${genome}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -29,8 +30,9 @@ process BIN_ASCAT {
 
     stub:
     def args = task.ext.args ?: ''
+    def genome = params.qdnaseq_genome ?: 'hg38'
     """
-    echo  "forecast_ascat.R ${meta.id} ${ploidy} ${chr_arm_boundaries}"
+    echo  "forecast_ascat.R ${meta.id} ${ploidy} ${projectDir}/bin/ ${chr_arm_boundaries} ${genome}"
     touch ${meta.id}.pdf
     touch ${meta.id}.txt
 
