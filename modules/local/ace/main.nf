@@ -3,7 +3,7 @@ process ACE {
     label 'process_medium'
 
     conda "bioconductor-ace:1.16.0--r42hdfd78af_0"
-    container "r-ace.sif"
+    container "ace-qdnaseq_latest.sif"
 
     input:
     tuple val(meta), path(bam), path(bai)

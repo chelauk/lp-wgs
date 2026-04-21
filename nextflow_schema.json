@@ -66,7 +66,8 @@
     "properties": {
         "tech": {
             "type": "string",
-            "default": "illumina"
+            "default": "illumina",
+            "enum": ["illumina", "nanopore"]
         },
         "sort": {
             "type": "boolean",
@@ -74,7 +75,14 @@
         },
         "step": {
             "type": "string",
-            "default": "fastq"
+            "default": "mapping",
+            "enum": ["mapping", "calling"]
+        },
+        "tools": {
+            "type": "string",
+            "default": "ace,ichor,ascat",
+            "pattern": "^[A-Za-z,]+$",
+            "description": "Comma-separated list of downstream calling tools to run."
         },
         "call_gc": {
             "type": "string"
@@ -219,6 +227,15 @@
         "map_wig": {
             "type": "string"
         },
+        "map_wig_file": {
+            "type": ["string", "null"]
+        },
+        "gc_wig": {
+            "type": ["string", "null"]
+        },
+        "pon_rds": {
+            "type": ["string", "null"]
+        },
         "chr_bed": {
             "type": "string"
         },
@@ -230,6 +247,16 @@
         },
         "chr_arm_boundaries": {
             "type": "string"
+        },
+        "qdnaseq_genome": {
+            "type": ["string", "null"],
+            "enum": ["hg19", "hg38", "mm10", null]
+        },
+        "qdnaseq_package": {
+            "type": ["string", "null"]
+        },
+        "hmmcopy_chromosomes": {
+            "type": ["string", "null"]
         }
     }
 }

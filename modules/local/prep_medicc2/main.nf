@@ -7,7 +7,7 @@ process PREP_MEDICC2 {
     //               For Conda, the build (i.e. "h9402c20_2") must be EXCLUDED to support installation on different operating systems.
     // TODO nf-core: See section in main README for further information regarding finding and adding container addresses to the section below.
     conda "bioconductor-ace:1.16.0--r42hdfd78af_0"
-    container "r-ace.sif"
+    container "ace-qdnaseq_latest.sif"
 
     input:
     tuple val(patient), val(samples), val(ids), val(ploidy),  path(ace_out)
