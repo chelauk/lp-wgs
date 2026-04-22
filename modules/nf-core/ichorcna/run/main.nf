@@ -27,6 +27,8 @@ process ICHORCNA_RUN {
     def args3 = task.ext.args3 ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def centro = centromere ? "--centromere ${centromere}" : ''
+    def genomeBuild = params.ichor_genome_build ?: (params.qdnaseq_genome ?: 'hg38')
+    def genomeStyle = params.ichor_genome_style ?: (genomeBuild?.startsWith('mm') ? 'NCBI' : 'UCSC')
     def VERSION = '0.3.2' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
     if [ ! -d $filter_status ]; then
@@ -40,8 +42,8 @@ process ICHORCNA_RUN {
         --id ${prefix} \\
         --gcWig ${gc_wig} \\
         --mapWig ${map_wig} \\
-        --genomeBuild hg38 \\
-        --genomeStyle UCSC \\
+        --genomeBuild ${genomeBuild} \\
+        --genomeStyle ${genomeStyle} \\
         ${centro} \\
         --outDir $filter_status
 
@@ -56,6 +58,8 @@ process ICHORCNA_RUN {
     def args3 = task.ext.args3 ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def centro = centromere ? "--centromere ${centromere}" : ''
+    def genomeBuild = params.ichor_genome_build ?: (params.qdnaseq_genome ?: 'hg38')
+    def genomeStyle = params.ichor_genome_style ?: (genomeBuild?.startsWith('mm') ? 'NCBI' : 'UCSC')
     def VERSION = '0.3.2' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
     if [ ! -d $filter_status ]; then
@@ -69,6 +73,8 @@ process ICHORCNA_RUN {
     echo "    --id ${prefix} "
     echo "    --gcWig ${gc_wig} "
     echo "    --mapWig ${map_wig} "
+    echo "    --genomeBuild ${genomeBuild} "
+    echo "    --genomeStyle ${genomeStyle} "
     echo "    ${centro} "
     echo "    --outDir ${filter_status}'
 

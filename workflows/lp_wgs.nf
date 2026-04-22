@@ -91,7 +91,7 @@ workflow LP_WGS {
     selected_tools = params.tools.split(',').collect { it.trim() }.findAll { it }
 
     if (params.qdnaseq_genome?.startsWith('mm')) {
-        unsupported_tools = selected_tools.intersect(['ichor', 'medicc'])
+        unsupported_tools = selected_tools.intersect(['medicc'])
         if (unsupported_tools) {
             exit 1, "Genome '${params.genome}' is configured as mouse (${params.qdnaseq_genome}), but these tools are still human-specific in this pipeline: ${unsupported_tools.join(', ')}."
         }
