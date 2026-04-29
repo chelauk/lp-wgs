@@ -63,6 +63,8 @@ workflow {
     ch_map_wig = params.map_wig_file ? Channel.fromPath(params.map_wig_file).collect() : Channel.empty()
     ch_normal_wig = params.normal ? Channel.fromPath(params.normal).collect() : Channel.value([])
 
+
+    ch_bwa.view { "ch_bwa: ${it}" }
     //
     // SUBWORKFLOW: Run initialisation tasks
     //
