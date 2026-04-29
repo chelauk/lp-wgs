@@ -9,51 +9,42 @@ include { SAMBAMBA_MERGE }              from '../../../modules/local/sambamba/me
 
 workflow MERGE_LANES {
     take:
-        take: bam_bwa
+    ch_bam_bwa
 
     main:
     versions = Channel.empty()
 
-        bam_bwa
-            .map{meta, bam ->
-                meta.id = meta.patient + "_" + meta.sample
-                [[meta.patient, meta.sample, meta.id, meta.gender, meta.status], bam ] }
-            .groupTuple()
-            .branch{
-                single:   it[1].size() == 1
-                multiple: it[1].size() > 1
-            }.set{ bam_bwa_to_sort }
+    ch_bam_bwa
+        .map { meta, bam ->
+            def mergedMeta = meta + [id: "${meta.patient}_${meta.sample}"]
+            [mergedMeta, bam]
+        }
+        .map { meta, bam -> [[meta.patient, meta.sample], [meta, bam]] }
+        .groupTuple()
+        .branch { sample_key, grouped_records ->
+            single: grouped_records.size() == 1
+            multiple: grouped_records.size() > 1
+        }
+        .set { ch_bam_grouped }
 
-        bam_multiple = bam_bwa_to_sort.multiple
-                                .map{
-                                    info,bam ->
-                                    def meta = [:]
-                                    meta.patient = info[0]
-                                    meta.sample  = info[1]
-                                    meta.id      = info[2]
-                                    meta.gender  = info[3]
-                                    meta.status  = info[4]
-                                    [meta,bam]
-                                }
+    ch_bam_single = ch_bam_grouped.single
+        .map { sample_key, grouped_records -> grouped_records[0] }
 
-        bam_single = bam_bwa_to_sort.single
-                                .map{
-                                    info,bam ->
-                                    def meta = [:]
-                                    meta.patient = info[0]
-                                    meta.sample  = info[1]
-                                    meta.id      = info[2]
-                                    meta.gender  = info[3]
-                                    meta.status  = info[4]
-                                    [meta,bam]
-                                }
-        // STEP 1.5: MERGING AND INDEXING BAM FROM MULTIPLE LANES
-        SAMTOOLS_INDEX(bam_single)
-        bam_single = bam_single.join(SAMTOOLS_INDEX.out.bai)
-        SAMBAMBA_MERGE(bam_multiple)
-        bam          = bam_single.mix(SAMBAMBA_MERGE.out.bam)
-        versions  = versions.mix(SAMBAMBA_MERGE.out.versions.first())
+    ch_bam_multiple = ch_bam_grouped.multiple
+        .map { sample_key, grouped_records ->
+            def meta = grouped_records[0][0]
+            def bams = grouped_records.collect { record -> record[1] }
+            [meta, bams]
+        }
+
+    // STEP 1.5: MERGING AND INDEXING BAM FROM MULTIPLE LANES
+    SAMTOOLS_INDEX(ch_bam_single)
+    ch_bam_single = ch_bam_single.join(SAMTOOLS_INDEX.out.bai)
+    SAMBAMBA_MERGE(ch_bam_multiple)
+    bam = ch_bam_single.mix(SAMBAMBA_MERGE.out.bam)
+    versions = versions.mix(SAMBAMBA_MERGE.out.versions.first())
+
     emit:
-        bam
-        versions
+    bam
+    versions
 }
