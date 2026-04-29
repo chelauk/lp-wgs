@@ -8,12 +8,8 @@
 // MODULE: Installed directly from nf-core/modules
 //
 
-include { BWA_MEM                     } from '../modules/nf-core/bwa/mem/main'
-include { QC_TRIM                     } from '../subworkflows/local/qc_trim/main'
-include { MERGE_LANES                 } from '../subworkflows/local/merge_lanes/main'
+include { MAPPING_QC                  } from '../subworkflows/local/mapping_qc/main'
 include { REPORTING_MULTIQC           } from '../subworkflows/local/reporting_multiqc/main'
-include { MOSDEPTH                    } from '../modules/nf-core/mosdepth/main'
-include { PICARD_COLLECTINSERTSIZEMETRICS } from '../modules/nf-core/picard/collectinsertsizemetrics/main'
 //include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 include { HMMCOPY_GCCOUNTER           } from '../modules/nf-core/hmmcopy/gccounter/main'
 include { HMMCOPY_READCOUNTER         } from '../modules/nf-core/hmmcopy/readcounter/main'
@@ -25,7 +21,6 @@ include { PREP_ASCAT                  } from '../modules/local/prep_ascat/main'
 include { RUN_ASCAT                   } from '../modules/local/ascat_lp/main'
 include { PREP_MEDICC2                } from '../modules/local/prep_medicc2/main'
 include { MEDICC2                     } from '../modules/local/medicc2/main'
-include { PICARD_COLLECTALIGNMENTSUMMARYMETRICS } from '../modules/local/picard/collectalignmentmummarymetrics/main'
 
 
 /*
@@ -83,60 +78,24 @@ workflow LP_WGS {
     reports  = Channel.empty()
     versions = Channel.empty()
 
-    //
-    // FASTQC, FASTP and BWA
-    //
     // bin_dir for Rscripts
     bin_dir = Channel.fromPath("$projectDir/bin").collect()
 
-    // Mapping step
     if (step == 'mapping') {
-        // 1. QC and Trim with fastqc and fastp ( QC_TRIM subworkflow )
-        QC_TRIM(ch_input_sample)
-        versions = versions.mix(QC_TRIM.out.versions)
-        reports  = reports.mix(QC_TRIM.out.reports)
-
-        // 2. Map with BWA MEM
-        BWA_MEM(QC_TRIM.out.reads, bwa, true) // If aligner is bwa-mem
-        versions = versions.mix(BWA_MEM.out.versions.first())
-
-        // 3. call the merge subworkflow
-        MERGE_LANES ( BWA_MEM.out.bam )
-        versions = versions.mix(MERGE_LANES.out.versions.first())
-
-        // 4. filter bams
-        if (!filter_bam) {
-            ch_mapped_bam = MERGE_LANES.out.bam
-        } else {
-            ch_filter_input = MERGE_LANES.out.bam
-            SAMTOOLS_VIEW(ch_filter_input, filter_bam_min, filter_bam_max)
-            ch_mapped_bam = SAMTOOLS_VIEW.out.bam
-            versions = versions.mix(SAMTOOLS_VIEW.out.versions.first())
-        }
-
-        PICARD_COLLECTALIGNMENTSUMMARYMETRICS (
-            ch_mapped_bam,
+        MAPPING_QC(
+            ch_input_sample,
+            bwa,
             fasta,
             dict,
-            filter_status
-            )
-        versions = versions.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.versions.first())
-        reports  = reports.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.metrics.collect{meta, report -> report})
-        PICARD_COLLECTINSERTSIZEMETRICS (
-            ch_mapped_bam,
-            filter_status
-            )
-        versions = versions.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.versions.first())
-        reports  = reports.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.size_metrics.collect{meta, report -> report})
-
-        MOSDEPTH(
-            ch_mapped_bam,
             chr_bed,
-            fasta,
+            filter_bam,
+            filter_bam_min,
+            filter_bam_max,
             filter_status
         )
-        //reports  = reports.mix(MOSDEPTH.out.reports.collect{meta, report -> report})
-        versions = versions.mix(MOSDEPTH.out.versions.first())
+        ch_mapped_bam = MAPPING_QC.out.bam
+        versions = versions.mix(MAPPING_QC.out.versions)
+        reports  = reports.mix(MAPPING_QC.out.reports)
     }
 
     // Calling step
