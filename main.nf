@@ -23,7 +23,6 @@ params.centromere            = params.centromere ?: getGenomeAttribute('centrome
 params.map_wig               = params.map_wig ?: getGenomeAttribute('map_wig')
 params.map_wig_file          = params.map_wig_file ?: getGenomeAttribute('map_wig_file')
 params.gc_wig                = params.gc_wig ?: getGenomeAttribute('gc_wig')
-params.pon_rds               = params.pon_rds ?: getGenomeAttribute('pon_rds')
 params.ichor_genome_build    = params.ichor_genome_build ?: getGenomeAttribute('ichor_genome_build')
 params.ichor_genome_style    = params.ichor_genome_style ?: getGenomeAttribute('ichor_genome_style')
 params.chr_bed               = params.chr_bed ?: getGenomeAttribute('chr_bed')
@@ -62,7 +61,6 @@ workflow {
     ch_medicc_genes = params.medicc_genes ? Channel.fromPath(params.medicc_genes).collect() : Channel.empty()
     ch_gc_wig = params.gc_wig ? Channel.fromPath(params.gc_wig).collect() : Channel.empty()
     ch_map_wig = params.map_wig_file ? Channel.fromPath(params.map_wig_file).collect() : Channel.empty()
-    ch_pon_rds = params.pon_rds ? Channel.fromPath(params.pon_rds).collect() : Channel.value([])
     ch_normal_wig = params.normal ? Channel.fromPath(params.normal).collect() : Channel.value([])
 
     //
@@ -95,7 +93,6 @@ workflow {
         ch_medicc_genes,
         ch_gc_wig,
         ch_map_wig,
-        ch_pon_rds,
         ch_normal_wig
     )
 

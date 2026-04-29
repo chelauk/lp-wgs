@@ -54,7 +54,6 @@ workflow LP_WGS {
     medicc_genes
     gc_wig
     map_wig
-    pon_rds
     normal_wig
 
     main:
@@ -219,7 +218,7 @@ workflow LP_WGS {
     // Collate and save software versions
     //
     version_yaml = softwareVersionsToYAML(versions)
-        .collectFile(storeDir: "${params.outdir}/pipeline_info", name: 'nf_core_sarek_software_mqc_versions.yml', sort: true, newLine: true)
+        .collectFile(storeDir: "${params.outdir}/pipeline_info", name: 'lp_wgs_software_mqc_versions.yml', sort: true, newLine: true)
 
     //
     // MODULE: MultiQC

@@ -253,11 +253,6 @@
             "format": "file-path",
             "exists": true
         },
-        "pon_rds": {
-            "type": ["string", "null"],
-            "format": "file-path",
-            "exists": true
-        },
         "chr_bed": {
             "type": ["string", "null"],
             "format": "file-path",
