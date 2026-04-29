@@ -1,8 +1,3 @@
-include { paramsSummaryMultiqc                              } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { softwareVersionsToYAML                            } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText                            } from '../subworkflows/local/utils_nfcore_lp_wgs_pipeline'
-include { paramsSummaryMap                                  } from 'plugin/nf-schema'
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
@@ -16,9 +11,9 @@ include { paramsSummaryMap                                  } from 'plugin/nf-sc
 include { BWA_MEM                     } from '../modules/nf-core/bwa/mem/main'
 include { QC_TRIM                     } from '../subworkflows/local/qc_trim/main'
 include { MERGE_LANES                 } from '../subworkflows/local/merge_lanes/main'
+include { REPORTING_MULTIQC           } from '../subworkflows/local/reporting_multiqc/main'
 include { MOSDEPTH                    } from '../modules/nf-core/mosdepth/main'
 include { PICARD_COLLECTINSERTSIZEMETRICS } from '../modules/nf-core/picard/collectinsertsizemetrics/main'
-include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 //include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 include { HMMCOPY_GCCOUNTER           } from '../modules/nf-core/hmmcopy/gccounter/main'
 include { HMMCOPY_READCOUNTER         } from '../modules/nf-core/hmmcopy/readcounter/main'
@@ -84,11 +79,9 @@ workflow LP_WGS {
     // define filter status
     filter_status = filter_bam ? "filter_${filter_bam_min}_${filter_bam_max}" : "filter_none"
 
-    // To gather all QC reports for MultiQC
-    ch_multiqc_files = Channel.empty()
-    multiqc_report   = Channel.empty()
-    reports          = Channel.empty()
-    versions         = Channel.empty()
+    // To gather QC reports and software versions for reporting
+    reports  = Channel.empty()
+    versions = Channel.empty()
 
     //
     // FASTQC, FASTP and BWA
@@ -229,36 +222,16 @@ workflow LP_WGS {
         MEDICC2(PREP_MEDICC2.out.for_medicc, medicc_arms, medicc_genes)
     }
 
-    //
-    // Collate and save software versions
-    //
-    ch_version_yaml = softwareVersionsToYAML(versions)
-        .collectFile(storeDir: "${outdir}/pipeline_info", name: 'lp_wgs_software_mqc_versions.yml', sort: true, newLine: true)
-
-    //
-    // MODULE: MultiQC
-    //
-    ch_multiqc_config        = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
-    ch_multiqc_custom_config = multiqc_config ? Channel.fromPath(multiqc_config, checkIfExists: true) : Channel.empty()
-    ch_multiqc_logo          = multiqc_logo ? Channel.fromPath(multiqc_logo, checkIfExists: true) : Channel.empty()
-    multiqc_summary_params   = paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
-    ch_workflow_summary      = Channel.value(paramsSummaryMultiqc(multiqc_summary_params))
-    multiqc_methods_template = multiqc_methods_description ? file(multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-    ch_methods_description   = Channel.value(methodsDescriptionText(multiqc_methods_template))
-    ch_multiqc_files         = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'lp_wgs_workflow_summary_mqc.yaml'))
-    ch_multiqc_files         = ch_multiqc_files.mix(ch_version_yaml)
-    ch_multiqc_files         = ch_multiqc_files.mix(reports)
-    ch_multiqc_files         = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'lp_wgs_methods_description_mqc.yaml', sort: true))
-
-    MULTIQC (
-        ch_multiqc_files.collect(),
-        ch_multiqc_config.toList(),
-        ch_multiqc_custom_config.toList(),
-        ch_multiqc_logo.toList()
+    REPORTING_MULTIQC(
+        versions,
+        reports,
+        outdir,
+        multiqc_config,
+        multiqc_logo,
+        multiqc_methods_description
     )
-    multiqc_report = MULTIQC.out.report.toList()
 
     emit:
-        multiqc_report // channel: /path/to/multiqc_report.html
-        versions
+    multiqc_report = REPORTING_MULTIQC.out.report // channel: /path/to/multiqc_report.html
+    versions
 }
