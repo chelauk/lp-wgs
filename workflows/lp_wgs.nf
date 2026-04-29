@@ -79,21 +79,18 @@ workflow LP_WGS {
     //
     // FASTQC, FASTP and BWA
     //
-    sort_bam = true
-    // Gather index for mapping given the chosen aligner
-    ch_map_index = bwa
     // bin_dir for Rscripts
     bin_dir = Channel.fromPath("$projectDir/bin").collect()
 
     // Mapping step
     if ( params.step == 'mapping' ) {
         // 1. QC and Trim with fastqc and fastp ( QC_TRIM subworkflow )
-        QC_TRIM ( ch_input_sample, ch_map_index, sort_bam)
+        QC_TRIM(ch_input_sample)
         versions = versions.mix(QC_TRIM.out.versions)
         reports  = reports.mix(QC_TRIM.out.reports)
 
         // 2. Map with BWA MEM
-        BWA_MEM( QC_TRIM.out.reads, ch_map_index, sort_bam) // If aligner is bwa-mem
+        BWA_MEM(QC_TRIM.out.reads, bwa, true) // If aligner is bwa-mem
         versions = versions.mix(BWA_MEM.out.versions.first())
 
         // 3. call the merge subworkflow
