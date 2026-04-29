@@ -123,7 +123,9 @@
             "type": "string"
         },
         "normal": {
-            "type": "string"
+            "type": ["string", "null"],
+            "format": "file-path",
+            "exists": true
         },
         "ichor_purity": {
             "type": "string"
@@ -152,7 +154,9 @@
             "default": "default"
         },
         "multiqc_config": {
-            "type": "string"
+            "type": ["string", "null"],
+            "format": "file-path",
+            "exists": true
         },
         "multiqc_title": {
             "type": "string"
@@ -210,43 +214,69 @@
             "default": "240.h"
         },
         "dict": {
-            "type": "string"
+            "type": ["string", "null"],
+            "format": "file-path",
+            "exists": true
         },
         "fasta": {
-            "type": "string"
+            "type": ["string", "null"],
+            "format": "file-path",
+            "exists": true
         },
         "fasta_fai": {
-            "type": "string"
+            "type": ["string", "null"],
+            "format": "file-path",
+            "exists": true
         },
         "bwa": {
-            "type": "string"
+            "type": ["string", "null"],
+            "format": "directory-path",
+            "exists": true
         },
         "centromere": {
-            "type": "string"
+            "type": ["string", "null"],
+            "format": "file-path",
+            "exists": true
         },
         "map_wig": {
-            "type": "string"
+            "type": ["string", "null"],
+            "format": "directory-path",
+            "exists": true
         },
         "map_wig_file": {
-            "type": ["string", "null"]
+            "type": ["string", "null"],
+            "format": "file-path",
+            "exists": true
         },
         "gc_wig": {
-            "type": ["string", "null"]
+            "type": ["string", "null"],
+            "format": "file-path",
+            "exists": true
         },
         "pon_rds": {
-            "type": ["string", "null"]
+            "type": ["string", "null"],
+            "format": "file-path",
+            "exists": true
         },
         "chr_bed": {
-            "type": "string"
+            "type": ["string", "null"],
+            "format": "file-path",
+            "exists": true
         },
         "medicc_arms": {
-            "type": "string"
+            "type": ["string", "null"],
+            "format": "file-path",
+            "exists": true
         },
         "medicc_genes": {
-            "type": "string"
+            "type": ["string", "null"],
+            "format": "file-path",
+            "exists": true
         },
         "chr_arm_boundaries": {
-            "type": "string"
+            "type": ["string", "null"],
+            "format": "file-path",
+            "exists": true
         },
         "qdnaseq_genome": {
             "type": ["string", "null"],
