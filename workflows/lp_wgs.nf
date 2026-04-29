@@ -1,28 +1,7 @@
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    VALIDATE INPUTS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
 include { paramsSummaryMultiqc                              } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML                            } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText                            } from '../subworkflows/local/utils_nfcore_lp_wgs_pipeline'
 include { paramsSummaryMap                                  } from 'plugin/nf-schema'
-
-// Check input path parameters to see if they exist
-def checkPathParamList = [
-    params.input,
-    params.multiqc_config,
-    params.bwa,
-    params.fasta,
-    params.fasta_fai,
-    params.centromere,
-    params.chr_arm_boundaries,
-    params.map_wig,
-    params.dict,
-    params.medicc_arms,
-    params.medicc_genes
-    ]
-for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
