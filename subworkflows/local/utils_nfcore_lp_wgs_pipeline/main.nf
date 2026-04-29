@@ -38,6 +38,9 @@ workflow PIPELINE_INITIALISATION {
     nextflow_cli_args //   array: List of positional nextflow CLI args
     outdir            //  string: The output directory where the results will be saved
     input             //  string: Path to input samplesheet
+    seq_center        //  string: Sequencing center metadata to add to each sample
+    seq_platform      //  string: Sequencing platform metadata to add to each sample
+    step              //  string: Pipeline stage selection used when shaping sample inputs
 
     main:
 
@@ -73,12 +76,13 @@ workflow PIPELINE_INITIALISATION {
     //
     UTILS_NFCORE_PIPELINE(nextflow_cli_args)
 
-    ch_from_samplesheet = params.input ? Channel.fromList(samplesheetToList(params.input, "./assets/schema_input.json")) : Channel.empty()
+    ch_from_samplesheet = input ? Channel.fromList(samplesheetToList(input, "./assets/schema_input.json")) : Channel.empty()
     SAMPLESHEET_TO_CHANNEL(
         ch_from_samplesheet,
-        params.seq_center,
-        params.seq_platform,
-        params.step)
+        seq_center,
+        seq_platform,
+        step
+    )
 
     emit:
     samplesheet = SAMPLESHEET_TO_CHANNEL.out.samplesheet
@@ -167,25 +171,15 @@ def methodsDescriptionText(mqc_methods_yaml) {
 }
 
 //
-// nf-core/sarek logo
+// lp_wgs help banner
 //
 def nfCoreLogo(monochrome_logs=true) {
     Map colors = logColours(monochrome_logs)
     String.format(
         """\n
         ${dashedLine(monochrome_logs)}
-                                                ${colors.green},--.${colors.black}/${colors.green},-.${colors.reset}
-        ${colors.blue}        ___     __   __   __   ___     ${colors.green}/,-._.--~\'${colors.reset}
-        ${colors.blue}  |\\ | |__  __ /  ` /  \\ |__) |__         ${colors.yellow}}  {${colors.reset}
-        ${colors.blue}  | \\| |       \\__, \\__/ |  \\ |___     ${colors.green}\\`-._,-`-,${colors.reset}
-                                                ${colors.green}`._,._,\'${colors.reset}
-        ${colors.white}      ____${colors.reset}
-        ${colors.white}    .´ _  `.${colors.reset}
-        ${colors.white}   /  ${colors.green}|\\${colors.reset}`-_ \\${colors.reset}     ${colors.blue} __        __   ___     ${colors.reset}
-        ${colors.white}  |   ${colors.green}| \\${colors.reset}  `-|${colors.reset}    ${colors.blue}|__`  /\\  |__) |__  |__/${colors.reset}
-        ${colors.white}   \\ ${colors.green}|   \\${colors.reset}  /${colors.reset}     ${colors.blue}.__| /¯¯\\ |  \\ |___ |  \\${colors.reset}
-        ${colors.white}    `${colors.green}|${colors.reset}____${colors.green}\\${colors.reset}´${colors.reset}
-
+        ${colors.purple}  lp_wgs${colors.reset}
+        ${colors.blue}  low-pass whole genome sequencing${colors.reset}
         ${colors.purple}  ${workflow.manifest.name} ${getWorkflowVersion()}${colors.reset}
         ${dashedLine(monochrome_logs)}
         """.stripIndent()

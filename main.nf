@@ -76,7 +76,10 @@ workflow {
         params.monochrome_logs,
         args,
         params.outdir,
-        params.input
+        params.input,
+        params.seq_center,
+        params.seq_platform,
+        params.step
     )
 
     LP_WGS (
