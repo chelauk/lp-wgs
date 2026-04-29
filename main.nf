@@ -93,7 +93,22 @@ workflow {
         ch_medicc_genes,
         ch_gc_wig,
         ch_map_wig,
-        ch_normal_wig
+        ch_normal_wig,
+        params.tools,
+        params.genome,
+        params.qdnaseq_genome,
+        params.step,
+        params.tech,
+        params.filter_bam,
+        params.filter_bam_min,
+        params.filter_bam_max,
+        params.call_gc,
+        params.bin,
+        params.ploidy,
+        params.outdir,
+        params.multiqc_config,
+        params.multiqc_logo,
+        params.multiqc_methods_description
     )
 
     //

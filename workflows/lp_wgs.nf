@@ -55,19 +55,34 @@ workflow LP_WGS {
     gc_wig
     map_wig
     normal_wig
+    tools
+    genome
+    qdnaseq_genome
+    step
+    tech
+    filter_bam
+    filter_bam_min
+    filter_bam_max
+    call_gc
+    bin_size
+    ploidy
+    outdir
+    multiqc_config
+    multiqc_logo
+    multiqc_methods_description
 
     main:
-    selected_tools = params.tools.tokenize(',').collect { it.trim() }.findAll { it }
+    selected_tools = tools.tokenize(',').collect { it.trim() }.findAll { it }
 
-    if (params.qdnaseq_genome?.startsWith('mm')) {
+    if (qdnaseq_genome?.startsWith('mm')) {
         unsupported_tools = selected_tools.intersect(['medicc'])
         if (unsupported_tools) {
-            exit 1, "Genome '${params.genome}' is configured as mouse (${params.qdnaseq_genome}), but these tools are still human-specific in this pipeline: ${unsupported_tools.join(', ')}."
+            exit 1, "Genome '${genome}' is configured as mouse (${qdnaseq_genome}), but these tools are still human-specific in this pipeline: ${unsupported_tools.join(', ')}."
         }
     }
 
     // define filter status
-    filter_status = params.filter_bam ? "filter_${params.filter_bam_min}_${params.filter_bam_max}" : "filter_none"
+    filter_status = filter_bam ? "filter_${filter_bam_min}_${filter_bam_max}" : "filter_none"
 
     // To gather all QC reports for MultiQC
     ch_multiqc_files = Channel.empty()
@@ -82,7 +97,7 @@ workflow LP_WGS {
     bin_dir = Channel.fromPath("$projectDir/bin").collect()
 
     // Mapping step
-    if ( params.step == 'mapping' ) {
+    if (step == 'mapping') {
         // 1. QC and Trim with fastqc and fastp ( QC_TRIM subworkflow )
         QC_TRIM(ch_input_sample)
         versions = versions.mix(QC_TRIM.out.versions)
@@ -97,11 +112,11 @@ workflow LP_WGS {
         versions = versions.mix(MERGE_LANES.out.versions.first())
 
         // 4. filter bams
-        if (!params.filter_bam) {
+        if (!filter_bam) {
             ch_mapped_bam = MERGE_LANES.out.bam
         } else {
             ch_filter_input = MERGE_LANES.out.bam
-            SAMTOOLS_VIEW(ch_filter_input, params.filter_bam_min, params.filter_bam_max)
+            SAMTOOLS_VIEW(ch_filter_input, filter_bam_min, filter_bam_max)
             ch_mapped_bam = SAMTOOLS_VIEW.out.bam
             versions = versions.mix(SAMTOOLS_VIEW.out.versions.first())
         }
@@ -133,31 +148,31 @@ workflow LP_WGS {
 
     // Calling step
 
-    ch_analysis_input = params.step == 'calling' \
+    ch_analysis_input = step == 'calling' \
     ? ch_input_sample \
     : ch_mapped_bam
 
     // 1. run the illumina tech branch
-    if (params.tech == 'illumina') {
-        if (params.step == 'calling' && params.filter_bam) {
+    if (tech == 'illumina') {
+        if (step == 'calling' && filter_bam) {
             ch_filter_input = ch_analysis_input
-            SAMTOOLS_VIEW(ch_filter_input, params.filter_bam_min, params.filter_bam_max)
+            SAMTOOLS_VIEW(ch_filter_input, filter_bam_min, filter_bam_max)
             ch_analysis_input = SAMTOOLS_VIEW.out.bam
             versions = versions.mix(SAMTOOLS_VIEW.out.versions.first())
         }
-    } else if (params.tech == 'nanopore') {
-        if (params.step == 'calling' && params.filter_bam) {
+    } else if (tech == 'nanopore') {
+        if (step == 'calling' && filter_bam) {
             ch_filter_input = ch_analysis_input
-            SAMTOOLS_NVIEW(ch_filter_input, params.filter_bam_min, params.filter_bam_max)
+            SAMTOOLS_NVIEW(ch_filter_input, filter_bam_min, filter_bam_max)
             ch_analysis_input = SAMTOOLS_NVIEW.out.bam.map { meta, bam, bai -> [meta, [bam, bai]] }
             versions = versions.mix(SAMTOOLS_NVIEW.out.versions.first())
         }
     } else {
-        exit 1, "Unsupported sequencing technology '${params.tech}'. Expected one of: illumina, nanopore."
+        exit 1, "Unsupported sequencing technology '${tech}'. Expected one of: illumina, nanopore."
     }
     // run hmmcopygccounter
-    if ( params.call_gc ) {
-        HMMCOPY_GCCOUNTER(fasta, params.bin )
+    if (call_gc) {
+        HMMCOPY_GCCOUNTER(fasta, bin_size)
         ch_gc_wig = HMMCOPY_GCCOUNTER.out.wig
         versions = versions.mix(HMMCOPY_GCCOUNTER.out.versions)
     } else {
@@ -183,8 +198,8 @@ workflow LP_WGS {
     // run PREP_ASCAT
 
     if (selected_tools.contains('ascat')) {
-        PREP_ASCAT( ch_analysis_input, params.bin )
-        RUN_ASCAT( PREP_ASCAT.out.for_ascat, params.ploidy, chr_arm_boundaries )
+        PREP_ASCAT(ch_analysis_input, bin_size)
+        RUN_ASCAT(PREP_ASCAT.out.for_ascat, ploidy, chr_arm_boundaries)
     }
 
     // run ACE
@@ -218,17 +233,17 @@ workflow LP_WGS {
     // Collate and save software versions
     //
     ch_version_yaml = softwareVersionsToYAML(versions)
-        .collectFile(storeDir: "${params.outdir}/pipeline_info", name: 'lp_wgs_software_mqc_versions.yml', sort: true, newLine: true)
+        .collectFile(storeDir: "${outdir}/pipeline_info", name: 'lp_wgs_software_mqc_versions.yml', sort: true, newLine: true)
 
     //
     // MODULE: MultiQC
     //
     ch_multiqc_config        = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
-    ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multiqc_config, checkIfExists: true) : Channel.empty()
-    ch_multiqc_logo          = params.multiqc_logo ? Channel.fromPath(params.multiqc_logo, checkIfExists: true) : Channel.empty()
+    ch_multiqc_custom_config = multiqc_config ? Channel.fromPath(multiqc_config, checkIfExists: true) : Channel.empty()
+    ch_multiqc_logo          = multiqc_logo ? Channel.fromPath(multiqc_logo, checkIfExists: true) : Channel.empty()
     multiqc_summary_params   = paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
     ch_workflow_summary      = Channel.value(paramsSummaryMultiqc(multiqc_summary_params))
-    multiqc_methods_template = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
+    multiqc_methods_template = multiqc_methods_description ? file(multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
     ch_methods_description   = Channel.value(methodsDescriptionText(multiqc_methods_template))
     ch_multiqc_files         = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'lp_wgs_workflow_summary_mqc.yaml'))
     ch_multiqc_files         = ch_multiqc_files.mix(ch_version_yaml)
