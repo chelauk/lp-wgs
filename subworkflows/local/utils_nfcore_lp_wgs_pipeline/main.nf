@@ -81,7 +81,9 @@ workflow PIPELINE_INITIALISATION {
         ch_from_samplesheet,
         seq_center,
         seq_platform,
-        step
+        step,
+        params.library,
+        params.fasta
     )
 
     emit:
