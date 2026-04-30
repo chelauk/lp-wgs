@@ -41,6 +41,8 @@ workflow PIPELINE_INITIALISATION {
     seq_center        //  string: Sequencing center metadata to add to each sample
     seq_platform      //  string: Sequencing platform metadata to add to each sample
     step              //  string: Pipeline stage selection used when shaping sample inputs
+    library           //  string: Library metadata to add to each sample
+    fasta             //  string: Reference fasta path used to shape sample inputs
 
     main:
 
@@ -82,8 +84,8 @@ workflow PIPELINE_INITIALISATION {
         seq_center,
         seq_platform,
         step,
-        params.library,
-        params.fasta
+        library,
+        fasta
     )
 
     emit:

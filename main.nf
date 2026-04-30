@@ -15,23 +15,23 @@ nextflow.enable.dsl = 2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-params.dict                  = params.dict ?: getGenomeAttribute('dict')
-params.fasta                 = params.fasta ?: getGenomeAttribute('fasta')
-params.fasta_fai             = params.fasta_fai ?: getGenomeAttribute('fasta_fai')
-params.bwa                   = params.bwa ?: getGenomeAttribute('bwa')
-params.centromere            = params.centromere ?: getGenomeAttribute('centromere')
-params.map_wig               = params.map_wig ?: getGenomeAttribute('map_wig')
-params.map_wig_file          = params.map_wig_file ?: getGenomeAttribute('map_wig_file')
-params.gc_wig                = params.gc_wig ?: getGenomeAttribute('gc_wig')
-params.ichor_genome_build    = params.ichor_genome_build ?: getGenomeAttribute('ichor_genome_build')
-params.ichor_genome_style    = params.ichor_genome_style ?: getGenomeAttribute('ichor_genome_style')
-params.chr_bed               = params.chr_bed ?: getGenomeAttribute('chr_bed')
-params.medicc_arms           = params.medicc_arms ?: getGenomeAttribute('medicc_arms')
-params.medicc_genes          = params.medicc_genes ?: getGenomeAttribute('medicc_genes')
-params.chr_arm_boundaries    = params.chr_arm_boundaries ?: getGenomeAttribute('chr_arm_boundaries')
-params.qdnaseq_genome        = params.qdnaseq_genome ?: getGenomeAttribute('qdnaseq_genome')
-params.qdnaseq_package       = params.qdnaseq_package ?: getGenomeAttribute('qdnaseq_package')
-params.hmmcopy_chromosomes   = params.hmmcopy_chromosomes ?: getGenomeAttribute('hmmcopy_chromosomes')
+ref_dict                  = params.dict ?: getGenomeAttribute('dict')
+ref_fasta                 = params.fasta ?: getGenomeAttribute('fasta')
+ref_fasta_fai             = params.fasta_fai ?: getGenomeAttribute('fasta_fai')
+ref_bwa                   = params.bwa ?: getGenomeAttribute('bwa')
+ref_centromere            = params.centromere ?: getGenomeAttribute('centromere')
+ref_map_wig               = params.map_wig ?: getGenomeAttribute('map_wig')
+ref_map_wig_file          = params.map_wig_file ?: getGenomeAttribute('map_wig_file')
+ref_gc_wig                = params.gc_wig ?: getGenomeAttribute('gc_wig')
+ref_ichor_genome_build    = params.ichor_genome_build ?: getGenomeAttribute('ichor_genome_build')
+ref_ichor_genome_style    = params.ichor_genome_style ?: getGenomeAttribute('ichor_genome_style')
+ref_chr_bed               = params.chr_bed ?: getGenomeAttribute('chr_bed')
+ref_medicc_arms           = params.medicc_arms ?: getGenomeAttribute('medicc_arms')
+ref_medicc_genes          = params.medicc_genes ?: getGenomeAttribute('medicc_genes')
+ref_chr_arm_boundaries    = params.chr_arm_boundaries ?: getGenomeAttribute('chr_arm_boundaries')
+ref_qdnaseq_genome        = params.qdnaseq_genome ?: getGenomeAttribute('qdnaseq_genome')
+ref_qdnaseq_package       = params.qdnaseq_package ?: getGenomeAttribute('qdnaseq_package')
+ref_hmmcopy_chromosomes   = params.hmmcopy_chromosomes ?: getGenomeAttribute('hmmcopy_chromosomes')
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -49,22 +49,22 @@ include { PIPELINE_COMPLETION              } from './subworkflows/local/utils_nf
 workflow {
     main:
     // Initialise genome resources close to the workflow entrypoint.
-    ch_fasta = params.fasta ? Channel.fromPath(params.fasta).map { path -> [[id: path.baseName], path] }.collect() : Channel.empty()
+    ch_fasta = ref_fasta ? Channel.fromPath(ref_fasta).map { path -> [[id: path.baseName], path] }.collect() : Channel.empty()
 
-    ch_dict = params.dict ? Channel.fromPath(params.dict).collect() : Channel.empty()
-    ch_fasta_fai = params.fasta_fai ? Channel.fromPath(params.fasta_fai).map { path -> [[id: 'fai'], path] }.collect() : Channel.empty()
-    ch_chr_arm_boundaries = params.chr_arm_boundaries ? Channel.fromPath(params.chr_arm_boundaries).collect() : Channel.empty()
-    ch_bwa = params.bwa ? Channel.fromPath(params.bwa).map { path -> [[id: 'bwa'], path] }.collect() : Channel.empty()
-    ch_chr_bed = params.chr_bed ? Channel.fromPath(params.chr_bed).collect() : Channel.empty()
-    ch_centromere = params.centromere ? Channel.fromPath(params.centromere).collect() : Channel.value([])
-    ch_medicc_arms = params.medicc_arms ? Channel.fromPath(params.medicc_arms).collect() : Channel.empty()
-    ch_medicc_genes = params.medicc_genes ? Channel.fromPath(params.medicc_genes).collect() : Channel.empty()
-    ch_gc_wig = params.gc_wig ? Channel.fromPath(params.gc_wig).collect() : Channel.empty()
-    ch_map_wig = params.map_wig_file ? Channel.fromPath(params.map_wig_file).collect() : Channel.empty()
+    ch_dict = ref_dict ? Channel.fromPath(ref_dict).collect() : Channel.empty()
+    ch_fasta_fai = ref_fasta_fai ? Channel.fromPath(ref_fasta_fai).map { path -> [[id: 'fai'], path] }.collect() : Channel.empty()
+    ch_chr_arm_boundaries = ref_chr_arm_boundaries ? Channel.fromPath(ref_chr_arm_boundaries).collect() : Channel.empty()
+    if (params.step == 'mapping' && !ref_bwa) {
+        error "No BWA index configured. genome=${params.genome}, igenomes_base=${params.igenomes_base}, genome_bwa=${getGenomeAttribute('bwa')}"
+    }
+    ch_bwa = ref_bwa ? Channel.fromPath(ref_bwa, checkIfExists: true).map { path -> [[id: 'bwa'], path] }.collect() : Channel.empty()
+    ch_chr_bed = ref_chr_bed ? Channel.fromPath(ref_chr_bed).collect() : Channel.empty()
+    ch_centromere = ref_centromere ? Channel.fromPath(ref_centromere).collect() : Channel.value([])
+    ch_medicc_arms = ref_medicc_arms ? Channel.fromPath(ref_medicc_arms).collect() : Channel.empty()
+    ch_medicc_genes = ref_medicc_genes ? Channel.fromPath(ref_medicc_genes).collect() : Channel.empty()
+    ch_gc_wig = ref_gc_wig ? Channel.fromPath(ref_gc_wig).collect() : Channel.empty()
+    ch_map_wig = ref_map_wig_file ? Channel.fromPath(ref_map_wig_file).collect() : Channel.empty()
     ch_normal_wig = params.normal ? Channel.fromPath(params.normal).collect() : Channel.value([])
-
-
-    ch_bwa.view { "ch_bwa: ${it}" }
     //
     // SUBWORKFLOW: Run initialisation tasks
     //
@@ -79,7 +79,9 @@ workflow {
         params.input,
         params.seq_center,
         params.seq_platform,
-        params.step
+        params.step,
+        params.library,
+        ref_fasta
     )
 
     LP_WGS (
@@ -98,7 +100,7 @@ workflow {
         ch_normal_wig,
         params.tools,
         params.genome,
-        params.qdnaseq_genome,
+        ref_qdnaseq_genome,
         params.step,
         params.tech,
         params.filter_bam,
