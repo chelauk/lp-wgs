@@ -25,7 +25,6 @@ workflow MAPPING_QC {
     QC_TRIM(ch_input_sample)
     versions = versions.mix(QC_TRIM.out.versions)
     reports  = reports.mix(QC_TRIM.out.reports)
-    QC_TRIM.out.reads.view { "QC_TRIM.out.reads: ${it}" }
 
     BWA_MEM(QC_TRIM.out.reads, bwa, true)
     versions = versions.mix(BWA_MEM.out.versions.first())
