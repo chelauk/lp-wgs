@@ -109,6 +109,7 @@ workflow {
         params.call_gc,
         params.bin,
         params.ploidy,
+        params.ascat_pcf_gamma,
         params.outdir,
         params.multiqc_config,
         params.multiqc_logo,

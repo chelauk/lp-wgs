@@ -9,6 +9,11 @@ ploidy <- as.integer(args[2])
 bin_dir <- args[3]
 chr_arm_boundaries <- args[4]
 genome <- if (length(args) >= 5) args[5] else "hg38"
+pcf_gamma <- if (length(args) >= 6) as.numeric(args[6]) else 10
+
+if (is.na(pcf_gamma) || pcf_gamma <= 0) {
+  stop("pcf_gamma must be a positive number")
+}
 
 arms <- read.table(chr_arm_boundaries, header = TRUE)
 source(paste0(bin_dir,"/00_general_functions.R"))
@@ -120,7 +125,7 @@ sample_seg <- pcf(data.frame(chr = chr_pos$chromosome,
                              pos = chr_pos$start,
                              p_mat),
                              arms = derive_arm_labels(chr_pos, arms, genome),
-                             gamma = 10, fast = FALSE)
+                             gamma = pcf_gamma, fast = FALSE)
 
 colnames(sample_seg)[7] <- sample_seg$sampleID[1]
 sample_seg$sampleID <- NULL

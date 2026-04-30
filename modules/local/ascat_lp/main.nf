@@ -9,6 +9,7 @@ process RUN_ASCAT {
     tuple val(meta), path(cna_segments), path(cna_bins)
     val(ploidy)
     path(chr_arm_boundaries)
+    val(ascat_pcf_gamma)
 
     output:
     tuple val(meta), path("*txt"), path("*pdf")
@@ -20,7 +21,7 @@ process RUN_ASCAT {
     def args = task.ext.args ?: ''
     def genome = params.qdnaseq_genome ?: 'hg38'
     """
-    forecast_ascat.R ${meta.id} ${ploidy} ${projectDir}/bin/ ${chr_arm_boundaries} ${genome}
+    forecast_ascat.R ${meta.id} ${ploidy} ${projectDir}/bin/ ${chr_arm_boundaries} ${genome} ${ascat_pcf_gamma}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -32,7 +33,7 @@ process RUN_ASCAT {
     def args = task.ext.args ?: ''
     def genome = params.qdnaseq_genome ?: 'hg38'
     """
-    echo  "forecast_ascat.R ${meta.id} ${ploidy} ${projectDir}/bin/ ${chr_arm_boundaries} ${genome}"
+    echo  "forecast_ascat.R ${meta.id} ${ploidy} ${projectDir}/bin/ ${chr_arm_boundaries} ${genome} ${ascat_pcf_gamma}"
     touch ${meta.id}.pdf
     touch ${meta.id}.txt
 

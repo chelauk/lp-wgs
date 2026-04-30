@@ -102,6 +102,12 @@
             "type": "integer",
             "default": 2
         },
+        "ascat_pcf_gamma": {
+            "type": "number",
+            "default": 10,
+            "exclusiveMinimum": 0,
+            "description": "Penalty parameter passed to copynumber::pcf for ASCAT low-pass segmentation."
+        },
         "bin": {
             "type": "integer",
             "default": 1000

@@ -53,6 +53,7 @@ workflow LP_WGS {
     call_gc
     bin_size
     ploidy
+    ascat_pcf_gamma
     outdir
     multiqc_config
     multiqc_logo
@@ -129,7 +130,7 @@ workflow LP_WGS {
 
     if (selected_tools.contains('ascat')) {
         PREP_ASCAT(ch_analysis_input, bin_size)
-        RUN_ASCAT(PREP_ASCAT.out.for_ascat, ploidy, chr_arm_boundaries)
+        RUN_ASCAT(PREP_ASCAT.out.for_ascat, ploidy, chr_arm_boundaries, ascat_pcf_gamma)
     }
 
     // run ACE
