@@ -57,6 +57,21 @@ set.seed(1)
 # Segment the data
 copy_numbers_segmented <- segmentBins(copy_numbers_normalized,
                                       transformFun = "sqrt")
+
+# SegmentBins implements the DNAcopy::segment function which uses the
+# circular binary segmentation (CBS) algorithm. This algorithm is not
+# deterministic, so you may get different results each time you run it.
+# Setting the seed ensures that you get the same results each time you
+# run the code.
+
+# in short it splits the chromosome into segments of similar copy number,
+# and then estimates the mean copy number for each segment.
+
+# 0.01  0.03 -0.02  0.00 | 0.55  0.61  0.58  0.60
+
+# Low-count bins and high-count bins do not have exactly the same variance.
+# A square-root transform is a classic variance-stabilising transform for count-like data.
+
 copy_numbers_segmented <- normalizeSegmentedBins(copy_numbers_segmented)
 
 # use the sqmodel function to estimate minima

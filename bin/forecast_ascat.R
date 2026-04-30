@@ -88,29 +88,6 @@ if (ncol(arms) < 2) {
 }
 arms[, 1] <- normalize_chr(arms[, 1])
 
-# log2R data output by QDNAseq.R
-# https://bioconductor.org/packages/release/bioc/vignettes/QDNAseq/inst/doc/QDNAseq.pdf # nolint: line_length_linter.
-# bins <- getBinAnnotations(binSize = binsize, genome = "hg38") # nolint: commented_code_linter, line_length_linter.
-# readCounts = binReadCounts(bins, bamfiles=bam) # nolint
-# readCountsFiltered = applyFilters(readCounts, residual=TRUE, blacklist=TRUE, mappability = 65, bases = 95) # nolint
-# readCountsFiltered = estimateCorrection(readCountsFiltered) # nolint
-# readCountsFiltered_XY = applyFilters(readCountsFiltered, residual=TRUE, blacklist=TRUE, mappability = 65, bases = 95, chromosomes=NA) # nolint
-# copyNumbers = correctBins(readCountsFiltered_XY) # nolint
-# copyNumbersNormalized = normalizeBins(copyNumbers) # nolint
-# copyNumbersSegmented = segmentBins(copyNumbersNormalized, transformFun="sqrt") # nolint
-# copyNumbersSegmented = normalizeSegmentedBins(copyNumbersSegmented) # nolint
-# copyNumbersCalled = callBins(copyNumbersSegmented,
-#                              method=c("cutoff"), # nolint
-#                              cutoffs=log2(c(deletion = 2 - 1.2, loss = 2 - 0.2, gain = 2 + 0.2, amplification = 2 + 1.2)/2)) # nolint
-
-## outputBINS
-# print(paste("bins_file:",paste0(patient,"_",sample,"_bins.txt"))) # nolint
-# exportBins(copyNumbersCalled, file = paste0(patient,"_",sample,"_bins.txt")) # nolint
-# lrrs = read.table(paste0(patient, "_",sample,"_bins.txt"), header = TRUE) # nolint
-# med_lrrs = median(lrrs[lrrs$chromosome %in% 1:22,5]) # nolint
-# lrrs[,5] = lrrs[,5] - med_lrrs nolint
-# write.table(lrrs, file = paste0(patient,"_",sample,"_bins.txt"), quote = FALSE, sep = "\t") # nolint
-
 patient_lrr <- read.table(paste0(id, "_bins.txt"),
                           header = TRUE, stringsAsFactors = FALSE)
 
@@ -128,6 +105,17 @@ colnames(p_mat) <- id
 # function pcf = Single-sample copy number segmentation
 # gamma
 # penalty for each discontinuity in the curve, default is 40.
+# pcf is a function from copynumber that performs piecewise constant fitting to segment the copy number data.
+# The gamma parameter controls the penalty for introducing a new segment, with higher values leading to fewer
+# segments. In this code, we set gamma to 10, which is a relatively low value, allowing for more segments to
+# be identified in the data. The fast parameter is set to FALSE, which means that the algorithm will not use
+# any speed optimizations and will perform a more thorough search for the optimal segmentation.
+# It is distinct from the Circular binary segmentation (CBS) algorithm, which is used by QDNAseq and other tools.
+# CBS is a specific method for segmenting copy number data, while pcf is a more general piecewise constant fitting
+#  method that can be applied to various types of data, including copy number data. The choice of segmentation
+#  method can affect the results, and pcf may be more flexible in certain cases, but it may also require more careful
+#  tuning of parameters like gamma to achieve optimal results.
+
 sample_seg <- pcf(data.frame(chr = chr_pos$chromosome,
                              pos = chr_pos$start,
                              p_mat),
@@ -142,7 +130,7 @@ expanded_segs <- rep(sample_seg[, 6], times = sample_seg$n.probes)
 names(expanded_segs) <- rep(id, length(expanded_segs))
 
 # runAscat
-mid_pld <- ploidy 
+mid_pld <- ploidy
 expand  <- 1.6
 mp      <- 1
 
