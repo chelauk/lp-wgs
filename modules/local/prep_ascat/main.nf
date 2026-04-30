@@ -1,6 +1,6 @@
 process PREP_ASCAT {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_low'
 
     conda "bioconductor-ace:1.16.0--r42hdfd78af_0"
     container "ace-qdnaseq_latest.sif"
@@ -29,7 +29,7 @@ process PREP_ASCAT {
         prep_ascat: 1
     END_VERSIONS
     """
-    
+
     stub:
     def args = task.ext.args ?: ''
     def genome = params.qdnaseq_genome ?: 'hg38'

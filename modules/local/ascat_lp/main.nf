@@ -1,10 +1,10 @@
 process RUN_ASCAT {
     tag "${meta.id}"
-    label 'process_medium'
+    label 'process_low'
 
     conda "bioconductor-ace:1.16.0--r42hdfd78af_0"
     container "forecast_lp_ascat.sif"
-    
+
     input:
     tuple val(meta), path(cna_segments), path(cna_bins)
     val(ploidy)
@@ -27,14 +27,14 @@ process RUN_ASCAT {
         ascat_lp: 0.01
     END_VERSIONS
     """
-    
+
     stub:
     def args = task.ext.args ?: ''
     def genome = params.qdnaseq_genome ?: 'hg38'
     """
     echo  "forecast_ascat.R ${meta.id} ${ploidy} ${projectDir}/bin/ ${chr_arm_boundaries} ${genome}"
     touch ${meta.id}.pdf
-    touch ${meta.id}.txt    
+    touch ${meta.id}.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

@@ -1,6 +1,6 @@
 process ACE {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_low'
 
     conda "bioconductor-ace:1.16.0--r42hdfd78af_0"
     container "ace-qdnaseq_latest.sif"
