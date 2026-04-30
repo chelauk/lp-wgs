@@ -139,6 +139,15 @@
         "ichor_purity_manual": {
             "type": "string"
         },
+        "ichor_genome_build": {
+            "type": ["string", "null"],
+            "description": "Genome build label passed to ichorCNA. If unset, the pipeline derives it from the selected genome configuration."
+        },
+        "ichor_genome_style": {
+            "type": ["string", "null"],
+            "enum": ["UCSC", "NCBI", null],
+            "description": "Chromosome naming style passed to ichorCNA. If unset, the pipeline derives it from the selected genome configuration."
+        },
         "validationShowHiddenParams": {
             "type": "boolean",
             "default": true
