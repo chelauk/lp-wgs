@@ -1,180 +1,139 @@
 ## Introduction
 
-**lp-wgs** is a bioinformatics analysis pipeline for shallow whole genome sequence analyses.
+**lp-wgs** is a Nextflow pipeline for shallow whole genome sequencing analysis. It can start from paired-end FASTQ files or aligned BAM files, then generate low-pass copy number and QC outputs from tools including FastQC, fastp, BWA, mosdepth, Picard, HMMcopy, ichorCNA, QDNAseq, ACE, ASCAT-style low-pass fitting, and optionally MEDICC2.
 
-The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules)
+The pipeline uses Nextflow DSL2 and supports containerised execution with Docker, Singularity/Apptainer, Podman, Shifter, Charliecloud, or Conda.
 
-## Pipeline summary
+## Pipeline Summary
 
-1.  Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
-2.  Trim Reads ([`Fastp`](https://github.com/OpenGene/fastp))
-3.  Align Reads ([`bwa`](https://github.com/lh3/bwa)) (optional: begin from this stage)
-4.  Filter Bam ([`samtools`](https://https://www.htslib.org/)) (optional: if it is set with --filter-bam the default is 90<=fragment size<=150, this can be set with --filter_bam_min and --filter_bam_max)
-5.  Coverage ([`mosdepth`](https://github.com/brentp/mosdepth))
-6.  Alignment QC with ([`picard`](https://broadinstitute.github.io/picard/))
-7.  GC counts ([`HMMcopy`](http://compbio.bccrc.ca/software/hmmcopy/))
-8.  read counts ([`HMMcopy`](http://compbio.bccrc.ca/software/hmmcopy/))
-9.  ICHOR cna calls and tumour cell fraction ([`ICHOR`](https://github.com/broadinstitute/ichorCNA/wiki))
-10. Segmentation and log read ratios QDNAseq ([`QDNAseq`](https://bioconductor.org/packages/release/bioc/html/QDNAseq.html))
-11. ACE cna calls and tumour cell fraction ([`ACE`](https://bioconductor.org/packages/release/bioc/html/ACE.html))
-12. ASCAT cna calls and purity/ploidy estimation ([`lpASCAT`](https://github.com/cresswell-lab/ASCATlp))
+When starting from FASTQ files (`--step mapping`), the pipeline runs:
 
-Bin options for ICHOR include 1000kb,500kb,100kb and 10kb these are set with the --bin parameter
-for ichor the normal fraction and ploids and subclone fractions can be set, see [`here`](https://github.com/broadinstitute/ichorCNA/wiki/Parameter-tuning-and-settings) for low tumour fractions
-setting
+1. Read QC with [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
+2. Read trimming with [fastp](https://github.com/OpenGene/fastp)
+3. Alignment with [BWA](https://github.com/lh3/bwa)
+4. Lane merging and BAM indexing
+5. Optional fragment-size BAM filtering with [samtools](https://www.htslib.org/)
+6. Alignment and insert-size QC with [Picard](https://broadinstitute.github.io/picard/)
+7. Coverage QC with [mosdepth](https://github.com/brentp/mosdepth)
 
-       --ichor_purity cf_dna
-* will set these parameters for ichor automatically
+When starting from BAM files (`--step calling`), or after mapping has completed, the pipeline runs copy number preparation and callers:
 
-        --normal "c(0.95, 0.99, 0.995, 0.999)"
-        --ploidy "c(2)"
-        --maxCN 3
-        --estimateScPrevalence FALSE
-        --scStates "c()"
-        --chrs "c(1:22)"
-        --chrTrain "c(1:22)"
+1. HMMcopy read counting, using a supplied GC wig or generating one with `--call_gc`
+2. ichorCNA tumour fraction and copy number calling
+3. QDNAseq segmentation and bin-level log2 ratios
+4. ACE absolute copy number estimation
+5. ASCAT-style low-pass purity, ploidy, and copy number fitting
+6. Optional MEDICC2 preparation and execution
+7. MultiQC reporting
 
-* otherwise you can set
+The caller set is controlled with `--tools`, for example `--tools ace,ichor,ascat`.
 
-       --ichor_purity_manual  c(0.95, 0.99, 0.995, 0.999)
-  which will set this parameter for ichor
+## Quick Start
 
-       --normal "c(0.95, 0.99, 0.995, 0.999)"
+Run from paired-end FASTQ files:
 
-
-9. ACE Absolute Copy number Estimation using low-coverage whole genome sequencing data ([`ACE`](https://github.com/tgac-vumc/ACE)). The default script for ACE is
-```
-library(ACE)
-args <- commandArgs(trailingOnly = TRUE)
-output_folder <- args[1]
-ploidy <- c(2, 3, 4)
-
-runACE(
-    outputdir = output_folder, filetype = "bam",
-    genome = "hg38", ploidies = ploidy
-)
-```
-10. Collate QC ([`MultiQC`](http://multiqc.info/))
-
-
-```mermaid
-flowchart TD
-step1(reference fasta)
-step2(fastqs)
-step2-->step3(qc fastqc)
-step2-->step4(trim fastp)
-step1-->step5(align bwa)
-step4-->step5(align bwa)
-step5-->step6(coverage mosdepth)
-step5-->step7(alignment qc picard)
-step1-->step13(gccounter HMMCOPY)
-step5-->step8(counter HMMCOPY)
-step13-->step9(CNA ICHOR)
-step8-->step9(CNA ICHOR)
-step5-->step10(DNA ACE)
-step5-->step14(segmentation and log read ratios)
-step10-->step11(copy number output)
-step9-->step11(copy number output)
-step14-->step15(ASCATlp)
-step15-->step11(copy number output)
-step3-->step12(multiqc)
-step6-->step12(multiqc)
+```bash
+nextflow run /path/to/lp_wgs \
+    --input samplesheet_fastq.csv \
+    --outdir results \
+    --igenomes_base /path/to/igenomes \
+    --step mapping \
+    -profile singularity \
+    -resume
 ```
 
-## slurm quick start:
+Run from existing BAM files:
 
-The pipeline will require a csv file with headers describing the paths to samples
-
-1. Starting from fastq example csv:
+```bash
+nextflow run /path/to/lp_wgs \
+    --input samplesheet_bam.csv \
+    --outdir results \
+    --igenomes_base /path/to/igenomes \
+    --step calling \
+    -profile singularity \
+    -resume
 ```
-patient,sample,lane,fastq_1,fastq_2
-patient1,sample1,1,./data/patient1_sample1_R1.fastq.gz,./data/patient1_sample1_R2.fastq.gz
-patient1,sample2,1,./data/patient1_sample2_R1.fastq.gz,./data/patient1_sample2_R2.fastq.gz
-patient2,sample1,1,./data/patient2_sample1_R1.fastq.gz,./data/patient2_sample1_R2.fastq.gz
-patient2,sample2,1,./data/patient2_sample2_R1.fastq.gz,./data/patient2_sample2_R2.fastq.gz
+
+## Samplesheets
+
+FASTQ input:
+
+```csv
+patient,sample,lane,fastq_1,fastq_2,predicted_ploidy
+patient1,sample1,1,/data/patient1_sample1_L001_R1.fastq.gz,/data/patient1_sample1_L001_R2.fastq.gz,2
+patient1,sample1,2,/data/patient1_sample1_L002_R1.fastq.gz,/data/patient1_sample1_L002_R2.fastq.gz,2
+patient1,sample2,1,/data/patient1_sample2_L001_R1.fastq.gz,/data/patient1_sample2_L001_R2.fastq.gz,3
 ```
-Multi-lane samples are merged automatically with sambamba
 
-example sbatch script:
+BAM input:
+
+```csv
+patient,sample,bam,bai,predicted_ploidy
+patient1,sample1,/data/patient1_sample1.bam,/data/patient1_sample1.bam.bai,2
+patient1,sample2,/data/patient1_sample2.bam,/data/patient1_sample2.bam.bai,3
 ```
-#!/bin/bash -l
-#SBATCH --job-name=nextflow
-#SBATCH --output=nextflow_out.txt
-#SBATCH --partition=master-worker
-#SBATCH --ntasks=1
-#SBATCH --time=96:00:00
 
-module load java/jdk15.0.1
-nextflow run /path/to/lp-wgs \
-		--input input_fastq.csv  \
-		--outdir results \
-		--igenomes_base /path/to/reference \
-		--step 'mapping' \
-		-c local.config \
-		-with-tower \
-		-profile singularity \
-		-resume
- ```
- note that when starting with fastq you need to add `--step mapping`
+`patient` and `sample` are required. `lane` is required for FASTQ input. `predicted_ploidy` is optional and defaults to `2`; it is used by ACE/ASCAT-related copy number steps.
 
- note with regard to the reference path it needs to match this pattern:
+## Common Parameters
+
+| Parameter | Default | Description |
+| --- | ---: | --- |
+| `--step` | `mapping` | Use `mapping` for FASTQ input or `calling` for BAM input. |
+| `--tools` | `ace,ichor,ascat` | Comma-separated copy number tools to run. |
+| `--bin` | `1000` | Bin size in kb for HMMcopy/ichorCNA-style read counting. Supported values in the bundled config are `10`, `50`, `500`, and `1000`. |
+| `--ploidy` | `2` | Default ploidy used by ASCAT-style fitting when sample-level ploidy is not supplied. |
+| `--ascat_pcf_gamma` | `10` | Penalty passed to `copynumber::pcf()` for ASCAT low-pass segmentation. Higher values produce fewer segments. |
+| `--filter_bam` | `false` | Filter BAMs by insert size before calling/QC. |
+| `--filter_bam_min` | `90` | Minimum insert size when `--filter_bam` is enabled. |
+| `--filter_bam_max` | `150` | Maximum insert size when `--filter_bam` is enabled. |
+| `--ichor_purity` | unset | Set to `cf_dna` to use low-fraction ichorCNA defaults. |
+| `--ichor_purity_manual` | unset | Manually pass ichorCNA normal fractions, for example `"c(0.95,0.99,0.995,0.999)"`. |
+| `--qdnaseq_genome` | genome config | Genome label used by QDNAseq/ASCAT support code: `hg19`, `hg38`, or `mm10`. |
+
+See [docs/usage.md](docs/usage.md) for more complete run examples and reference configuration notes.
+
+## Reference Data
+
+The default human configuration expects an iGenomes-style directory layout under `--igenomes_base`, including BWA indexes, FASTA, FASTA index, sequence dictionary, GC/mappability wig files, centromeres, and chromosome arm boundary files.
+
+You can override individual reference paths directly, for example:
+
+```bash
+--fasta /refs/Homo_sapiens_assembly38.fasta \
+--fasta_fai /refs/Homo_sapiens_assembly38.fasta.fai \
+--dict /refs/Homo_sapiens_assembly38.dict \
+--bwa /refs/BWAIndex \
+--chr_arm_boundaries /refs/chrArmBoundaries_hg38.txt
 ```
-            bwa                   = "${params.igenomes_base}/Homo_sapiens/GATK/GRCh38/Sequence/BWAIndex/"
-            dict                  = "${params.igenomes_base}/Homo_sapiens/GATK/GRCh38/Sequence/WholeGenomeFasta/Homo_sapiens_assembly38.dict"
-            fasta                 = "${params.igenomes_base}/Homo_sapiens/GATK/GRCh38/Sequence/WholeGenomeFasta/Homo_sapiens_assembly38.fasta"
-            fasta_fai             = "${params.igenomes_base}/Homo_sapiens/GATK/GRCh38/Sequence/WholeGenomeFasta/Homo_sapiens_assembly38.fasta.fai"
+
+## Output
+
+Results are written under:
+
+```text
+<outdir>/<patient>/<patient>_<sample>/low_pass_wgs/
 ```
-or you can modify the genomes.config file yourself
 
+The main result areas are:
 
-2. Starting from bam example csv:
-```
-patient,sample,bam,bai
-patient1,sample1,./data/patient1_sample1.bam,./data/patient1_sample1.bam.bai
-patient1,sample2,./data/patient1_sample2.bam,./data/patient1_sample2.bam.bai
-patient2,sample1,./data/patient2_sample1.bam,./data/patient2_sample1.bam.bai
-patient2,sample2,./data/patient2_sample2.bam,./data/patient2_sample2.bam.bai
-```
-example sbatch script:
-```
-#!/bin/bash -l
-#SBATCH --job-name=nextflow
-#SBATCH --output=nextflow_out.txt
-#SBATCH --partition=master-worker
-#SBATCH --ntasks=1
-#SBATCH --time=96:00:00
+- `reports/`: FastQC, Picard, mosdepth, and other QC outputs.
+- `ichorcna_<bin>/`: ichorCNA outputs for the chosen bin size.
+- `ace/`: ACE outputs.
+- `ascat/`: ASCAT low-pass copy number calls and plot PDFs.
+- `bwa/`: mapped BAM/BAM index outputs when mapping is run.
+- `<outdir>/reports/low_pass_wgs/`: MultiQC report and pipeline-level reporting files.
 
-module load java/jdk15.0.1
-nextflow run /path/to/lp-wgs \
-		--input input_fastq.csv  \
-		--outdir results \
-		--igenomes_base /path/to/reference \
-		--step 'calling' \
-		-c local.config \
-		-with-tower \
-		-profile singularity \
-		-resume
- ```
+See [docs/output.md](docs/output.md) for details.
 
-   Note that some form of configuration will be needed so that Nextflow knows how to fetch the required software. This is usually done in the form of a config profile (`YOURPROFILE` in the example command above). You can chain multiple config profiles in a comma-separated string.
+## Documentation
 
-   > - The pipeline comes with config profiles called `docker`, `singularity`, `podman`, `shifter`, `charliecloud` and `conda` which instruct the pipeline to use the named tool for software management. For example, `-profile test,docker`.
-   > - Please check [nf-core/configs](https://github.com/nf-core/configs#documentation) to see if a custom config file to run nf-core pipelines already exists for your Institute. If so, you can simply use `-profile <institute>` in your command. This will enable either `docker` or `singularity` and set the appropriate execution settings for your local compute environment.
-   > - If you are using `singularity`, please use the [`nf-core download`](https://nf-co.re/tools/#downloading-pipelines-for-offline-use) command to download images first, before running the pipeline. Setting the [`NXF_SINGULARITY_CACHEDIR` or `singularity.cacheDir`](https://www.nextflow.io/docs/latest/singularity.html?#singularity-docker-hub) Nextflow options enables you to store and re-use the images from a central location for future pipeline runs.
-   > - If you are using `conda`, it is highly recommended to use the [`NXF_CONDA_CACHEDIR` or `conda.cacheDir`](https://www.nextflow.io/docs/latest/conda.html) settings to store the environments in a central location for future pipeline runs.
-
-4. Start running your own analysis!
-
-   nextflow run lp-wgs --input samplesheet.csv --outdir <OUTDIR> --genome GRCh38 -profile <docker/singularity/podman/shifter/charliecloud/conda/institute>
-   ```
+- [Usage](docs/usage.md)
+- [Output](docs/output.md)
 
 ## Credits
 
 lp-wgs was originally written by Chela James George Cresswell.
-
-We thank the following people for their extensive assistance in the development of this pipeline:
-
-<!-- TODO nf-core: If applicable, make list of people who have also contributed -->
 
 ## Contributions and Support
 
@@ -182,17 +141,6 @@ If you would like to contribute to this pipeline, please see the [contributing g
 
 ## Citations
 
-<!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
-<!-- If you use  lp-wgs for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
-
-<!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->
-
 An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
 
 This pipeline uses code and infrastructure developed and maintained by the [nf-core](https://nf-co.re) community, reused here under the [MIT license](https://github.com/nf-core/tools/blob/master/LICENSE).
-
-> **The nf-core framework for community-curated bioinformatics pipelines.**
->
-> Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.
->
-> _Nat Biotechnol._ 2020 Feb 13. doi: [10.1038/s41587-020-0439-x](https://dx.doi.org/10.1038/s41587-020-0439-x).
