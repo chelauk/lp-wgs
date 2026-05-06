@@ -6,6 +6,7 @@ if (!require(CGHcall)) stop("Package 'CGHcall' missing\n.")
 if (!require(ACE)) stop("Package 'ACE' missing\n.")
 if (!require(bcp)) stop("Package 'bcp' missing\n.")
 if (!require(tidyverse)) stop("Package 'tidyverse' missing\n")
+if (!require(magrittr)) stop("Package 'magrittr' missing\n.")
 if (!require(pracma)) stop("Package 'pracma' missing\n")
 
 args <- commandArgs(trailingOnly = TRUE)
