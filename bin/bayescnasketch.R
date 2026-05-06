@@ -8,6 +8,7 @@ if (!require(bcp)) stop("Package 'bcp' missing\n.")
 if (!require(tidyverse)) stop("Package 'tidyverse' missing\n")
 if (!require(pracma)) stop("Package 'pracma' missing\n")
 
+args <- commandArgs(trailingOnly = TRUE)
 
 patient <- args[1]
 sample  <- args[2]
@@ -65,9 +66,9 @@ bins_df <- data.frame(
 dir.create(paste0(patient,"_",sample,"_bcp", showWarnings = FALSE)
 
 for (chr in autosomes) {
-  
+
   chr_data <- get_chr_signal(copy_numbers_normalized, chr)
-  
+
   denoised <- bcp(
     chr_data$y,
     p0 = 0.01,
@@ -75,7 +76,7 @@ for (chr in autosomes) {
     mcmc = 2000,
     return.mcmc = TRUE
   )
-  
+
   pdf(
     file = paste0(
       patient, "_", sample,"_bcp/",
@@ -84,14 +85,14 @@ for (chr in autosomes) {
     width = 10,
     height = 6
   )
-  
+
   plot(
     denoised,
     main = paste0(
       "Posterior Means and Probabilities of a Change — chr", chr
     )
   )
-  
+
   dev.off()
 }
 
