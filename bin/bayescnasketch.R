@@ -180,16 +180,18 @@ res <- runASCATlp(
 pdf(
   paste0(
          patient, "_", sample,"_bcp/",
-         patient,"_",sample,"bcp_wgs_profile.pdf"
+         patient,"_",sample,"_bcp_wgs_profile.pdf"
          ),
   width = 10,
   height = 6)
 
-p  +
+print(
+  p  +
   labs(
     x = "Chromosome",
     y = "Copy number",
     title = paste("BayesCNA genome-wide profile, purity =", res$Purity)
   ) +
   theme_bw()
+)
 dev.off()
