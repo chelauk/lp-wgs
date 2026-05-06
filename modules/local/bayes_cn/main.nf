@@ -1,0 +1,42 @@
+process RUN_BAYES {
+    tag "${meta.id}"
+    label 'process_low'
+
+    container "bcp-qdnaseq_latest.sif"
+
+    input:
+    tuple val(meta), path(bam), path(bai)
+    val (bin)
+
+    output:
+    tuple val(meta), path("**/*.csv"), path("**/*.pdf") 
+
+    when:
+    task.ext.when == null || task.ext.when
+
+    script:
+    def args = task.ext.args ?: ''
+    def genome = params.qdnaseq_genome ?: 'hg38'
+    """
+    bayescnasketch.R ${meta.patient} ${meta.sample} $bin ${projectDir}/bin/ $bam ${genome}
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        bcp: 0.01
+    END_VERSIONS
+    """
+
+    stub:
+    def args = task.ext.args ?: ''
+    def genome = params.qdnaseq_genome ?: 'hg38'
+    """
+    echo  "bayescnasketch.R ${meta.patient} ${meta.sample} $bam ${projectDir}/bin/ ${genome}"
+    touch ${meta.id}.pdf
+    touch ${meta.id}.csv
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        ascat_lp: stub version
+    END_VERSIONS
+    """
+}

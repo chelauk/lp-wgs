@@ -16,6 +16,7 @@ include { ICHORCNA_RUN                } from '../modules/nf-core/ichorcna/run/ma
 include { ACE                         } from '../modules/local/ace/main'
 include { PREP_ASCAT                  } from '../modules/local/prep_ascat/main'
 include { RUN_ASCAT                   } from '../modules/local/ascat_lp/main'
+include { RUN_BAYES                   } from '../modules/local/bayes_cn/main'
 include { PREP_MEDICC2                } from '../modules/local/prep_medicc2/main'
 include { MEDICC2                     } from '../modules/local/medicc2/main'
 
@@ -147,6 +148,11 @@ workflow LP_WGS {
             .filter { tuple -> tuple[1].size() > 1 }
             .set { prep_medicc2_input }
     }
+
+    // run bayes_cna
+    if (selected_tools.contains('bayes_cna')) {
+        RUN_BAYES(ch_analysis_input, bin_size )
+        }
 
     //run prep_medicc
     if (selected_tools.contains('medicc')) {

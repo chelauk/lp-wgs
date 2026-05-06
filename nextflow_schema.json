@@ -80,8 +80,8 @@
         },
         "tools": {
             "type": "string",
-            "default": "ace,ichor,ascat",
-            "pattern": "^[A-Za-z,]+$",
+            "default": "ace,ichor,ascat,bayes_cna",
+            "pattern": "^[A-Za-z_,]+$",
             "description": "Comma-separated list of downstream calling tools to run."
         },
         "call_gc": {
