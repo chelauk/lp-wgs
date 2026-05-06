@@ -131,7 +131,7 @@ workflow LP_WGS {
 
     if (selected_tools.contains('ascat')) {
         PREP_ASCAT(ch_analysis_input, bin_size)
-        RUN_ASCAT(PREP_ASCAT.out.for_ascat, ploidy, chr_arm_boundaries, ascat_pcf_gamma)
+        RUN_ASCAT(PREP_ASCAT.out.for_ascat, ploidy, chr_arm_boundaries, qdnaseq_genome, ascat_pcf_gamma)
     }
 
     // run ACE
@@ -151,7 +151,7 @@ workflow LP_WGS {
 
     // run bayes_cna
     if (selected_tools.contains('bayes_cna')) {
-        RUN_BAYES(ch_analysis_input, bin_size )
+        RUN_BAYES(ch_analysis_input, bin_size, qdnaseq_genome)
         }
 
     //run prep_medicc

@@ -7,6 +7,7 @@ process RUN_BAYES {
     input:
     tuple val(meta), path(bam), path(bai)
     val (bin)
+    val(qdnaseq_genome)
 
     output:
     tuple val(meta), path("**/*.csv"), path("**/*.pdf") 
@@ -16,7 +17,7 @@ process RUN_BAYES {
 
     script:
     def args = task.ext.args ?: ''
-    def genome = params.qdnaseq_genome ?: 'hg38'
+    def genome = qdnaseq_genome ?: 'hg38'
     """
     bayescnasketch.R ${meta.patient} ${meta.sample} $bin ${projectDir}/bin/ $bam ${genome}
 
@@ -28,7 +29,7 @@ process RUN_BAYES {
 
     stub:
     def args = task.ext.args ?: ''
-    def genome = params.qdnaseq_genome ?: 'hg38'
+    def genome = qdnaseq_genome ?: 'hg38'
     """
     echo  "bayescnasketch.R ${meta.patient} ${meta.sample} $bam ${projectDir}/bin/ ${genome}"
     touch ${meta.id}.pdf
