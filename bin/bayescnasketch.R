@@ -63,7 +63,7 @@ bins_df <- data.frame(
   use        = copy_numbers_normalized@featureData@data$use
 )
 
-dir.create(paste0(patient,"_",sample,"_bcp", showWarnings = FALSE)
+dir.create(paste0(patient, "_", sample, "_bcp"), showWarnings = FALSE)
 
 for (chr in autosomes) {
 
