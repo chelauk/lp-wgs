@@ -1,3 +1,6 @@
+#!/usr/bin/env Rscript
+
+
 if (!require(QDNAseq)) stop("Package 'QDNAseq' missing\n.")
 if (!require(CGHcall)) stop("Package 'CGHcall' missing\n.")
 if (!require(ACE)) stop("Package 'ACE' missing\n.")
@@ -59,7 +62,7 @@ bins_df <- data.frame(
   use        = copy_numbers_normalized@featureData@data$use
 )
 
-dir.create("posterior_probabilities", showWarnings = FALSE)
+dir.create(paste0(patient,"_",sample,"_bcp", showWarnings = FALSE)
 
 for (chr in autosomes) {
   
@@ -149,7 +152,7 @@ write.csv(bayes_segments,
                         patient, "_", sample,"_bcp/",
                         patient,"_",sample,"_bcp_segments.csv"
                         ),
-          sep  = ",", row.names = FALSE)
+          row.names = FALSE)
 
 segs_auto <- log2(bayes_segments$mean_cn / 2)
 
