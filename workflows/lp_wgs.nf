@@ -46,6 +46,9 @@ workflow LP_WGS {
     tools
     genome
     qdnaseq_genome
+    qdnaseq_package
+    ichor_genome_build
+    ichor_genome_style
     step
     tech
     filter_bam
@@ -122,6 +125,8 @@ workflow LP_WGS {
             ch_gc_wig,
             map_wig,
             centromere,
+            ichor_genome_build,
+            ichor_genome_style,
             filter_status
         )
         versions= versions.mix(ICHORCNA_RUN.out.versions)
@@ -130,13 +135,13 @@ workflow LP_WGS {
     // run PREP_ASCAT
 
     if (selected_tools.contains('ascat')) {
-        PREP_ASCAT(ch_analysis_input, bin_size)
+        PREP_ASCAT(ch_analysis_input, bin_size, qdnaseq_genome, qdnaseq_package)
         RUN_ASCAT(PREP_ASCAT.out.for_ascat, ploidy, chr_arm_boundaries, qdnaseq_genome, ascat_pcf_gamma)
     }
 
     // run ACE
     if (selected_tools.contains('ace')) {
-        ACE(ch_analysis_input, filter_status)
+        ACE(ch_analysis_input, filter_status, qdnaseq_genome)
         versions = versions.mix(ACE.out.versions)
         ACE.out.ace
             .map { meta, ace ->

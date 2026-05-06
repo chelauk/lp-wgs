@@ -12,6 +12,8 @@ process ICHORCNA_RUN {
     path(gc_wig)
     path map_wig
     path centromere
+    val ichor_genome_build
+    val ichor_genome_style
     val filter_status
 
     output:
@@ -27,8 +29,8 @@ process ICHORCNA_RUN {
     def args3 = task.ext.args3 ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def centro = centromere ? "--centromere ${centromere}" : ''
-    def genomeBuild = params.ichor_genome_build ?: (params.qdnaseq_genome ?: 'hg38')
-    def genomeStyle = params.ichor_genome_style ?: (genomeBuild?.startsWith('mm') ? 'NCBI' : 'UCSC')
+    def genomeBuild = ichor_genome_build ?: 'hg38'
+    def genomeStyle = ichor_genome_style ?: (genomeBuild?.startsWith('mm') ? 'NCBI' : 'UCSC')
     def VERSION = '0.3.2' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
     if [ ! -d $filter_status ]; then
@@ -58,8 +60,8 @@ process ICHORCNA_RUN {
     def args3 = task.ext.args3 ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def centro = centromere ? "--centromere ${centromere}" : ''
-    def genomeBuild = params.ichor_genome_build ?: (params.qdnaseq_genome ?: 'hg38')
-    def genomeStyle = params.ichor_genome_style ?: (genomeBuild?.startsWith('mm') ? 'NCBI' : 'UCSC')
+    def genomeBuild = ichor_genome_build ?: 'hg38'
+    def genomeStyle = ichor_genome_style ?: (genomeBuild?.startsWith('mm') ? 'NCBI' : 'UCSC')
     def VERSION = '0.3.2' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
     if [ ! -d $filter_status ]; then

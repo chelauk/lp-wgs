@@ -8,6 +8,8 @@ process PREP_ASCAT {
     input:
     tuple val(meta), path(bam), path(bai)
     val(bin)
+    val(qdnaseq_genome)
+    val(qdnaseq_package)
 
     output:
     tuple val(meta), path("*.pdf"), path("*txt"), emit: qdnaseq_out
@@ -19,8 +21,8 @@ process PREP_ASCAT {
 
     script:
     def args = task.ext.args ?: ''
-    def genome = params.qdnaseq_genome ?: 'hg38'
-    def qdnaseqPackage = params.qdnaseq_package ?: 'QDNAseq.hg38'
+    def genome = qdnaseq_genome ?: 'hg38'
+    def qdnaseqPackage = qdnaseq_package ?: 'QDNAseq.hg38'
     """
     QDNAseq.R ${meta.patient} ${meta.sample} $bin $bam ${genome} ${qdnaseqPackage}
 
@@ -32,8 +34,8 @@ process PREP_ASCAT {
 
     stub:
     def args = task.ext.args ?: ''
-    def genome = params.qdnaseq_genome ?: 'hg38'
-    def qdnaseqPackage = params.qdnaseq_package ?: 'QDNAseq.hg38'
+    def genome = qdnaseq_genome ?: 'hg38'
+    def qdnaseqPackage = qdnaseq_package ?: 'QDNAseq.hg38'
     """
     echo  "QDNAseq.R ${meta.patient} ${meta.sample} $bin $bam ${genome} ${qdnaseqPackage}"
     touch "${meta.id}.cna_segments.txt"

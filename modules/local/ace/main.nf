@@ -8,6 +8,7 @@ process ACE {
     input:
     tuple val(meta), path(bam), path(bai)
     val(filter_status)
+    val(qdnaseq_genome)
 
     output:
     tuple val(meta), path("${meta.sample}_${filter_status}"),  emit: ace
@@ -19,7 +20,7 @@ process ACE {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def genome = params.qdnaseq_genome ?: 'hg38'
+    def genome = qdnaseq_genome ?: 'hg38'
     """
     prefix=$prefix
 
@@ -40,7 +41,7 @@ process ACE {
     stub:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def genome = params.qdnaseq_genome ?: 'hg38'
+    def genome = qdnaseq_genome ?: 'hg38'
     """
     mkdir ${meta.sample}_${filter_status}
     echo "ace.R ${meta.sample}_${filter_status} ${genome}"
