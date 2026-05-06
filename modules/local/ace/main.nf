@@ -9,6 +9,7 @@ process ACE {
     tuple val(meta), path(bam), path(bai)
     val(filter_status)
     val(qdnaseq_genome)
+    val(ace_ploidy)
 
     output:
     tuple val(meta), path("${meta.sample}_${filter_status}"),  emit: ace
@@ -31,7 +32,7 @@ process ACE {
     if [ ! -d "${meta.sample}_${filter_status}" ]; then
     mkdir "${meta.sample}_${filter_status}"
     fi
-    ace.R ${meta.sample}_${filter_status} ${genome}
+    ace.R ${meta.sample}_${filter_status} ${genome} "${ace_ploidy}"
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -44,7 +45,7 @@ process ACE {
     def genome = qdnaseq_genome ?: 'hg38'
     """
     mkdir ${meta.sample}_${filter_status}
-    echo "ace.R ${meta.sample}_${filter_status} ${genome}"
+    echo "ace.R ${meta.sample}_${filter_status} ${genome} \"${ace_ploidy}\""
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         ace: stub version
