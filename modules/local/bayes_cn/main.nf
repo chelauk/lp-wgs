@@ -10,7 +10,7 @@ process RUN_BAYES {
     val(qdnaseq_genome)
 
     output:
-    tuple val(meta), path("**/*.csv"), path("**/*.pdf") 
+    tuple val(meta), path("*_bcp")
 
     when:
     task.ext.when == null || task.ext.when
