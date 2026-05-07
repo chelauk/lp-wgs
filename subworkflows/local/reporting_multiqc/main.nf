@@ -1,6 +1,5 @@
 include { paramsSummaryMultiqc   } from '../../../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../../../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText } from '../../../subworkflows/local/utils_nfcore_lp_wgs_pipeline'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { MULTIQC                } from '../../../modules/nf-core/multiqc/main'
 
@@ -26,6 +25,7 @@ workflow REPORTING_MULTIQC {
     ch_workflow_summary      = Channel.value(paramsSummaryMultiqc(multiqc_summary_params))
     multiqc_methods_template = multiqc_methods_description ? file(multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
     ch_methods_description   = Channel.value(methodsDescriptionText(multiqc_methods_template))
+    ch_methods_description   = Channel.value(WorkflowWgs.methodsDescriptionText(workflow, multiqc_methods_template))
 
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'lp_wgs_workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(ch_version_yaml)
