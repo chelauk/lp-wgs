@@ -61,9 +61,9 @@ FASTQ input:
 
 ```csv
 patient,sample,lane,fastq_1,fastq_2,predicted_ploidy
-patient1,sample1,1,/data/patient1_sample1_L001_R1.fastq.gz,/data/patient1_sample1_L001_R2.fastq.gz,2
-patient1,sample1,2,/data/patient1_sample1_L002_R1.fastq.gz,/data/patient1_sample1_L002_R2.fastq.gz,2
-patient1,sample2,1,/data/patient1_sample2_L001_R1.fastq.gz,/data/patient1_sample2_L001_R2.fastq.gz,3
+patient1,sample1,1,/data/patient1_sample1_L001_R1.fastq.gz,/data/patient1_sample1_L001_R2.fastq.gz
+patient1,sample1,2,/data/patient1_sample1_L002_R1.fastq.gz,/data/patient1_sample1_L002_R2.fastq.gz
+patient1,sample2,1,/data/patient1_sample2_L001_R1.fastq.gz,/data/patient1_sample2_L001_R2.fastq.gz
 ```
 
 BAM input:
