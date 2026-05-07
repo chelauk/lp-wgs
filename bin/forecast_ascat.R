@@ -12,89 +12,92 @@ genome <- if (length(args) >= 5) args[5] else "hg38"
 pcf_gamma <- if (length(args) >= 6) as.numeric(args[6]) else 10
 
 if (is.na(pcf_gamma) || pcf_gamma <= 0) {
-  stop("pcf_gamma must be a positive number")
+    stop("pcf_gamma must be a positive number")
 }
 
 arms <- read.table(chr_arm_boundaries, header = TRUE)
-source(paste0(bin_dir,"/00_general_functions.R"))
-source(paste0(bin_dir,"/runASCATlp.R"))
+source(paste0(bin_dir, "/00_general_functions.R"))
+source(paste0(bin_dir, "/runASCATlp.R"))
 
 autosomes <- switch(
-  genome,
-  hg38 = as.character(1:22),
-  hg19 = as.character(1:22),
-  mm10 = as.character(1:19),
-  stop(sprintf("Unsupported ASCAT genome '%s'", genome))
+    genome,
+    hg38 = as.character(1:22),
+    hg19 = as.character(1:22),
+    mm10 = as.character(1:19),
+    stop(sprintf("Unsupported ASCAT genome '%s'", genome))
 )
 chromosome_levels <- c(autosomes, "X", "Y")
 
 normalize_chr <- function(x) {
-  gsub("^chr", "", as.character(x), ignore.case = TRUE)
+    gsub("^chr", "", as.character(x), ignore.case = TRUE)
 }
 
 derive_arm_labels <- function(chr_pos, arms_table, genome) {
-  chrom <- normalize_chr(chr_pos$chromosome)
-  start <- chr_pos$start
+    chrom <- normalize_chr(chr_pos$chromosome)
+    start <- chr_pos$start
 
-  # Mouse chromosomes are effectively acrocentric/telocentric here, so
-  # segment per chromosome instead of forcing a p/q split.
-  if (startsWith(genome, "mm")) {
-    return(rep("p", length(chrom)))
-  }
-
-  arm_col <- names(arms_table)[tolower(names(arms_table)) %in% c("arm", "chromosome_arm")]
-  start_col <- names(arms_table)[tolower(names(arms_table)) %in% c("start", "chromstart", "arm_start")]
-  end_col <- names(arms_table)[tolower(names(arms_table)) %in% c("end", "stop", "chromend", "arm_end")]
-
-  if (length(arm_col) > 0 && length(start_col) > 0 && length(end_col) > 0) {
-    arm_chr <- normalize_chr(arms_table[[1]])
-    arm_start <- as.numeric(arms_table[[start_col[1]]])
-    arm_end <- as.numeric(arms_table[[end_col[1]]])
-    arm_name <- tolower(as.character(arms_table[[arm_col[1]]]))
-
-    derived <- rep(NA_character_, length(chrom))
-    for (i in seq_along(chrom)) {
-      hit <- which(
-        arm_chr == chrom[i] &
-        !is.na(arm_start) &
-        !is.na(arm_end) &
-        arm_start <= start[i] &
-        arm_end >= start[i]
-      )
-      if (length(hit) > 0) {
-        derived[i] <- substr(arm_name[hit[1]], 1, 1)
-      }
+    # Mouse chromosomes are effectively acrocentric/telocentric here, so
+    # segment per chromosome instead of forcing a p/q split.
+    if (startsWith(genome, "mm")) {
+        return(rep("p", length(chrom)))
     }
-    if (all(derived %in% c("p", "q"), na.rm = TRUE) && !anyNA(derived)) {
-      return(derived)
+
+        arm_col <- names(arms_table)[tolower(names(arms_table))
+        %in% c("arm", "chromosome_arm")]
+        start_col <- names(arms_table)[tolower(names(arms_table))
+        %in% c("start", "chromstart", "arm_start")]
+        end_col <- names(arms_table)[tolower(names(arms_table))
+        %in% c("end", "stop", "chromend", "arm_end")]
+
+    if (length(arm_col) > 0 && length(start_col) > 0 && length(end_col) > 0) {
+        arm_chr <- normalize_chr(arms_table[[1]])
+        arm_start <- as.numeric(arms_table[[start_col[1]]])
+        arm_end <- as.numeric(arms_table[[end_col[1]]])
+        arm_name <- tolower(as.character(arms_table[[arm_col[1]]]))
+
+        derived <- rep(NA_character_, length(chrom))
+        for (i in seq_along(chrom)) {
+            hit <- which(
+                arm_chr == chrom[i] &
+                !is.na(arm_start) &
+                !is.na(arm_end) &
+                arm_start <= start[i] &
+                arm_end >= start[i]
+            )
+            if (length(hit) > 0) {
+            derived[i] <- substr(arm_name[hit[1]], 1, 1)
+            }
+        }
+        if (all(derived %in% c("p", "q"), na.rm = TRUE) && !anyNA(derived)) {
+            return(derived)
+        }
     }
-  }
 
-  boundary <- suppressWarnings(as.numeric(arms_table[[2]]))
-  if (all(is.na(boundary))) {
-    stop("Could not derive chromosome arms from chr_arm_boundaries")
-  }
+    boundary <- suppressWarnings(as.numeric(arms_table[[2]]))
+    if (all(is.na(boundary))) {
+        stop("Could not derive chromosome arms from chr_arm_boundaries")
+    }
 
-  boundary_map <- setNames(boundary, normalize_chr(arms_table[[1]]))
-  p_boundary <- unname(boundary_map[chrom])
-  if (anyNA(p_boundary)) {
-    missing_chr <- unique(chrom[is.na(p_boundary)])
-    stop(sprintf(
-      "Missing chr_arm_boundaries entries for chromosome(s): %s",
-      paste(missing_chr, collapse = ", ")
-    ))
-  }
+    boundary_map <- setNames(boundary, normalize_chr(arms_table[[1]]))
 
-  ifelse(start <= p_boundary, "p", "q")
+    p_boundary <- unname(boundary_map[chrom])
+    if (anyNA(p_boundary)) {
+            missing_chr <- unique(chrom[is.na(p_boundary)])
+            stop(sprintf(
+                "Missing chr_arm_boundaries entries for chromosome(s): %s",
+                paste(missing_chr, collapse = ", ")
+            ))
+        }
+    ifelse(start <= p_boundary, "p", "q")
 }
 
 if (ncol(arms) < 2) {
-  stop("chr_arm_boundaries must have at least two columns")
+    stop("chr_arm_boundaries must have at least two columns")
 }
 arms[, 1] <- normalize_chr(arms[, 1])
 
 patient_lrr <- read.table(paste0(id, "_bins.txt"),
-                          header = TRUE, stringsAsFactors = FALSE)
+                            header = TRUE, stringsAsFactors = FALSE)
 
 # Get the index of bins
 chr_pos <- patient_lrr[, 2:4]
@@ -110,22 +113,29 @@ colnames(p_mat) <- id
 # function pcf = Single-sample copy number segmentation
 # gamma
 # penalty for each discontinuity in the curve, default is 40.
-# pcf is a function from copynumber that performs piecewise constant fitting to segment the copy number data.
-# The gamma parameter controls the penalty for introducing a new segment, with higher values leading to fewer
-# segments. In this code, we set gamma to 10, which is a relatively low value, allowing for more segments to
-# be identified in the data. The fast parameter is set to FALSE, which means that the algorithm will not use
-# any speed optimizations and will perform a more thorough search for the optimal segmentation.
-# It is distinct from the Circular binary segmentation (CBS) algorithm, which is used by QDNAseq and other tools.
-# CBS is a specific method for segmenting copy number data, while pcf is a more general piecewise constant fitting
-#  method that can be applied to various types of data, including copy number data. The choice of segmentation
-#  method can affect the results, and pcf may be more flexible in certain cases, but it may also require more careful
-#  tuning of parameters like gamma to achieve optimal results.
+# pcf is a function from copynumber that performs piecewise constant fitting to
+# segment the copy number data. The gamma parameter controls the penalty for
+# introducing a new segment, with higher values leading to fewer segments. In
+# this code, we set gamma to 10, which is a relatively low value, allowing for
+# more segments to be identified in the data. The fast parameter is set to
+# FALSE, which means that the algorithm will not use any speed optimizations and
+# will perform a more thorough search for the optimal segmentation.
+# It is distinct from the Circular binary segmentation (CBS) algorithm, which is
+# used by QDNAseq and other tools. CBS is a specific method for segmenting copy
+# number data, while pcf is a more general piecewise constant fitting method
+# that can be applied to various types of data, including copy number data. The
+# choice of segmentation method can affect the results, and pcf may be more
+# flexible in certain cases, but it may also require more careful tuning of
+# parameters like gamma to achieve optimal results.
 
-sample_seg <- pcf(data.frame(chr = chr_pos$chromosome,
-                             pos = chr_pos$start,
-                             p_mat),
-                             arms = derive_arm_labels(chr_pos, arms, genome),
-                             gamma = pcf_gamma, fast = FALSE)
+sample_seg <- pcf(
+    data.frame(
+        chr = chr_pos$chromosome,
+        pos = chr_pos$start,
+        p_mat),
+        arms = derive_arm_labels(chr_pos, arms, genome),
+        gamma = pcf_gamma, fast = FALSE
+        )
 
 colnames(sample_seg)[7] <- sample_seg$sampleID[1]
 sample_seg$sampleID <- NULL
@@ -147,10 +157,11 @@ ps <- FALSE
 pr <- 1000  # irrelevant because preset (ps) is FALSE
 pp <- 1000  # irrelevant because preset (ps) is FALSE
 
-res <- runASCATlp(lrrs = segs_auto, fix_ploidy = mid_pld, pad_ploidy = expand,
-                  interval = 0.01, min_purity = 0.01, max_lrr = Inf,
-                  no_fit_psit = 2, preset = ps, preset_purity = pr,
-                  preset_ploidy = pp, max_purity = mp)
+res <- runASCATlp(
+    lrrs = segs_auto, fix_ploidy = mid_pld, pad_ploidy = expand,
+    interval = 0.01, min_purity = 0.01, max_lrr = Inf,
+    no_fit_psit = 2, preset = ps, preset_purity = pr,
+    preset_ploidy = pp, max_purity = mp)
 
 
 sex_segs <- expanded_segs[!autosome_index]
@@ -172,52 +183,66 @@ cn_output   <- data.frame(cna_data$CN)
 colnames(cn_output) <- sample_name
 
 # Make a plot dataframe
-plt_df <- data.frame(genome.bin = seq_along(cna_data$bins),
-                     Chromosome = chr_pos$chromosome,
-                     Log2ratio = cna_data$bins,
-                     mean_segment = cna_data$segs,
-                     Call = as.factor(cna_data$CN))
+plt_df <- data.frame(
+    genome.bin = seq_along(cna_data$bins),
+    Chromosome = chr_pos$chromosome,
+    Log2ratio = cna_data$bins,
+    mean_segment = cna_data$segs,
+    Call = as.factor(cna_data$CN)
+    )
 
 # Max CN
 max_cn <- 2
 min_cn <- -2
 
 # lines across
-lines_across <- data.frame(x1 = 1,
-                           y1 = min_cn:max_cn,
-                           x2 = length(cna_data$bins),
-                           y2 = min_cn:max_cn)
+lines_across <- data.frame(
+    x1 = 1,
+    y1 = min_cn:max_cn,
+    x2 = length(cna_data$bins),
+    y2 = min_cn:max_cn
+    )
 
 # lines going up for chromosomes
-lines_vertical <- data.frame(x1 = c(1, cumsum(table(plt_df$Chromosome))),
-                             y1 = min_cn,
-                             x2 = c(1, cumsum(table(plt_df$Chromosome))),
-                             y2 = max_cn)
+lines_vertical <- data.frame(
+    x1 = c(1, cumsum(table(plt_df$Chromosome))),
+    y1 = min_cn,
+    x2 = c(1, cumsum(table(plt_df$Chromosome))),
+    y2 = max_cn
+    )
 
 # Remove any chromosome labels due to congestion?
 chrs_lab <- chromosome_levels
 
 # Make the plot
 p <- ggplot(plt_df, aes(x = genome.bin, y = Log2ratio, col = Call)) +
-       geom_hline(yintercept = c(-2, -1, 0, 1, 2), lty = c("solid"), lwd = 0.2) +
-       geom_point() +
-       scale_colour_manual(values = cols) +
-       scale_x_continuous(name = "Chromosomes", labels = chrs_lab,
-                          breaks = {
+        geom_hline(yintercept = c(-2, -1, 0, 1, 2), lty = c("solid"), lwd = 0.2) +
+        geom_point() +
+        scale_colour_manual(values = cols) +
+        scale_x_continuous(name = "Chromosomes", labels = chrs_lab,
+                            breaks = {
                             chrom_sizes <- as.numeric(table(plt_df$Chromosome))
                             c(1, head(cumsum(chrom_sizes), -1)) + (chrom_sizes / 2)
-                          }) +
-       geom_vline(xintercept = c(1, cumsum(table(plt_df$Chromosome))), lty = "dotted") +
-       ggtitle(paste0(id, " Low pass calls - ", sample_name, ", purity=",
-                      cna_data$Purity, ", psit = ", cna_data$PsiT)) +
-       scale_y_continuous(limits = c(-2, 2), oob = scales::squish) +
-       theme(panel.grid.major = element_blank(),
-             panel.grid.minor = element_blank(),
-             panel.background = element_blank(),
-             plot.title = element_text(hjust = 0.5, size = 18)) +
-       geom_point(aes(y = mean_segment), color = "#000000")
+                            }) +
+        geom_vline(xintercept = c(1, cumsum(table(plt_df$Chromosome))), lty = "dotted") +
+        ggtitle(paste0( id, " Low pass calls - ", sample_name, ", purity=",
+                        cna_data$Purity, ", psit = ", cna_data$PsiT)) +
+        scale_y_continuous(limits = c(-2, 2), oob = scales::squish) +
+        theme(
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.background = element_blank(),
+            plot.title = element_text(hjust = 0.5, size = 18
+            ) +
+        geom_point(aes(y = mean_segment), color = "#000000")
 
-ggsave(paste0(id, "_ascat_lp_plot.pdf"), plot = p, width = 297, height = 210, units = "mm")
+ggsave(
+    paste0(id, "_ascat_lp_plot.pdf"),
+    plot = p,
+    width = 297,
+    height = 210,
+    units = "mm"
+    )
 
 autosome_index <- as.character(chr_pos$chromosome) %in% autosomes
 
@@ -227,17 +252,21 @@ ploidy_expected <- median(cna_data$CN) * ploidy_expected
 ploidy_expected <- round(ploidy_expected)
 
 # Get output metrics
-metrics <- data.frame(Sample = cna_data$sample_name, Purity = cna_data$Purity,
-                      PsiT = cna_data$PsiT,
-                      Ploidy = signif(mean(cna_data$CN[autosome_index]),
-                                      digits = 4),
-                      PGA = signif(length(which(
-                                                cna_data$CN != ploidy_expected))
-                      / length(cna_data$CN),
-                      digits = 4))
+metrics <- data.frame(
+    Sample = cna_data$sample_name, Purity = cna_data$Purity,
+    PsiT = cna_data$PsiT,
+    Ploidy = signif(mean(cna_data$CN[autosome_index]),
+    digits = 4),
+    PGA = signif(length(which(cna_data$CN != ploidy_expected))/length(cna_data$CN),
+    digits = 4)
+    )
 
 cn_out <- data.frame(res$CN)
 
 # output ascat calls
 write.table(cn_out, file = paste0(id,"_cna_ploidy_search_calls.txt"),
             quote = FALSE)
+# write metrics
+write.table(metrics, file = paste0(id,"_ascat_lp_metrics.txt"),
+            quote = FALSE, row.names = FALSE)
+
