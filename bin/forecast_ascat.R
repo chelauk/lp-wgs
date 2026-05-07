@@ -234,15 +234,14 @@ p <- ggplot(plt_df, aes(x = genome.bin, y = Log2ratio, col = Call)) +
             panel.background = element_blank(),
             plot.title = element_text(hjust = 0.5, size = 18
             ) +
-        geom_point(aes(y = mean_segment), color = "#000000")
-
-ggsave(
-    paste0(id, "_ascat_lp_plot.pdf"),
-    plot = p,
-    width = 297,
-    height = 210,
-    units = "mm"
-    )
+        geom_point(aes(y = mean_segment), color = "#000000") +
+        ggsave(
+            paste0(id, "_ascat_lp_plot.pdf"),
+            plot = p,
+            width = 297,
+            height = 210,
+            units = "mm"
+        )
 
 autosome_index <- as.character(chr_pos$chromosome) %in% autosomes
 
