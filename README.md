@@ -1,6 +1,6 @@
 ## Introduction
 
-**lp-wgs** is a Nextflow pipeline for shallow whole genome sequencing analysis. It can start from paired-end FASTQ files or aligned BAM files, then generate low-pass copy number and QC outputs from tools including FastQC, fastp, BWA, mosdepth, Picard, HMMcopy, ichorCNA, QDNAseq, ACE, ASCAT-style low-pass fitting, and optionally MEDICC2.
+**lp-wgs** is a Nextflow pipeline for shallow whole genome sequencing analysis. It can start from paired-end FASTQ files or aligned BAM files, then generate low-pass copy number and QC outputs from tools including FastQC, fastp, BWA, mosdepth, Picard, HMMcopy, ichorCNA, QDNAseq, ACE, ASCAT-style low-pass fitting, and optionally MEDICC2.  One of the strategies of this pipeline is to utilise multiple algorithms for segmentation including Hidden Markov Modelling (ichorCNA), circular binary segmentaion ( ACE ), piecewise constant fitting ( ASCATlp) and bayesian modelling (BayesCNA).
 
 The pipeline uses Nextflow DSL2 and supports containerised execution with Docker, Singularity/Apptainer, Podman, Shifter, Charliecloud, or Conda.
 
@@ -22,9 +22,10 @@ When starting from BAM files (`--step calling`), or after mapping has completed,
 2. ichorCNA tumour fraction and copy number calling
 3. QDNAseq segmentation and bin-level log2 ratios
 4. ACE absolute copy number estimation
-5. ASCAT-style low-pass purity, ploidy, and copy number fitting
-6. Optional MEDICC2 preparation and execution
-7. MultiQC reporting
+5. ASCATlp low-pass purity, ploidy, and copy number fitting
+6. BayesCNA bayesian model for segmentaion.
+7. Optional MEDICC2 preparation and execution
+8. MultiQC reporting
 
 The caller set is controlled with `--tools`, for example `--tools ace,ichor,ascat`.
 
