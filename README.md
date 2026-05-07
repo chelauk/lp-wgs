@@ -81,7 +81,7 @@ patient1,sample2,/data/patient1_sample2.bam,/data/patient1_sample2.bam.bai,3
 | Parameter | Default | Description |
 | --- | ---: | --- |
 | `--step` | `mapping` | Use `mapping` for FASTQ input or `calling` for BAM input. |
-| `--tools` | `ace,ichor,ascat` | Comma-separated copy number tools to run. |
+| `--tools` | `ace,ichor,ascat,bayes_cna` | Comma-separated copy number tools to run. |
 | `--bin` | `1000` | Bin size in kb for HMMcopy/ichorCNA-style read counting. Supported values in the bundled config are `10`, `50`, `500`, and `1000`. |
 | `--ploidy` | `2` | Default ploidy used by ASCAT-style fitting when sample-level ploidy is not supplied. |
 | `--ascat_pcf_gamma` | `10` | Penalty passed to `copynumber::pcf()` for ASCAT low-pass segmentation. Higher values produce fewer segments. |
