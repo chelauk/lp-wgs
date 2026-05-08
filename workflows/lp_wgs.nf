@@ -52,6 +52,7 @@ workflow LP_WGS {
     step
     tech
     sort
+    fastp_adapter_fasta
     filter_bam
     filter_bam_min
     filter_bam_max
@@ -93,6 +94,7 @@ workflow LP_WGS {
             dict,
             chr_bed,
             sort,
+            fastp_adapter_fasta,
             filter_bam,
             filter_bam_min,
             filter_bam_max,

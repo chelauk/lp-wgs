@@ -8,6 +8,7 @@ include { FASTP   } from '../../../modules/nf-core/fastp/main'
 workflow QC_TRIM {
     take:
     ch_reads // channel: [ val(meta), fastq_1, fastq_2 ]
+    fastp_adapter_fasta
 
     main:
     versions = Channel.empty()
@@ -23,16 +24,17 @@ workflow QC_TRIM {
 
     adapter_fasta = fastp_adapter_fasta ? file(fastp_adapter_fasta, checkIfExists: true) : []
 
-    ch_fastp_input = ch_input_sample.map { meta, reads ->
-    tuple(meta, reads, adapter_fasta)
+    ch_fastp_input = ch_reads_for_qc.map { meta, reads ->
+        tuple(meta, reads, adapter_fasta)
     }
 
+    discard_trimmed_pass = false
     save_trimmed_fail = false
     save_merged = false
 
     FASTP(
-        ch_reads_for_qc,
-        [],  // default adapter sequences
+        ch_fastp_input,
+        discard_trimmed_pass,
         save_trimmed_fail,
         save_merged
     )

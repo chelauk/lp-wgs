@@ -87,6 +87,11 @@
         "call_gc": {
             "type": "string"
         },
+        "fastp_adapter_fasta": {
+            "type": "string",
+            "format": "file-path",
+            "description": "Optional adapter FASTA passed to fastp --adapter_fasta."
+        },
         "filter_bam": {
             "type": "boolean"
         },

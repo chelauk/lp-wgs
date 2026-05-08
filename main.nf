@@ -107,6 +107,7 @@ workflow {
         params.step,
         params.tech,
         params.sort,
+        params.fastp_adapter_fasta,
         params.filter_bam,
         params.filter_bam_min,
         params.filter_bam_max,

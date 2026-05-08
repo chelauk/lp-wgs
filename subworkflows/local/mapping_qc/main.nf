@@ -14,6 +14,7 @@ workflow MAPPING_QC {
     dict
     chr_bed
     sort
+    fastp_adapter_fasta
     filter_bam
     filter_bam_min
     filter_bam_max
@@ -23,7 +24,7 @@ workflow MAPPING_QC {
     reports  = Channel.empty()
     versions = Channel.empty()
 
-    QC_TRIM(ch_input_sample)
+    QC_TRIM(ch_input_sample, fastp_adapter_fasta)
     versions = versions.mix(QC_TRIM.out.versions)
     reports  = reports.mix(QC_TRIM.out.reports)
 
