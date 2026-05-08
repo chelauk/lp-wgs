@@ -49,7 +49,7 @@
                     },
                     "ichorcna/run": {
                         "branch": "master",
-                        "git_sha": "7c51d3e30559100439671cf49fa221ec6c22b91e",
+                        "git_sha": "6d46786420b4d7bc88eba026eb389c0c5535d120",
                         "installed_by": [
                             "modules"
                         ]

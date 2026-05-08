@@ -2,87 +2,106 @@ process ICHORCNA_RUN {
     tag "$meta.id"
     label 'process_low'
 
-    // WARN: Version information not provided by tool on CLI. Please update version string below when bumping container versions.
-    conda "bioconda::r-ichorcna=0.3.2"
-    container "ichor_1_2.sif"
+    conda "${moduleDir}/environment.yml"
+    container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?
+        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/f0/f07cec06705b4443052d3d7eaccebdbd0078366f7d074bfd4a6893980c6e2c4b/data' :
+        'community.wave.seqera.io/library/r-ichorcna:0.5.1--eed4be826f05c9d4' }"
 
     input:
     tuple val(meta), path(wig)
-    path normal_wig
-    path(gc_wig)
+    path gc_wig
     path map_wig
+    path normal_wig
+    path normal_background
     path centromere
-    val ichor_genome_build
-    val ichor_genome_style
-    val filter_status
+    path rep_time_wig
+    path exons
 
     output:
-    tuple val(meta), path("filter*"),  emit: ichor_out
-    path "versions.yml"             ,  emit: versions
+    tuple val(meta), path("${prefix}.RData")             , emit: rdata
+    tuple val(meta), path("${prefix}.seg")               , emit: seg
+    tuple val(meta), path("${prefix}.cna.seg")           , emit: cna_seg
+    tuple val(meta), path("${prefix}.seg.txt")           , emit: seg_txt
+    tuple val(meta), path("${prefix}.correctedDepth.txt"), emit: corrected_depth
+    tuple val(meta), path("${prefix}.params.txt")        , emit: ichorcna_params
+    tuple val(meta), path("${prefix}/*.pdf")             , emit: plots
+    tuple val(meta), path("**/${prefix}_genomeWide.pdf") , emit: genome_plot
+    path "versions.yml"                                  , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ? "${task.ext.args} ${normal_wig}" : ''
-    def args2 = task.ext.args2 ?: ''
-    def args3 = task.ext.args3 ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
-    def centro = centromere ? "--centromere ${centromere}" : ''
-    def genomeBuild = ichor_genome_build ?: 'hg38'
-    def genomeStyle = ichor_genome_style ?: (genomeBuild?.startsWith('mm') ? 'NCBI' : 'UCSC')
-    def VERSION = '0.3.2' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
+    def args = task.ext.args       ?: ''
+    prefix = task.ext.prefix       ?: "${meta.id}"
+    def norm   = normal_wig        ? "normal_wig='${normal_wig}',"          : 'normal_wig=NULL,'
+    def pon    = normal_background ? "normal_panel='${normal_background}'," : 'normal_panel=NULL,'
+    def map    = map_wig           ? "mapWig='${map_wig}',"                 : 'mapWig=NULL,'
+    def centro = centromere        ? "centromere='${centromere}',"          : ''
+    def rep    = rep_time_wig      ? "repTimeWig='${rep_time_wig}',"        : 'repTimeWig=NULL,'
+    def exon   = exons             ? "exons.bed='${exons}',"                : ''
     """
-    if [ ! -d $filter_status ]; then
-    mkdir -p $filter_status
-    fi
-    runIchorCNA.R \\
-        $args \\
-        $args2 \\
-        $args3 \\
-        --WIG ${wig} \\
-        --id ${prefix} \\
-        --gcWig ${gc_wig} \\
-        --mapWig ${map_wig} \\
-        --genomeBuild ${genomeBuild} \\
-        --genomeStyle ${genomeStyle} \\
-        ${centro} \\
-        --outDir $filter_status
+    #!/usr/bin/env Rscript
+    library("ichorCNA")
+    library("yaml")
 
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        ichorcna: $VERSION
-    END_VERSIONS
+    run_ichorCNA(
+        tumor_wig='${wig}',
+        id='${prefix}',
+        cores=${task.cpus},
+        gcWig='${gc_wig}',
+        $norm
+        $pon
+        $map
+        $centro
+        $rep
+        $exon
+        $args
+        outDir="."
+    )
+
+
+    ### Make Versions YAML for NF-Core ###
+    versions = list()
+    versions["r"]        <- paste(R.Version()\$major, R.Version()\$minor, sep=".")
+    versions["ichorCNA"] <- paste(packageVersion("ichorCNA"), sep=".")
+
+    yaml_str <- as.yaml(
+        list(
+            "${task.process}" = versions
+        )
+    )
+    writeLines(yaml_str, file("versions.yml"))
     """
+
     stub:
-    def args = task.ext.args ? "${task.ext.args} ${normal_wig}" : ''
-    def args2 = task.ext.args2 ?: ''
-    def args3 = task.ext.args3 ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
-    def centro = centromere ? "--centromere ${centromere}" : ''
-    def genomeBuild = ichor_genome_build ?: 'hg38'
-    def genomeStyle = ichor_genome_style ?: (genomeBuild?.startsWith('mm') ? 'NCBI' : 'UCSC')
-    def VERSION = '0.3.2' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
-    """
-    if [ ! -d $filter_status ]; then
-    mkdir -p $filter_status
-    fi
-    echo -e 'runIchorCNA.R "
-    echo '$args' 
-    echo '$args2' 
-    echo '$args3' 
-    echo "    --WIG ${wig} "
-    echo "    --id ${prefix} "
-    echo "    --gcWig ${gc_wig} "
-    echo "    --mapWig ${map_wig} "
-    echo "    --genomeBuild ${genomeBuild} "
-    echo "    --genomeStyle ${genomeStyle} "
-    echo "    ${centro} "
-    echo "    --outDir ${filter_status}'
+    prefix = task.ext.prefix   ?: "${meta.id}"
 
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        ichorcna: $VERSION
-    END_VERSIONS
     """
+    #!/usr/bin/env Rscript
+    library("ichorCNA")
+    library("yaml")
+
+    file.create('${prefix}.RData')
+    file.create('${prefix}.seg')
+    file.create('${prefix}.cna.seg')
+    file.create('${prefix}.seg.txt')
+    file.create('${prefix}.correctedDepth.txt')
+    file.create('${prefix}.params.txt')
+    dir.create('${prefix}')
+    file.create('${prefix}/${prefix}_genomeWide.pdf')
+
+    ### Make Versions YAML for NF-Core ###
+    versions = list()
+    versions["r"]        <- paste(R.Version()\$major, R.Version()\$minor, sep=".")
+    versions["ichorCNA"] <- paste(packageVersion("ichorCNA"), sep=".")
+
+    yaml_str <- as.yaml(
+        list(
+            "${task.process}" = versions
+        )
+    )
+    writeLines(yaml_str, file("versions.yml"))
+    """
+
 }

@@ -126,13 +126,13 @@ workflow LP_WGS {
     if (selected_tools.contains('ichor')) {
         ICHORCNA_RUN(
             CALLING_PREP.out.readcounter_wig,
-            normal_wig,
             ch_gc_wig,
             map_wig,
+            normal_wig,
+            [],
             centromere,
-            ichor_genome_build,
-            ichor_genome_style,
-            filter_status
+            [],
+            []
         )
         versions= versions.mix(ICHORCNA_RUN.out.versions)
     }
