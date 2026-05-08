@@ -28,7 +28,6 @@ workflow MAPPING_QC {
     reports  = reports.mix(QC_TRIM.out.reports)
 
     BWA_MEM(QC_TRIM.out.reads, bwa, fasta, sort)
-    versions = versions.mix(BWA_MEM.out.versions.first())
 
     MERGE_LANES(BWA_MEM.out.bam)
     versions = versions.mix(MERGE_LANES.out.versions.first())
