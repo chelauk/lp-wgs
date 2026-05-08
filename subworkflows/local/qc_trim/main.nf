@@ -20,7 +20,6 @@ workflow QC_TRIM {
 
     FASTQC(ch_reads_for_qc)
     reports  = reports.mix(FASTQC.out.zip.collect { meta, logs -> logs })
-    versions = versions.mix(FASTQC.out.versions.first())
 
     adapter_fasta = fastp_adapter_fasta ? file(fastp_adapter_fasta, checkIfExists: true) : []
 
