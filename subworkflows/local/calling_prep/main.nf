@@ -47,8 +47,7 @@ workflow CALLING_PREP {
         ch_gc_wig = gc_wig
     }
 
-    HMMCOPY_READCOUNTER(ch_analysis_input)
-    versions = versions.mix(HMMCOPY_READCOUNTER.out.versions)
+    HMMCOPY_READCOUNTER(ch_analysis_input, fasta)
 
     emit:
     analysis_input = ch_analysis_input
