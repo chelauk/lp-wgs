@@ -13,6 +13,7 @@ workflow MAPPING_QC {
     fasta
     dict
     chr_bed
+    sort
     filter_bam
     filter_bam_min
     filter_bam_max
@@ -26,7 +27,7 @@ workflow MAPPING_QC {
     versions = versions.mix(QC_TRIM.out.versions)
     reports  = reports.mix(QC_TRIM.out.reports)
 
-    BWA_MEM(QC_TRIM.out.reads, bwa, true)
+    BWA_MEM(QC_TRIM.out.reads, bwa, fasta, sort)
     versions = versions.mix(BWA_MEM.out.versions.first())
 
     MERGE_LANES(BWA_MEM.out.bam)

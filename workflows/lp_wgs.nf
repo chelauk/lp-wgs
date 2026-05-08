@@ -51,6 +51,7 @@ workflow LP_WGS {
     ichor_genome_style
     step
     tech
+    sort
     filter_bam
     filter_bam_min
     filter_bam_max
@@ -91,6 +92,7 @@ workflow LP_WGS {
             fasta,
             dict,
             chr_bed,
+            sort,
             filter_bam,
             filter_bam_min,
             filter_bam_max,

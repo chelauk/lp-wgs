@@ -106,6 +106,7 @@ workflow {
         ref_ichor_genome_style,
         params.step,
         params.tech,
+        params.sort,
         params.filter_bam,
         params.filter_bam_min,
         params.filter_bam_max,
