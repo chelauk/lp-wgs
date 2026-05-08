@@ -41,9 +41,8 @@ workflow CALLING_PREP {
     }
 
     if (call_gc) {
-        HMMCOPY_GCCOUNTER(fasta, bin_size)
+        HMMCOPY_GCCOUNTER(fasta)
         ch_gc_wig = HMMCOPY_GCCOUNTER.out.wig
-        versions = versions.mix(HMMCOPY_GCCOUNTER.out.versions)
     } else {
         ch_gc_wig = gc_wig
     }
