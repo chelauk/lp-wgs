@@ -109,7 +109,7 @@ The `--tools` parameter controls downstream copy number tools. It is a comma-sep
 Default:
 
 ```bash
---tools ace,ichor,ascat
+--tools ace,ichor,ascat,bayes_cna
 ```
 
 Examples:
@@ -121,6 +121,17 @@ Examples:
 ```
 
 For mouse genomes (`qdnaseq_genome = mm10`), MEDICC is currently blocked by the workflow because it remains human-specific in this pipeline.
+
+The default caller set intentionally includes several tools that operate on similar low-pass WGS copy number signal. They are kept together because each caller encodes a different modelling strategy, which makes the pipeline useful for comparing concordance and caller-specific behaviour:
+
+| Tool | Modelling strategy | Role in the pipeline |
+| --- | --- | --- |
+| `ichor` / ichorCNA | Hidden Markov modelling | Estimates tumour fraction and copy number states from binned read depth. |
+| `ace` / ACE | Circular binary segmentation | Estimates absolute copy number using segmented low-pass profiles. |
+| `ascat` / ASCATlp | Piecewise constant fitting | Fits low-pass purity, ploidy, and copy number using PCF-segmented profiles. |
+| `bayes_cna` / BayesCNA | Bayesian inference | Models copy number using a Bayesian framework. |
+
+For a minimal run, choose one caller with `--tools`. For method comparison, keep multiple callers enabled and compare their segment-level and sample-level outputs.
 
 ## Bin Size
 

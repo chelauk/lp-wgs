@@ -69,6 +69,15 @@ Files can include:
 
 ## Copy Number Outputs
 
+The copy number callers are not redundant wrappers around the same algorithm. They provide complementary views of the same low-pass WGS read-depth signal:
+
+- ichorCNA uses hidden Markov modelling.
+- ACE uses circular binary segmentation.
+- ASCATlp uses piecewise constant fitting.
+- BayesCNA uses Bayesian inference.
+
+Running several callers can be useful when the goal is to compare method agreement, inspect caller-specific assumptions, or prioritise robust copy number events across approaches.
+
 ### HMMcopy Read Counts
 
 HMMcopy read-counter wig files are primarily intermediate files consumed by ichorCNA. They are collected into the workflow and may be visible in work directories, but the main published copy number outputs come from the caller directories below.
@@ -89,7 +98,7 @@ Files:
 
 - `filter*`: ichorCNA result files produced by the module, including copy number calls, parameters, and plots depending on ichorCNA output mode.
 
-The `<bin>` suffix reflects `--bin`, for example `ichorcna_1000`.
+The `<bin>` suffix reflects `--bin`, for example `ichorcna_1000`. ichorCNA is the hidden Markov model caller in the pipeline.
 
 ### QDNAseq Preparation
 
@@ -118,7 +127,7 @@ Files:
 - `*_ascat_lp_plot.pdf`: low-pass copy number plot with segment means and integer calls.
 - `*_cna_ploidy_search_calls.txt`: integer copy number calls from ASCAT-style low-pass fitting.
 
-ASCAT segmentation uses `copynumber::pcf()` with `--ascat_pcf_gamma` controlling the breakpoint penalty.
+ASCATlp is the piecewise constant fitting caller in the pipeline. Segmentation uses `copynumber::pcf()` with `--ascat_pcf_gamma` controlling the breakpoint penalty.
 
 ### ACE
 
@@ -131,6 +140,12 @@ Files:
 - `*filter_*`: ACE output directory/files for the filtered or unfiltered input state.
 - `*_sky_on_fire.pdf`: ACE square-model matrix plot.
 - `*_sqmodel_minmadf.txt`: ACE square-model minima table.
+
+ACE is the circular binary segmentation caller in the pipeline.
+
+### BayesCNA
+
+BayesCNA is the Bayesian inference caller in the pipeline. Its outputs are published under the BayesCNA-specific result directory when `bayes_cna` is included in `--tools`.
 
 ### MEDICC2
 

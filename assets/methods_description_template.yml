@@ -1,5 +1,5 @@
 id: "lp-wgs-methods-description"
-description: "Data were processed using bwa, ACE, ICHOR, a version of ASCAT and MEDICC2"
+description: "Data were processed using bwa and low-pass WGS copy number callers representing complementary modelling strategies: ichorCNA hidden Markov modelling, ACE circular binary segmentation, ASCATlp piecewise constant fitting, and BayesCNA Bayesian inference. MEDICC2 was optionally used for downstream copy number comparison where enabled."
 section_name: "lp-wgs Methods Description"
 section_href: "https://github.com/chelauk/lp-wgs"
 plot_type: "html"

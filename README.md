@@ -1,6 +1,13 @@
 ## Introduction
 
-**lp-wgs** is a Nextflow pipeline for shallow whole genome sequencing analysis. It can start from paired-end FASTQ files or aligned BAM files, then generate low-pass copy number and QC outputs from tools including FastQC, fastp, BWA, mosdepth, Picard, HMMcopy, ichorCNA, QDNAseq, ACE, ASCAT-style low-pass fitting, and optionally MEDICC2.  One of the strategies of this pipeline is to utilise multiple algorithms for segmentation including Hidden Markov Modelling (ichorCNA), circular binary segmentaion ( ACE ), piecewise constant fitting ( ASCATlp) and bayesian modelling (BayesCNA).
+**lp-wgs** is a Nextflow pipeline for shallow whole genome sequencing analysis. It can start from paired-end FASTQ files or aligned BAM files, then generate low-pass copy number and QC outputs from tools including FastQC, fastp, BWA, mosdepth, Picard, HMMcopy, ichorCNA, QDNAseq, ACE, ASCAT-style low-pass fitting, BayesCNA, and optionally MEDICC2.
+
+The pipeline deliberately supports multiple low-pass copy number callers because they model the same signal with different statistical assumptions. This allows results to be compared across complementary approaches:
+
+- ichorCNA: hidden Markov modelling for tumour fraction and copy number calling.
+- ACE: circular binary segmentation for absolute copy number estimation.
+- ASCATlp: piecewise constant fitting for low-pass purity, ploidy, and copy number inference.
+- BayesCNA: Bayesian inference for copy number modelling.
 
 The pipeline uses Nextflow DSL2 and supports containerised execution with Docker, Singularity/Apptainer, Podman, Shifter, Charliecloud, or Conda.
 
@@ -19,11 +26,11 @@ When starting from FASTQ files (`--step mapping`), the pipeline runs:
 When starting from BAM files (`--step calling`), or after mapping has completed, the pipeline runs copy number preparation and callers:
 
 1. HMMcopy read counting, using a supplied GC wig or generating one with `--call_gc`
-2. ichorCNA tumour fraction and copy number calling
+2. ichorCNA hidden Markov model tumour fraction and copy number calling
 3. QDNAseq segmentation and bin-level log2 ratios
-4. ACE absolute copy number estimation
-5. ASCATlp low-pass purity, ploidy, and copy number fitting
-6. BayesCNA bayesian model for segmentaion.
+4. ACE circular binary segmentation and absolute copy number estimation
+5. ASCATlp piecewise constant low-pass purity, ploidy, and copy number fitting
+6. BayesCNA Bayesian copy number inference
 7. Optional MEDICC2 preparation and execution
 8. MultiQC reporting
 
