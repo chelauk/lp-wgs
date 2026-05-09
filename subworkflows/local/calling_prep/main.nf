@@ -33,7 +33,7 @@ workflow CALLING_PREP {
         if (step == 'calling' && filter_bam) {
             ch_filter_input = ch_analysis_input
             SAMTOOLS_NVIEW(ch_filter_input, filter_bam_min, filter_bam_max)
-            ch_analysis_input = SAMTOOLS_NVIEW.out.bam.map { meta, bam, bai -> [meta, [bam, bai]] }
+            ch_analysis_input = SAMTOOLS_NVIEW.out.bam
             versions = versions.mix(SAMTOOLS_NVIEW.out.versions.first())
         }
     } else {

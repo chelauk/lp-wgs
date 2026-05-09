@@ -51,7 +51,8 @@ workflow MAPPING_QC {
     versions = versions.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.versions.first())
     reports  = reports.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.metrics.collect { meta, report -> report })
 
-    PICARD_COLLECTINSERTSIZEMETRICS(ch_mapped_bam)
+    ch_insert_metrics_input = ch_mapped_bam.map { meta, bam, bai -> [meta, bam] }
+    PICARD_COLLECTINSERTSIZEMETRICS(ch_insert_metrics_input)
     versions = versions.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.versions_picard.map { process, tool, version -> "${process}:\n    ${tool}: ${version}" }.first())
     reports  = reports.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.metrics.collect { meta, report -> report })
 
