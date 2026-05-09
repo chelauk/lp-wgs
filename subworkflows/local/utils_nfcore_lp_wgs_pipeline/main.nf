@@ -1,3 +1,5 @@
+import WorkflowWgs
+
 //
 // Subworkflow with functionality specific to the nf-core/lp-wgs pipeline
 //
@@ -8,11 +10,9 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { paramsSummaryMap          } from 'plugin/nf-schema'
-include { samplesheetToList         } from 'plugin/nf-schema'
 include { SAMPLESHEET_TO_CHANNEL    } from '../../local/samplesheet_to_channel'
-include { UTILS_NFVALIDATION_PLUGIN } from '../../local/utils_nfvalidation_plugin'
 include { UTILS_NEXTFLOW_PIPELINE   } from '../../nf-core/utils_nextflow_pipeline'
+include { UTILS_NFVALIDATION_PLUGIN } from '../../nf-core/utils_nfvalidation_plugin'
 include { UTILS_NFCORE_PIPELINE     } from '../../nf-core/utils_nfcore_pipeline'
 include { completionEmail           } from '../../nf-core/utils_nfcore_pipeline'
 include { completionSummary         } from '../../nf-core/utils_nfcore_pipeline'
@@ -75,7 +75,7 @@ workflow PIPELINE_INITIALISATION {
     //
     UTILS_NFCORE_PIPELINE(nextflow_cli_args)
 
-    ch_from_samplesheet = input ? Channel.fromList(samplesheetToList(input, "./assets/schema_input.json")) : Channel.empty()
+    ch_from_samplesheet = input ? Channel.fromList(samplesheetToList(input)) : Channel.empty()
     SAMPLESHEET_TO_CHANNEL(
         ch_from_samplesheet,
         seq_center,
@@ -109,7 +109,7 @@ workflow PIPELINE_COMPLETION {
 
     main:
 
-    summary_params = paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
+    summary_params = WorkflowWgs.paramsSummaryMap(workflow, params, "nextflow_schema.json")
 
     //
     // Completion email and summary
@@ -169,6 +169,25 @@ def methodsDescriptionText(mqc_methods_yaml) {
     def description_html = engine.createTemplate(methods_text).make(meta)
 
     return description_html.toString()
+}
+
+def samplesheetToList(samplesheet) {
+    return WorkflowWgs.parseSamplesheet(samplesheet).collect { row ->
+        def meta = [
+            patient         : row.patient,
+            sample          : row.sample,
+            predicted_ploidy: row.predicted_ploidy ? row.predicted_ploidy.toInteger() : 2
+        ]
+        if (row.lane) {
+            meta.lane = row.lane
+        }
+        def fastq_1 = row.fastq_1 ? file(row.fastq_1, checkIfExists: true) : []
+        def fastq_2 = row.fastq_2 ? file(row.fastq_2, checkIfExists: true) : []
+        def bam = row.bam ? file(row.bam, checkIfExists: true) : []
+        def bai = row.bai ? file(row.bai, checkIfExists: true) : []
+        def rds = row.rds ? file(row.rds, checkIfExists: true) : []
+        [meta, fastq_1, fastq_2, bam, bai, rds]
+    }
 }
 
 //

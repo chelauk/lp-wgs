@@ -1,7 +1,6 @@
 import WorkflowWgs
 
 include { paramsSummaryMultiqc   } from '../../../subworkflows/nf-core/utils_nfcore_pipeline'
-include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { MULTIQC                } from '../../../modules/nf-core/multiqc/main'
 
 workflow REPORTING_MULTIQC {
@@ -22,7 +21,7 @@ workflow REPORTING_MULTIQC {
     ch_multiqc_config        = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
     ch_multiqc_custom_config = multiqc_config ? Channel.fromPath(multiqc_config, checkIfExists: true) : Channel.empty()
     ch_multiqc_logo          = multiqc_logo ? Channel.fromPath(multiqc_logo, checkIfExists: true) : Channel.empty()
-    multiqc_summary_params   = paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
+    multiqc_summary_params   = WorkflowWgs.paramsSummaryMap(workflow, params, "nextflow_schema.json")
     ch_workflow_summary      = Channel.value(paramsSummaryMultiqc(multiqc_summary_params))
     multiqc_methods_template = multiqc_methods_description ? file(multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
     ch_methods_description   = Channel.value(WorkflowWgs.methodsDescriptionText(workflow, multiqc_methods_template))
