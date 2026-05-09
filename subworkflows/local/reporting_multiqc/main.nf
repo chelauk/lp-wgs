@@ -38,7 +38,11 @@ workflow REPORTING_MULTIQC {
         .combine(ch_multiqc_config.toList())
         .combine(ch_multiqc_custom_config.toList())
         .combine(ch_multiqc_logo.toList())
-        .map { files, base_config, custom_config, logo ->
+        .map { multiqc_input ->
+            def files = multiqc_input[0]
+            def base_config = multiqc_input[1]
+            def custom_config = multiqc_input[2]
+            def logo = multiqc_input[3]
             def configs = base_config + custom_config
             def logo_file = logo ? logo[0] : []
             [[id: 'lp_wgs'], files, configs, logo_file, [], []]
