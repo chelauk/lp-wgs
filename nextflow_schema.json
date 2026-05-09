@@ -45,6 +45,12 @@
                     "fa_icon": "fas fa-question-circle",
                     "hidden": true
                 },
+                "help": {
+                    "type": "boolean",
+                    "description": "Display help text and exit.",
+                    "fa_icon": "fas fa-question-circle",
+                    "hidden": true
+                },
                 "validate_params": {
                     "type": "boolean",
                     "description": "Boolean whether to validate parameters against the schema at runtime",
@@ -121,6 +127,11 @@
         "bin": {
             "type": "integer",
             "default": 1000
+        },
+        "map_bin": {
+            "type": "string",
+            "description": "Legacy/config compatibility value for map and GC wig bin labels, for example 1000kb.",
+            "hidden": true
         },
         "insertsizemetrics": {
             "type": "string"
@@ -226,17 +237,10 @@
             "type": "string",
             "default": "genomes"
         },
-        "max_memory": {
+        "trace_timestamp": {
             "type": "string",
-            "default": "128.GB"
-        },
-        "max_cpus": {
-            "type": "integer",
-            "default": 16
-        },
-        "max_time": {
-            "type": "string",
-            "default": "240.h"
+            "description": "Timestamp used to name Nextflow trace, report, timeline, and DAG files.",
+            "hidden": true
         },
         "dict": {
             "type": ["string", "null"],

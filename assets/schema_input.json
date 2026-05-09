@@ -20,7 +20,7 @@
                 "meta" : ["sample"]
             },
             "lane":{
-                "oneOf": [
+                "anyOf": [
                     {
                         "type": "string",
                         "pattern": "^\\S+$",
