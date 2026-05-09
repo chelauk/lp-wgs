@@ -1,7 +1,6 @@
 import WorkflowWgs
 
 include { paramsSummaryMultiqc   } from '../../../subworkflows/nf-core/utils_nfcore_pipeline'
-include { softwareVersionsToYAML } from '../../../subworkflows/nf-core/utils_nfcore_pipeline'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { MULTIQC                } from '../../../modules/nf-core/multiqc/main'
 
@@ -56,4 +55,56 @@ workflow REPORTING_MULTIQC {
 
     emit:
     report = MULTIQC.out.report.map { meta, report -> report }.toList()
+}
+
+//
+// Convert legacy versions.yml files into a MultiQC-ready YAML string.
+//
+def processVersionsFromYAML(yaml_file) {
+    def yaml = new org.yaml.snakeyaml.Yaml()
+    def versions = yaml.load(yaml_file).collectEntries { k, v -> [k.tokenize(':')[-1], v] }
+    return yaml.dumpAsMap(versions).trim()
+}
+
+//
+// Convert nf-core tuple-style version entries into a MultiQC-ready YAML string.
+//
+def processVersionsFromTuple(version) {
+    def yaml = new org.yaml.snakeyaml.Yaml()
+    def process = version[0].toString().tokenize(':')[-1]
+    def tool = version[1].toString()
+    def tool_version = version[2].toString()
+    return yaml.dumpAsMap([(process): [(tool): tool_version]]).trim()
+}
+
+//
+// Convert version entries from either versions.yml files or nf-core tuple outputs.
+//
+def processVersionEntry(version) {
+    if (version instanceof Collection && version.size() == 3) {
+        return processVersionsFromTuple(version)
+    }
+    return processVersionsFromYAML(version)
+}
+
+//
+// Get workflow version for MultiQC software versions.
+//
+def workflowVersionToYAML() {
+    return """
+    Workflow:
+        ${workflow.manifest.name}: ${workflow.manifest.version}
+        Nextflow: ${workflow.nextflow.version}
+    """.stripIndent().trim()
+}
+
+//
+// Get channel of software versions used in pipeline in YAML format.
+//
+def softwareVersionsToYAML(ch_versions) {
+    return ch_versions
+                .unique()
+                .map { version -> processVersionEntry(version) }
+                .unique()
+                .mix(Channel.of(workflowVersionToYAML()))
 }

@@ -16,11 +16,8 @@ include { UTILS_NFVALIDATION_PLUGIN } from '../../nf-core/utils_nfvalidation_plu
 include { UTILS_NFCORE_PIPELINE     } from '../../nf-core/utils_nfcore_pipeline'
 include { completionEmail           } from '../../nf-core/utils_nfcore_pipeline'
 include { completionSummary         } from '../../nf-core/utils_nfcore_pipeline'
-include { dashedLine                } from '../../nf-core/utils_nfcore_pipeline'
 include { getWorkflowVersion        } from '../../nf-core/utils_nfcore_pipeline'
-include { imNotification            } from '../../nf-core/utils_nfcore_pipeline'
 include { logColours                } from '../../nf-core/utils_nfcore_pipeline'
-include { workflowCitation          } from '../../nf-core/utils_nfcore_pipeline'
 
 /*
 ========================================================================================
@@ -188,4 +185,81 @@ def nfCoreLogo(monochrome_logs=true) {
         ${dashedLine(monochrome_logs)}
         """.stripIndent()
     )
+}
+
+//
+// Return dashed line
+//
+def dashedLine(monochrome_logs=true) {
+    def colors = logColours(monochrome_logs) as Map
+    return "-${colors.dim}----------------------------------------------------${colors.reset}-"
+}
+
+//
+// Citation string for pipeline
+//
+def workflowCitation() {
+    def temp_doi_ref = ""
+    def manifest_doi = workflow.manifest.doi.tokenize(",")
+    manifest_doi.each { doi_ref ->
+        temp_doi_ref += "  https://doi.org/${doi_ref.replace('https://doi.org/', '').replace(' ', '')}\n"
+    }
+    return "If you use ${workflow.manifest.name} for your analysis please cite:\n\n" +
+        "* The pipeline\n" +
+        temp_doi_ref + "\n" +
+        "* The nf-core framework\n" +
+        "  https://doi.org/10.1038/s41587-020-0439-x\n\n" +
+        "* Software dependencies\n" +
+        "  https://github.com/${workflow.manifest.name}/blob/master/CITATIONS.md"
+}
+
+//
+// Construct and send a notification to a web server as JSON e.g. Microsoft Teams and Slack
+//
+def imNotification(summary_params, hook_url) {
+    def summary = [:]
+    summary_params.keySet().sort().each { group ->
+        summary << summary_params[group]
+    }
+
+    def misc_fields = [:]
+    misc_fields['start']                                = workflow.start
+    misc_fields['complete']                             = workflow.complete
+    misc_fields['scriptfile']                           = workflow.scriptFile
+    misc_fields['scriptid']                             = workflow.scriptId
+    if (workflow.repository) misc_fields['repository']  = workflow.repository
+    if (workflow.commitId)   misc_fields['commitid']    = workflow.commitId
+    if (workflow.revision)   misc_fields['revision']    = workflow.revision
+    misc_fields['nxf_version']                          = workflow.nextflow.version
+    misc_fields['nxf_build']                            = workflow.nextflow.build
+    misc_fields['nxf_timestamp']                        = workflow.nextflow.timestamp
+
+    def msg_fields = [:]
+    msg_fields['version']      = getWorkflowVersion()
+    msg_fields['runName']      = workflow.runName
+    msg_fields['success']      = workflow.success
+    msg_fields['dateComplete'] = workflow.complete
+    msg_fields['duration']     = workflow.duration
+    msg_fields['exitStatus']   = workflow.exitStatus
+    msg_fields['errorMessage'] = (workflow.errorMessage ?: 'None')
+    msg_fields['errorReport']  = (workflow.errorReport ?: 'None')
+    msg_fields['commandLine']  = workflow.commandLine.replaceFirst(/ +--hook_url +[^ ]+/, "")
+    msg_fields['projectDir']   = workflow.projectDir
+    msg_fields['summary']      = summary << misc_fields
+
+    def engine = new groovy.text.GStringTemplateEngine()
+    def json_path = hook_url.contains("hooks.slack.com") ? "slackreport.json" : "adaptivecard.json"
+    def hf = new File("${workflow.projectDir}/assets/${json_path}")
+    def json_template = engine.createTemplate(hf).make(msg_fields)
+    def json_message = json_template.toString()
+
+    def post = new URL(hook_url).openConnection()
+    post.setRequestMethod("POST")
+    post.setDoOutput(true)
+    post.setRequestProperty("Content-Type", "application/json")
+    post.getOutputStream().write(json_message.getBytes("UTF-8"))
+    def postRC = post.getResponseCode()
+    if (!postRC.equals(200)) {
+        log.warn(post.getErrorStream().getText())
+    }
 }
