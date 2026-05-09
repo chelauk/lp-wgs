@@ -51,12 +51,9 @@ workflow MAPPING_QC {
     versions = versions.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.versions.first())
     reports  = reports.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.metrics.collect { meta, report -> report })
 
-    PICARD_COLLECTINSERTSIZEMETRICS(
-        ch_mapped_bam,
-        filter_status
-    )
-    versions = versions.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.versions.first())
-    reports  = reports.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.size_metrics.collect { meta, report -> report })
+    PICARD_COLLECTINSERTSIZEMETRICS(ch_mapped_bam)
+    versions = versions.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.versions_picard.map { process, tool, version -> "${process}:\n    ${tool}: ${version}" }.first())
+    reports  = reports.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.metrics.collect { meta, report -> report })
 
     MOSDEPTH(
         ch_mapped_bam,
