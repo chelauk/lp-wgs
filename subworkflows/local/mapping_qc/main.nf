@@ -56,13 +56,20 @@ workflow MAPPING_QC {
     versions = versions.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.versions_picard.map { process, tool, version -> "${process}:\n    ${tool}: ${version}" }.first())
     reports  = reports.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.metrics.collect { meta, report -> report })
 
+    ch_mosdepth_input = ch_mapped_bam
+        .combine(chr_bed)
+        .map { meta, bam, bai, bed ->
+            def interval_bed = bed instanceof List ? bed[0] : bed
+            [meta + [filter_status: filter_status], bam, bai, interval_bed]
+        }
+
     MOSDEPTH(
-        ch_mapped_bam,
-        chr_bed,
+        ch_mosdepth_input,
         fasta,
-        filter_status
+        []
     )
-    versions = versions.mix(MOSDEPTH.out.versions.first())
+    versions = versions.mix(MOSDEPTH.out.versions_mosdepth.map { process, tool, version -> "${process}:\n    ${tool}: ${version}" }.first())
+    versions = versions.mix(MOSDEPTH.out.versions_gzip.map { process, tool, version -> "${process}:\n    ${tool}: ${version}" }.first())
 
     emit:
     bam = ch_mapped_bam

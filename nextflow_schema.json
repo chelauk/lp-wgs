@@ -278,6 +278,11 @@
             "format": "file-path",
             "exists": true
         },
+        "mosdepth_bed": {
+            "type": ["string", "null"],
+            "format": "file-path",
+            "exists": true
+        },
         "chr_bed": {
             "type": ["string", "null"],
             "format": "file-path",

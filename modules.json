@@ -37,7 +37,7 @@
                     },
                     "mosdepth": {
                         "branch": "master",
-                        "git_sha": "def5f182583df0c20f43ec3d4355e8ebd341aaa9",
+                        "git_sha": "cd1912cb4928c5808bb1b39ed3015919733286fc",
                         "installed_by": ["modules"]
                     },
                     "multiqc": {
@@ -48,11 +48,6 @@
                     "picard/collectinsertsizemetrics": {
                         "branch": "master",
                         "git_sha": "6d46786420b4d7bc88eba026eb389c0c5535d120",
-                        "installed_by": ["modules"]
-                    },
-                    "sambamba/markdup": {
-                        "branch": "master",
-                        "git_sha": "911696ea0b62df80e900ef244d7867d177971f73",
                         "installed_by": ["modules"]
                     },
                     "samtools/index": {
