@@ -19,6 +19,7 @@ workflow QC_TRIM {
         .set { ch_reads_for_qc }
 
     FASTQC(ch_reads_for_qc)
+    versions = versions.mix(FASTQC.out.versions_fastqc)
     reports  = reports.mix(FASTQC.out.zip.collect { meta, logs -> logs })
 
     adapter_fasta = fastp_adapter_fasta ? file(fastp_adapter_fasta, checkIfExists: true) : []
@@ -37,6 +38,7 @@ workflow QC_TRIM {
         save_trimmed_fail,
         save_merged
     )
+    versions = versions.mix(FASTP.out.versions_fastp)
     reports  = reports.mix(
         FASTP.out.json.collect { meta, json -> json },
         FASTP.out.html.collect { meta, html -> html }

@@ -107,6 +107,27 @@ def processVersionsFromYAML(yaml_file) {
 }
 
 //
+// Convert nf-core tuple-style version entries to YAML
+//
+def processVersionsFromTuple(version) {
+    def yaml = new org.yaml.snakeyaml.Yaml()
+    def process = version[0].toString().tokenize(':')[-1]
+    def tool = version[1].toString()
+    def tool_version = version[2].toString()
+    return yaml.dumpAsMap([(process): [(tool): tool_version]]).trim()
+}
+
+//
+// Convert version entries from either versions.yml files or nf-core tuple outputs
+//
+def processVersionEntry(version) {
+    if (version instanceof Collection && version.size() == 3) {
+        return processVersionsFromTuple(version)
+    }
+    return processVersionsFromYAML(version)
+}
+
+//
 // Get workflow version for pipeline
 //
 def workflowVersionToYAML() {
@@ -123,7 +144,7 @@ def workflowVersionToYAML() {
 def softwareVersionsToYAML(ch_versions) {
     return ch_versions
                 .unique()
-                .map { version -> processVersionsFromYAML(version) }
+                .map { version -> processVersionEntry(version) }
                 .unique()
                 .mix(Channel.of(workflowVersionToYAML()))
 }

@@ -33,13 +33,21 @@ workflow REPORTING_MULTIQC {
     ch_multiqc_files = ch_multiqc_files.mix(reports)
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'lp_wgs_methods_description_mqc.yaml', sort: true))
 
+    ch_multiqc_input = ch_multiqc_files
+        .collect()
+        .combine(ch_multiqc_config.toList())
+        .combine(ch_multiqc_custom_config.toList())
+        .combine(ch_multiqc_logo.toList())
+        .map { files, base_config, custom_config, logo ->
+            def configs = base_config + custom_config
+            def logo_file = logo ? logo[0] : []
+            [[id: 'lp_wgs'], files, configs, logo_file, [], []]
+        }
+
     MULTIQC(
-        ch_multiqc_files.collect(),
-        ch_multiqc_config.toList(),
-        ch_multiqc_custom_config.toList(),
-        ch_multiqc_logo.toList()
+        ch_multiqc_input
     )
 
     emit:
-    report = MULTIQC.out.report.toList()
+    report = MULTIQC.out.report.map { meta, report -> report }.toList()
 }
