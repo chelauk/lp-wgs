@@ -91,17 +91,21 @@ Files:
 
 The `<bin>` suffix reflects `--bin`, for example `ichorcna_1000`.
 
-### QDNAseq / ASCAT Preparation
+### QDNAseq Preparation
 
-QDNAseq produces bin-level and segment-level files used by ASCAT low-pass fitting.
+QDNAseq produces bin-level and segment-level files used by ASCAT low-pass
+fitting, plus a reusable QDNAseq RDS object used by ACE.
 
 Key intermediate files:
 
 - `*bins.txt`: bin-level log2 ratio data.
 - `*cna_segments.txt`: QDNAseq segment file.
+- `*kbp.rds`: normalized segmented QDNAseq object.
 - `*.pdf`: QDNAseq plot outputs.
 
-These are emitted by `PREP_ASCAT` and passed directly into `RUN_ASCAT`; the main published ASCAT-facing outputs are listed in the ASCAT section below.
+These are emitted by `RUN_QDNASEQ` and passed directly into `RUN_ASCAT` and
+`ACE`; the main published ASCAT-facing outputs are listed in the ASCAT section
+below.
 
 ### ASCAT Low-Pass
 
@@ -125,6 +129,8 @@ ASCAT segmentation uses `copynumber::pcf()` with `--ascat_pcf_gamma` controlling
 Files:
 
 - `*filter_*`: ACE output directory/files for the filtered or unfiltered input state.
+- `*_sky_on_fire.pdf`: ACE square-model matrix plot.
+- `*_sqmodel_minmadf.txt`: ACE square-model minima table.
 
 ### MEDICC2
 

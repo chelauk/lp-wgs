@@ -8,13 +8,17 @@ options(scipen = 999) # prevent scientific notation
 args <- commandArgs(trailingOnly = TRUE)
 patient <- args[1]
 input_ploidys <- as.integer(unlist(strsplit(args[2]," ")))
+binsize <- if (length(args) >= 4) as.numeric(args[4]) else 1000
+binsize_label <- format(binsize, trim = TRUE, scientific = FALSE)
+binsize_bp <- binsize * 1000
 
 source(paste0("bin/00_general_functions.R")) # import functions
 # find ace rds output
-my_rds <- list.files(".", recursive = TRUE, pattern = "*1000kbp.rds$")
+rds_pattern <- paste0(".*", binsize_label, "kbp\\.rds$")
+my_rds <- list.files(".", recursive = TRUE, pattern = rds_pattern)
 
 # this will give us a vector of sample_names
-object_name <- sub("_filter_.*\\/1000kbp\\.rds", "", my_rds)
+object_name <- sub(paste0("_filter_.*\\/", binsize_label, "kbp\\.rds"), "", my_rds)
 sample_list <- c()
 for (i in seq_along(my_rds)) {
   sample_list <- c(sample_list, paste0(patient, "_", object_name[i]))
@@ -45,7 +49,7 @@ for (i in seq_along(object_name)) {
 # add sample_name column and name as $sample_segments
 for (my_object in object_name) {
   current_object <- get(paste0(patient, "_", my_object, "_segments"))
-  current_object <- explode_ranges(current_object, 1000000)
+  current_object <- explode_ranges(current_object, binsize_bp)
   all_bins <- get(paste0(patient, "_", my_object))
   all_bins  <- as.data.frame(all_bins@assayData$copynumber)
   all_bins <- all_bins %>%

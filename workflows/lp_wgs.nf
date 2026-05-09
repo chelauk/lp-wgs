@@ -14,7 +14,7 @@ include { REPORTING_MULTIQC           } from '../subworkflows/local/reporting_mu
 //include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 include { ICHORCNA_RUN                } from '../modules/nf-core/ichorcna/run/main'
 include { ACE                         } from '../modules/local/ace/main'
-include { PREP_ASCAT                  } from '../modules/local/prep_ascat/main'
+include { RUN_QDNASEQ                 } from '../modules/local/prep_ascat/main'
 include { RUN_ASCAT                   } from '../modules/local/ascat_lp/main'
 include { RUN_BAYES                   } from '../modules/local/bayes_cn/main'
 include { PREP_MEDICC2                } from '../modules/local/prep_medicc2/main'
@@ -137,16 +137,20 @@ workflow LP_WGS {
         versions= versions.mix(ICHORCNA_RUN.out.versions)
     }
 
-    // run PREP_ASCAT
+    // run QDNAseq once for ASCAT and/or ACE
+
+    if (selected_tools.intersect(['ascat', 'ace'])) {
+        RUN_QDNASEQ(ch_analysis_input, bin_size, qdnaseq_genome, qdnaseq_package)
+        versions = versions.mix(RUN_QDNASEQ.out.versions)
+    }
 
     if (selected_tools.contains('ascat')) {
-        PREP_ASCAT(ch_analysis_input, bin_size, qdnaseq_genome, qdnaseq_package)
-        RUN_ASCAT(PREP_ASCAT.out.for_ascat, ploidy, chr_arm_boundaries, qdnaseq_genome, ascat_pcf_gamma)
+        RUN_ASCAT(RUN_QDNASEQ.out.for_ascat, ploidy, chr_arm_boundaries, qdnaseq_genome, ascat_pcf_gamma)
     }
 
     // run ACE
     if (selected_tools.contains('ace')) {
-        ACE(ch_analysis_input, filter_status, qdnaseq_genome, ace_ploidy)
+        ACE(RUN_QDNASEQ.out.for_ace, filter_status, qdnaseq_genome, ace_ploidy, bin_size)
         versions = versions.mix(ACE.out.versions)
         ACE.out.ace
             .map { meta, ace ->
@@ -169,7 +173,7 @@ workflow LP_WGS {
         if (!selected_tools.contains('ace')) {
             exit 1, "The 'medicc' workflow currently requires 'ace' so that ploidy-grouped inputs can be prepared."
         }
-        PREP_MEDICC2(prep_medicc2_input, bin_dir)
+        PREP_MEDICC2(prep_medicc2_input, bin_dir, bin_size)
         versions = versions.mix(PREP_MEDICC2.out.versions)
 
         // run medicc2

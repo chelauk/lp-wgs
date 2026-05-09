@@ -1,4 +1,4 @@
-process PREP_ASCAT {
+process RUN_QDNASEQ {
     tag "$meta.id"
     label 'process_low'
 
@@ -14,6 +14,7 @@ process PREP_ASCAT {
     output:
     tuple val(meta), path("*.pdf"), path("*txt"), emit: qdnaseq_out
     tuple val(meta), path("*cna_segments.txt"),  path("*bins.txt"),  emit: for_ascat
+    tuple val(meta), path("*.rds"), emit: for_ace
     path "versions.yml"             , emit: versions
 
     when:
@@ -28,7 +29,7 @@ process PREP_ASCAT {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        prep_ascat: 1
+        qdnaseq: 1
     END_VERSIONS
     """
 
@@ -40,10 +41,11 @@ process PREP_ASCAT {
     echo  "QDNAseq.R ${meta.patient} ${meta.sample} $bin $bam ${genome} ${qdnaseqPackage}"
     touch "${meta.id}.cna_segments.txt"
     touch "${meta.id}.bins.txt"
+    touch "${meta.id}_${bin}kbp.rds"
     touch "${meta.id}.called_segments.pdf"
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        prep_ascat: stub version
+        qdnaseq: stub version
     END_VERSIONS
     """
 }

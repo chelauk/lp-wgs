@@ -12,6 +12,7 @@ process PREP_MEDICC2 {
     input:
     tuple val(patient), val(samples), val(ids), val(ploidy),  path(ace_out)
     path(bin_dir)
+    val(bin)
 
     output:
     tuple val(patient), path("*tsv"), emit: for_medicc
@@ -24,7 +25,7 @@ process PREP_MEDICC2 {
     script:
     def args = task.ext.args ?: ''
     """
-    prep_medicc.R $patient "${ploidy.join(' ')}" $bin_dir
+    prep_medicc.R $patient "${ploidy.join(' ')}" $bin_dir $bin
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -34,7 +35,7 @@ process PREP_MEDICC2 {
     stub:
     def args = task.ext.args ?: ''
     """
-    echo "prep_medicc.R $patient $ploidy $bin_dir"
+    echo "prep_medicc.R $patient $ploidy $bin_dir $bin"
 
     touch ${patient}.tsv
     touch ${patient}.txt

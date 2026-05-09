@@ -9,12 +9,11 @@ args <- commandArgs(trailingOnly = TRUE)
 
 if (!require(QDNAseq)) stop("Package 'QDNAseq' missing\n.")
 if (!require(CGHcall)) stop("Package 'CGHcall' missing\n.")
-if (!require(ggplot2)) stop("Package 'ggplot2' missing\n.")
-if (!require(ACE)) stop("Package 'ACE' missing\n.")
 
 patient <- args[1]
 sample  <- args[2]
 binsize <- as.numeric(args[3])
+binsize_label <- format(binsize, trim = TRUE, scientific = FALSE)
 bam     <- args[4]
 genome  <- if (length(args) >= 5) args[5] else "hg38"
 qdnaseq_package <- if (length(args) >= 6) args[6] else paste0("QDNAseq.", genome)
@@ -74,23 +73,8 @@ copy_numbers_segmented <- segmentBins(copy_numbers_normalized,
 
 copy_numbers_segmented <- normalizeSegmentedBins(copy_numbers_segmented)
 
-# use the sqmodel function to estimate minima
-# You'll find that ACE can make great fits at interesting ploidies,
-# but they may not always make sense from a biological perspective.
-# On top of the penalty for low cellularities, you can consider to
-# use a penalty for ploidies (penploidy) that diverge a lot from two.
-# To use data from QDNAseq-objects, ACE parses it into data frames
-# referred to as "templates". Because we will look at sample2 several
-# times, we can just create a variable with this data frame.
-
-template <- objectsampletotemplate(copy_numbers_segmented, index = 1)
-sqmodel <- squaremodel(template, penalty = 0.5, penploidy = 0.5)
-pdf(paste0(patient, "_", sample, "_sky_on_fire.pdf"))
-sqmodel$matrixplot + ggtitle(paste0(patient, "_", sample, "_Sky on fire"))
-dev.off()
-
-write.table(file = paste0(patient, "_", sample, "_sqmodel_minmadf.txt"),
-            quote = FALSE, x = sqmodel$minimadf)
+saveRDS(copy_numbers_segmented,
+        file = paste0(patient, "_", sample, "_", binsize_label, "kbp.rds"))
 
 copy_numbers_called <- callBins(copy_numbers_segmented, method = c("cutoff"),
                                 cutoffs = log2(c(deletion = 2 - 1.2,

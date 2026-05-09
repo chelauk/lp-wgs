@@ -6,10 +6,11 @@ process ACE {
     container "ace-qdnaseq_latest.sif"
 
     input:
-    tuple val(meta), path(bam), path(bai)
+    tuple val(meta), path(qdnaseq_rds)
     val(filter_status)
     val(qdnaseq_genome)
     val(ace_ploidy)
+    val(bin)
 
     output:
     tuple val(meta), path("${meta.sample}_${filter_status}"),  emit: ace
@@ -20,19 +21,15 @@ process ACE {
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
     def genome = qdnaseq_genome ?: 'hg38'
     """
-    prefix=$prefix
-
-    if [ ! -e \$prefix.bam ]; then
-        mv $bam \$prefix.bam
-    fi
-
     if [ ! -d "${meta.sample}_${filter_status}" ]; then
     mkdir "${meta.sample}_${filter_status}"
     fi
-    ace.R ${meta.sample}_${filter_status} ${genome} "${ace_ploidy}"
+    ace.R ${meta.sample}_${filter_status} ${genome} "${ace_ploidy}" ${bin} .
+    if [ ! -e "${meta.sample}_${filter_status}/${bin}kbp.rds" ]; then
+        cp ${qdnaseq_rds} "${meta.sample}_${filter_status}/${bin}kbp.rds"
+    fi
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -41,11 +38,10 @@ process ACE {
     """
     stub:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
     def genome = qdnaseq_genome ?: 'hg38'
     """
     mkdir ${meta.sample}_${filter_status}
-    echo "ace.R ${meta.sample}_${filter_status} ${genome} \"${ace_ploidy}\""
+    echo "ace.R ${meta.sample}_${filter_status} ${genome} \"${ace_ploidy}\" ${bin} ."
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         ace: stub version
