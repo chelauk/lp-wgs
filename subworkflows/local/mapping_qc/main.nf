@@ -3,7 +3,7 @@ include { QC_TRIM                              } from '../../../subworkflows/loc
 include { MERGE_LANES                          } from '../../../subworkflows/local/merge_lanes/main'
 include { MOSDEPTH                             } from '../../../modules/nf-core/mosdepth/main'
 include { PICARD_COLLECTINSERTSIZEMETRICS      } from '../../../modules/nf-core/picard/collectinsertsizemetrics/main'
-include { SAMTOOLS_VIEW                        } from '../../../modules/nf-core/samtools/view/'
+include { SAMTOOLS_VIEW                        } from '../../../modules/local/samtools/view/main'
 include { PICARD_COLLECTALIGNMENTSUMMARYMETRICS } from '../../../modules/local/picard/collectalignmentmummarymetrics/main'
 
 workflow MAPPING_QC {

@@ -1,7 +1,7 @@
 include { HMMCOPY_GCCOUNTER } from '../../../modules/nf-core/hmmcopy/gccounter/main'
 include { HMMCOPY_READCOUNTER } from '../../../modules/nf-core/hmmcopy/readcounter/main'
-include { SAMTOOLS_VIEW } from '../../../modules/nf-core/samtools/view/'
-include { SAMTOOLS_NVIEW } from '../../../modules/local/samtools/view_nanopore/main'
+include { SAMTOOLS_VIEW } from '../../../modules/local/samtools/view/main'
+include { SAMTOOLS_VIEW as SAMTOOLS_NVIEW } from '../../../modules/local/samtools/view/main'
 
 workflow CALLING_PREP {
     take:

@@ -8,7 +8,7 @@ process SAMTOOLS_VIEW {
         'biocontainers/samtools:1.17--h00cdaf9_0' }"
 
     input:
-    tuple val(meta), path(bam), path(bai) 
+    tuple val(meta), path(bam), path(bai)
     val(filter_min)
     val(filter_max)
 
