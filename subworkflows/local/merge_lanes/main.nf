@@ -37,11 +37,11 @@ workflow MERGE_LANES {
             [meta, bams]
         }
 
-    // STEP 1.5: MERGING AND INDEXING BAM FROM MULTIPLE LANES
-    SAMTOOLS_INDEX(ch_bam_single)
-    ch_bam_single = ch_bam_single.join(SAMTOOLS_INDEX.out.index)
+    // STEP 1.5: MERGING AND INDEXING BAM
     SAMBAMBA_MERGE(ch_bam_multiple)
-    bam = ch_bam_single.mix(SAMBAMBA_MERGE.out.bam)
+    ch_bam_unindexed = ch_bam_single.mix(SAMBAMBA_MERGE.out.bam)
+    SAMTOOLS_INDEX(ch_bam_unindexed)
+    bam = ch_bam_unindexed.join(SAMTOOLS_INDEX.out.index)
     versions = versions.mix(SAMBAMBA_MERGE.out.versions.first())
 
     emit:

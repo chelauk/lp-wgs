@@ -11,7 +11,7 @@ process SAMBAMBA_MERGE {
     tuple val(meta), path(bam)
 
     output:
-    tuple val(meta), path("${meta.id}.bam"), path("${meta.id}.bam.bai"), emit: bam
+    tuple val(meta), path("${meta.id}.bam"), emit: bam
     path  "versions.yml"                , emit: versions
 
     script:
@@ -23,7 +23,6 @@ process SAMBAMBA_MERGE {
     --nthreads=4 /dev/stdout ${bam.join(' ')} | \\
     sambamba sort --tmpdir . -o ${meta.id}.bam /dev/stdin
 
-    sambamba index -t ${task.cpus} ${meta.id}.bam
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         sambamba: \$( echo \$(sambamba --version 2>&1 | sed 's/^.*sambamba //; s/ by.*//'))
@@ -36,11 +35,8 @@ process SAMBAMBA_MERGE {
     """
     echo -e "sambamba merge \\
     --nthreads=4 /dev/stdout ${bam.join(' ')} | \\
-    sambamba sort --tmpdir . -o ${meta.id}.bam /dev/stdin
-
-    sambamba index -t ${task.cpus} ${meta.id}.bam "
+    sambamba sort --tmpdir . -o ${meta.id}.bam /dev/stdin"
     touch ${meta.id}.bam
-    touch ${meta.id}.bam.bai
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         sambamba: 0.8.1
