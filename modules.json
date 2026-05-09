@@ -47,13 +47,6 @@
                             "modules"
                         ]
                     },
-                    "ichorcna/run": {
-                        "branch": "master",
-                        "git_sha": "6d46786420b4d7bc88eba026eb389c0c5535d120",
-                        "installed_by": [
-                            "modules"
-                        ]
-                    },
                     "mosdepth": {
                         "branch": "master",
                         "git_sha": "def5f182583df0c20f43ec3d4355e8ebd341aaa9",

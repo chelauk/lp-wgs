@@ -12,7 +12,7 @@ include { MAPPING_QC                  } from '../subworkflows/local/mapping_qc/m
 include { CALLING_PREP                } from '../subworkflows/local/calling_prep/main'
 include { REPORTING_MULTIQC           } from '../subworkflows/local/reporting_multiqc/main'
 //include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
-include { ICHORCNA_RUN                } from '../modules/nf-core/ichorcna/run/main'
+include { ICHORCNA_RUN                } from '../modules/local/ichorcna/run/main'
 include { ACE                         } from '../modules/local/ace/main'
 include { RUN_QDNASEQ                 } from '../modules/local/prep_ascat/main'
 include { RUN_ASCAT                   } from '../modules/local/ascat_lp/main'

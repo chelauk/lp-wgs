@@ -26,7 +26,7 @@ process ICHORCNA_RUN {
     tuple val(meta), path("${prefix}.params.txt")        , emit: ichorcna_params
     tuple val(meta), path("${prefix}/*.pdf")             , emit: plots
     tuple val(meta), path("**/${prefix}_genomeWide.pdf") , emit: genome_plot
-    path "versions.yml"                                  , emit: versions
+    path "versions.yml"                                  , emit: versions, topic: versions
 
     when:
     task.ext.when == null || task.ext.when
