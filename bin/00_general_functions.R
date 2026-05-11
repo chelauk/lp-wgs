@@ -46,3 +46,35 @@ explode_ranges <- function(df, step_size) {
 
   do.call(rbind, exploded_list)
 }
+
+# a function to return list of alternate solutions
+make_solution <- function(res, purity, psit, label) {
+    rho <- purity
+    psi <- (2 * (1 - rho)) + (rho * psit)
+
+    cn_auto <- ((psi * (2^segs_auto)) - (2 * (1 - rho))) / rho
+    cn_auto_int <- round(cn_auto)
+    cn_auto_int[cn_auto_int < 0] <- 0
+
+    sex_segs <- expanded_segs[!autosome_index]
+    cn_sex <- callXchromsome(
+        sex_lrrs = sex_segs,
+        psi = psi,
+        psit = psit,
+        purity = rho
+    )
+    cn_sex_int <- round(cn_sex)
+    cn_sex_int[cn_sex_int < 0] <- 0
+
+    out <- res
+    out$CN <- c(cn_auto_int, cn_sex_int)
+    out$contCN <- c(cn_auto, cn_sex)
+    out$Psi <- psi
+    out$PsiT <- psit
+    out$Purity <- rho
+    out$segs <- expanded_segs
+    out$bins <- patient_lrr[, 5]
+    out$sample_name <- id
+    out$solution_label <- label
+    out
+}

@@ -101,7 +101,6 @@ patient_lrr <- read.table(paste0(id, "_bins.txt"),
 
 # Get the index of bins
 chr_pos <- patient_lrr[, 2:4]
-bin_row <- patient_lrr[, 1]
 
 # chr_pos
 chr_pos$chromosome <- factor(normalize_chr(chr_pos$chromosome), levels = chromosome_levels)
@@ -150,9 +149,7 @@ expand  <- 1.6
 mp      <- 1
 
 autosome_index <- as.character(chr_pos$chromosome) %in% autosomes
-bins_auto <- p_mat[autosome_index]
 segs_auto <- expanded_segs[autosome_index]
-sn <- id
 ps <- FALSE
 pr <- 1000  # irrelevant because preset (ps) is FALSE
 pp <- 1000  # irrelevant because preset (ps) is FALSE
@@ -163,109 +160,110 @@ res <- runASCATlp(
     no_fit_psit = 2, preset = ps, preset_purity = pr,
     preset_ploidy = pp, max_purity = mp)
 
-
-sex_segs <- expanded_segs[!autosome_index]
-n <- callXchromsome(sex_lrrs = sex_segs, psi = res$Psi, psit = res$PsiT,
-                    purity = res$Purity)
-
-res$CN <- c(res$CN, ifelse(round(n) < 0, 0, round(n)))
-res$contCN <- c(res$contCN, n)
-res$segs <- expanded_segs
-res$bins <- patient_lrr[, 5]
-res$sample_name <- id
-
-# preparing ggplot
-cna_data    <- res
-
-sample_name <- cna_data$samplename
-
-cn_output   <- data.frame(cna_data$CN)
-colnames(cn_output) <- sample_name
-
-# Make a plot dataframe
-plt_df <- data.frame(
-    genome.bin = seq_along(cna_data$bins),
-    Chromosome = chr_pos$chromosome,
-    Log2ratio = cna_data$bins,
-    mean_segment = cna_data$segs,
-    Call = as.factor(cna_data$CN)
+solutions <- list(
+    selected = make_solution(
+        res = res,
+        purity = res$Purity,
+        psit = res$PsiT,
+        label = "selected",
+        segs_auto = segs_auto,
+        expanded_segs = expanded_segs,
+        autosome_index = autosome_index,
+        patient_lrr = patient_lrr,
+        id = id
     )
-
-# Max CN
-max_cn <- 2
-min_cn <- -2
-
-# lines across
-lines_across <- data.frame(
-    x1 = 1,
-    y1 = min_cn:max_cn,
-    x2 = length(cna_data$bins),
-    y2 = min_cn:max_cn
-    )
-
-# lines going up for chromosomes
-lines_vertical <- data.frame(
-    x1 = c(1, cumsum(table(plt_df$Chromosome))),
-    y1 = min_cn,
-    x2 = c(1, cumsum(table(plt_df$Chromosome))),
-    y2 = max_cn
-    )
-
-# Remove any chromosome labels due to congestion?
-chrs_lab <- chromosome_levels
-
-# Make the plot
-p <- ggplot(plt_df, aes(x = genome.bin, y = Log2ratio, col = Call)) +
-        geom_hline(yintercept = c(-2, -1, 0, 1, 2), lty = c("solid"), lwd = 0.2) +
-        geom_point() +
-        scale_colour_manual(values = cols) +
-        scale_x_continuous(name = "Chromosomes", labels = chrs_lab,
-                            breaks = {
-                            chrom_sizes <- as.numeric(table(plt_df$Chromosome))
-                            c(1, head(cumsum(chrom_sizes), -1)) + (chrom_sizes / 2)
-                            }) +
-        geom_vline(xintercept = c(1, cumsum(table(plt_df$Chromosome))), lty = "dotted") +
-        ggtitle(paste0( id, " Low pass calls - ", sample_name, ", purity=",
-                        cna_data$Purity, ", psit = ", cna_data$PsiT)) +
-        scale_y_continuous(limits = c(-2, 2), oob = scales::squish) +
-        theme(
-            panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            panel.background = element_blank(),
-            plot.title = element_text(hjust = 0.5, size = 18)
-            ) +
-        geom_point(aes(y = mean_segment), color = "#000000")
-
-ggsave(
-    paste0(id, "_ascat_lp_plot.pdf"),
-    plot = p,
-    width = 297,
-    height = 210,
-    units = "mm"
 )
 
-autosome_index <- as.character(chr_pos$chromosome) %in% autosomes
+if (!is.null(res$near_best) && nrow(res$near_best) > 1) {
+    for (i in 2:nrow(res$near_best)) {
+        label <- paste0("alt_", i - 1)
 
-ploidy_expected <- rep(1, times = length(cna_data$CN))
-ploidy_expected[!autosome_index] <- 0.5
-ploidy_expected <- median(cna_data$CN) * ploidy_expected
-ploidy_expected <- round(ploidy_expected)
+        solutions[[label]] <- make_solution(
+            res = res,
+            purity = res$near_best$purity[i],
+            psit = res$near_best$psit[i],
+            label = label,
+            segs_auto = segs_auto,
+            expanded_segs = expanded_segs,
+            autosome_index = autosome_index,
+            patient_lrr = patient_lrr,
+            id = id
+        )
+    }
+}
 
-# Get output metrics
-metrics <- data.frame(
-    Sample = cna_data$sample_name, Purity = cna_data$Purity,
-    PsiT = cna_data$PsiT,
-    Ploidy = signif(mean(cna_data$CN[autosome_index]),
-    digits = 4),
-    PGA = signif(length(which(cna_data$CN != ploidy_expected))/length(cna_data$CN),
-    digits = 4)
+for (solution_name in names(solutions)) {
+
+    cna_data <- solutions[[solution_name]]
+    sample_name <- cna_data$sample_name
+
+    colnames(cn_output) <- sample_name
+
+    # Make a plot dataframe
+    plt_df <- data.frame(
+        genome.bin = seq_along(cna_data$bins),
+        Chromosome = chr_pos$chromosome,
+        Log2ratio = cna_data$bins,
+        mean_segment = cna_data$segs,
+        Call = as.factor(cna_data$CN)
+        )
+
+    # Remove any chromosome labels due to congestion?
+    chrs_lab <- chromosome_levels
+
+    # Make the plot
+    p <- ggplot(plt_df, aes(x = genome.bin, y = Log2ratio, col = Call)) +
+            geom_hline(yintercept = c(-2, -1, 0, 1, 2), lty = c("solid"), lwd = 0.2) +
+            geom_point() +
+            scale_colour_manual(values = cols) +
+            scale_x_continuous(name = "Chromosomes", labels = chrs_lab,
+                                breaks = {
+                                chrom_sizes <- as.numeric(table(plt_df$Chromosome))
+                                c(1, head(cumsum(chrom_sizes), -1)) + (chrom_sizes / 2)
+                                }) +
+            geom_vline(xintercept = c(1, cumsum(table(plt_df$Chromosome))), lty = "dotted") +
+            ggtitle(paste0( id, " Low pass calls - ", sample_name, ", purity=",
+                            cna_data$Purity, ", psit = ", cna_data$PsiT)) +
+            scale_y_continuous(limits = c(-2, 2), oob = scales::squish) +
+            theme(
+                panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                panel.background = element_blank(),
+                plot.title = element_text(hjust = 0.5, size = 18)
+                ) +
+            geom_point(aes(y = mean_segment), color = "#000000")
+
+    ggsave(
+        paste0(id, "_", solution_name, "_ascat_lp_plot.pdf"),
+        plot = p,
+        width = 297,
+        height = 210,
+        units = "mm"
     )
 
-cn_out <- data.frame(res$CN)
+    autosome_index <- as.character(chr_pos$chromosome) %in% autosomes
 
-# output ascat calls
-write.table(cn_out, file = paste0(id,"_cna_ploidy_search_calls.txt"),
-            quote = FALSE)
-# write metrics
-write.table(metrics, file = paste0(id,"_ascat_lp_metrics.txt"),
-            quote = FALSE, row.names = FALSE)
+    ploidy_expected <- rep(1, times = length(cna_data$CN))
+    ploidy_expected[!autosome_index] <- 0.5
+    ploidy_expected <- median(cna_data$CN) * ploidy_expected
+    ploidy_expected <- round(ploidy_expected)
+
+    # Get output metrics
+    metrics <- data.frame(
+        Sample = cna_data$sample_name, Purity = cna_data$Purity,
+        PsiT = cna_data$PsiT,
+        Ploidy = signif(mean(cna_data$CN[autosome_index]),
+        digits = 4),
+        PGA = signif(length(which(cna_data$CN != ploidy_expected))/length(cna_data$CN),
+        digits = 4)
+        )
+
+    cn_out <- data.frame(cna_data$CN)
+
+    # output ascat calls
+    write.table(cn_out, file = paste0(id,"_",solution_name,"_cna_ploidy_search_calls.txt"),
+                quote = FALSE)
+    # write metrics
+    write.table(metrics, file = paste0(id,"_",solution_name,"_ascat_lp_metrics.txt"),
+                quote = FALSE, row.names = FALSE)
+}
