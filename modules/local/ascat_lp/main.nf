@@ -2,7 +2,7 @@ process RUN_ASCAT {
     tag "${meta.id}"
     label 'process_low'
 
-    container "docker.io/chelauk/ascat_lp:1.0.0"
+    container "docker.io/chelauk/ascat_lp:1.0.1"
 
     input:
     tuple val(meta), path(cna_segments), path(cna_bins)
