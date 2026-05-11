@@ -156,42 +156,63 @@ write.csv(bayes_segments,
                         ),
           row.names = FALSE)
 
-segs_auto <- log2(bayes_segments$mean_cn / 2)
+bayes_segments <- bayes_segments |>
+  mutate(lrr = log2(mean_cn / 2))
 
-expand  <- 1.6
-mp <- 1
-ps <- FALSE
-pr <- 1000  # irrelevant because preset (ps) is FALSE
-pp <- 1000  # irrelevant because preset (ps) is FALSE
+segs_auto <- rep(bayes_segments$lrr, times = bayes_segments$n_bins)
 
 res <- runASCATlp(
   lrrs = segs_auto,
-  pad_ploidy = expand,
+  fix_ploidy = 2,
+  pad_ploidy = 1.6,
   interval = 0.01,
   min_purity = 0.01,
   max_lrr = Inf,
   no_fit_psit = 2,
-  preset = ps,
-  preset_purity = pr,
-  preset_ploidy = pp,
-  max_purity = mp
+  preset = FALSE,
+  preset_purity = 1000,
+  preset_ploidy = 1000,
+  max_purity = 1
 )
 
-pdf(
-  paste0(
-         patient, "_", sample,"_bcp/",
-         patient,"_",sample,"_bcp_wgs_profile.pdf"
-         ),
-  width = 10,
-  height = 6)
+solutions <- res$near_best
 
-print(
-  p  +
-  labs(
-    x = "Chromosome",
-    y = "Copy number",
-    title = paste("BayesCNA genome-wide profile, purity =", res$Purity)
-  ) +
-  theme_bw()
-)
-dev.off()
+if (is.null(solutions) || nrow(solutions) == 0) {
+  solutions <- data.frame(
+    psit = res$PsiT,
+    purity = res$Purity,
+    dist = NA
+  )
+}
+
+for (i in seq_len(nrow(solutions))) {
+
+  solution_name <- ifelse(i == 1, "selected", paste0("alt_", i - 1))
+
+  pdf(
+    paste0(
+      patient, "_", sample, "_bcp/",
+      patient, "_", sample, "_bcp_wgs_profile_", solution_name, ".pdf"
+    ),
+    width = 10,
+    height = 6
+  )
+
+  print(
+    p +
+      labs(
+        x = "Chromosome",
+        y = "Copy number",
+        title = paste0(
+          "BayesCNA genome-wide profile; ASCATlp ",
+          solution_name,
+          ": purity = ", solutions$purity[i],
+          ", psit = ", solutions$psit[i],
+          ", dist = ", solutions$dist[i]
+        )
+      ) +
+      theme_bw()
+  )
+
+  dev.off()
+}
