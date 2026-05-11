@@ -179,7 +179,6 @@ For human genomes this applies ichorCNA settings equivalent to:
 --estimateScPrevalence FALSE
 --scStates "c()"
 --chrs 'paste0("chr",c(1:22))'
---chrNormalize 'paste0("chr", c(1:22))'
 --chrTrain 'paste0("chr", c(1:22))'
 ```
 
