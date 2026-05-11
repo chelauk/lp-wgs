@@ -10,7 +10,7 @@ process RUN_BAYES {
     val(qdnaseq_genome)
 
     output:
-    tuple val(meta), path("*_bcp")
+    tuple val(meta), path("${meta.patient}_${meta.sample}_bcp"), emit: bayes_cn
     path "versions.yml"             , emit: versions, topic: versions
 
     when:
@@ -33,8 +33,9 @@ process RUN_BAYES {
     def genome = qdnaseq_genome ?: 'hg38'
     """
     echo  "bayescnasketch.R ${meta.patient} ${meta.sample} $bam ${projectDir}/bin/ ${genome}"
-    touch ${meta.id}.pdf
-    touch ${meta.id}.csv
+    mkdir -p ${meta.patient}_${meta.sample}_bcp
+    touch ${meta.patient}_${meta.sample}_bcp/${meta.patient}_${meta.sample}_bcp_segments.csv
+    touch ${meta.patient}_${meta.sample}_bcp/${meta.patient}_${meta.sample}_bcp_wgs_profile_selected.pdf
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
