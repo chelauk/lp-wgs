@@ -85,6 +85,7 @@ workflow LP_WGS {
 
     // bin_dir for Rscripts
     bin_dir = Channel.fromPath("$projectDir/bin").collect()
+    ch_mapped_bam = Channel.empty()
 
     if (step == 'mapping') {
         MAPPING_QC(
