@@ -2,8 +2,7 @@ process RUN_ASCAT {
     tag "${meta.id}"
     label 'process_low'
 
-    conda "bioconductor-ace:1.16.0--r42hdfd78af_0"
-    container "forecast_lp_ascat.sif"
+    container "docker.io/chelauk/ascat_lp:1.0.0"
 
     input:
     tuple val(meta), path(cna_segments), path(cna_bins)
