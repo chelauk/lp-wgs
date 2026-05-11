@@ -17,7 +17,7 @@ process PREP_MEDICC2 {
     output:
     tuple val(patient), path("*tsv"), emit: for_medicc
     tuple val(patient), path("*txt"), emit: for_report
-    path "versions.yml"             , emit: versions
+    path "versions.yml"             , emit: versions, topic: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -42,7 +42,7 @@ process PREP_MEDICC2 {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        ace: stub version
-END_VERSIONS
+        medicc2: stub version
+    END_VERSIONS
     """
 }

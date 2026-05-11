@@ -12,7 +12,7 @@ process SAMBAMBA_MERGE {
 
     output:
     tuple val(meta), path("${meta.id}.bam"), emit: bam
-    path  "versions.yml"                , emit: versions
+    path  "versions.yml"                , emit: versions, topic: versions
 
     script:
     def args = task.ext.args ?: ''

@@ -15,7 +15,7 @@ process MEDICC2 {
 
     output:
     tuple val(patient), path("medicc2_output"),  emit: medicc2
-    path "versions.yml"                    ,  emit: versions
+    path "versions.yml"                    ,  emit: versions, topic: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -55,7 +55,7 @@ process MEDICC2 {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-    medicc2: stub version
+        medicc2: stub version
     END_VERSIONS
     """
 }

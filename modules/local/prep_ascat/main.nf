@@ -15,7 +15,7 @@ process RUN_QDNASEQ {
     tuple val(meta), path("*.pdf"), path("*txt"), emit: qdnaseq_out
     tuple val(meta), path("*cna_segments.txt"),  path("*bins.txt"),  emit: for_ascat
     tuple val(meta), path("*.rds"), emit: for_ace
-    path "versions.yml"             , emit: versions
+    path "versions.yml"             , emit: versions, topic: versions
 
     when:
     task.ext.when == null || task.ext.when

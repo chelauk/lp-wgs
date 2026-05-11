@@ -11,6 +11,7 @@ process RUN_BAYES {
 
     output:
     tuple val(meta), path("*_bcp")
+    path "versions.yml"             , emit: versions, topic: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -37,7 +38,7 @@ process RUN_BAYES {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        ascat_lp: stub version
+        bcp: stub version
     END_VERSIONS
     """
 }

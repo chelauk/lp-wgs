@@ -14,7 +14,7 @@ process ACE {
 
     output:
     tuple val(meta), path("${meta.sample}_${filter_status}"),  emit: ace
-    path "versions.yml"             , emit: versions
+    path "versions.yml"             , emit: versions, topic: versions
 
     when:
     task.ext.when == null || task.ext.when

@@ -14,6 +14,7 @@ process RUN_ASCAT {
 
     output:
     tuple val(meta), path("*txt"), path("*pdf")
+    path "versions.yml"             , emit: versions, topic: versions
 
     when:
     task.ext.when == null || task.ext.when

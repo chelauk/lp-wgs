@@ -146,6 +146,7 @@ workflow LP_WGS {
 
     if (selected_tools.contains('ascat')) {
         RUN_ASCAT(RUN_QDNASEQ.out.for_ascat, ploidy, chr_arm_boundaries, qdnaseq_genome, ascat_pcf_gamma)
+        versions = versions.mix(RUN_ASCAT.out.versions)
     }
 
     // run ACE
@@ -166,7 +167,8 @@ workflow LP_WGS {
     // run bayes_cna
     if (selected_tools.contains('bayes_cna')) {
         RUN_BAYES(ch_analysis_input, bin_size, qdnaseq_genome)
-        }
+        versions = versions.mix(RUN_BAYES.out.versions)
+    }
 
     //run prep_medicc
     if (selected_tools.contains('medicc')) {
@@ -178,6 +180,7 @@ workflow LP_WGS {
 
         // run medicc2
         MEDICC2(PREP_MEDICC2.out.for_medicc, medicc_arms, medicc_genes)
+        versions = versions.mix(MEDICC2.out.versions)
     }
 
     REPORTING_MULTIQC(
