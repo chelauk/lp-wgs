@@ -197,8 +197,6 @@ for (solution_name in names(solutions)) {
     cna_data <- solutions[[solution_name]]
     sample_name <- cna_data$sample_name
 
-    colnames(cn_output) <- sample_name
-
     # Make a plot dataframe
     plt_df <- data.frame(
         genome.bin = seq_along(cna_data$bins),

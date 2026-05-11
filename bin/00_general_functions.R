@@ -48,7 +48,9 @@ explode_ranges <- function(df, step_size) {
 }
 
 # a function to return list of alternate solutions
-make_solution <- function(res, purity, psit, label) {
+make_solution <- function(res, purity, psit, label,
+                          segs_auto, expanded_segs, autosome_index,
+                          patient_lrr, id) {
     rho <- purity
     psi <- (2 * (1 - rho)) + (rho * psit)
 
