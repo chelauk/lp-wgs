@@ -1,4 +1,4 @@
-patient,sample,lane,fastq_1,fastq_2,predicted_ploidy
-patient1,sample1,1,/path/to/fastq/files/patient1_sample1_L001_R1.fastq.gz,/path/to/fastq/files/patient1_sample1_L001_R2.fastq.gz,2
-patient1,sample1,2,/path/to/fastq/files/patient1_sample1_L002_R1.fastq.gz,/path/to/fastq/files/patient1_sample1_L002_R2.fastq.gz,2
-patient1,sample2,1,/path/to/fastq/files/patient1_sample2_L001_R1.fastq.gz,/path/to/fastq/files/patient1_sample2_L001_R2.fastq.gz,3
+patient,sample,lane,fastq_1,fastq_2
+patient1,sample1,1,/path/to/fastq/files/patient1_sample1_L001_R1.fastq.gz,/path/to/fastq/files/patient1_sample1_L001_R2.fastq.gz
+patient1,sample1,2,/path/to/fastq/files/patient1_sample1_L002_R1.fastq.gz,/path/to/fastq/files/patient1_sample1_L002_R2.fastq.gz
+patient1,sample2,1,/path/to/fastq/files/patient1_sample2_L001_R1.fastq.gz,/path/to/fastq/files/patient1_sample2_L001_R2.fastq.gz

@@ -128,11 +128,6 @@
             "type": "integer",
             "default": 1000
         },
-        "map_bin": {
-            "type": "string",
-            "description": "Legacy/config compatibility value for map and GC wig bin labels, for example 1000kb.",
-            "hidden": true
-        },
         "insertsizemetrics": {
             "type": "string"
         },
@@ -235,7 +230,7 @@
         },
         "schema_ignore_params": {
             "type": "string",
-            "default": "genomes"
+            "default": "genomes,trace_timestamp"
         },
         "trace_timestamp": {
             "type": "string",
