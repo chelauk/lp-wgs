@@ -3,7 +3,7 @@ process ACE {
     label 'process_low'
 
     conda "bioconductor-ace:1.16.0--r42hdfd78af_0"
-    container "ace-qdnaseq_latest.sif"
+    container "docker.io/chelauk/ace-qdnaseq:1.0.1"
 
     input:
     tuple val(meta), path(qdnaseq_rds)

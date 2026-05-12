@@ -2,7 +2,7 @@ process RUN_BAYES {
     tag "${meta.id}"
     label 'process_low'
 
-    container "bcp-qdnaseq_latest.sif"
+    container "docker.io/chelauk/bcp-qdnaseq:1.0.0"
 
     input:
     tuple val(meta), path(bam), path(bai)

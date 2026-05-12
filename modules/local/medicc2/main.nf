@@ -3,7 +3,7 @@ process MEDICC2 {
     label 'process_medium'
     maxRetries 1
 
-    conda '/home/chela.james/miniconda3/envs/medicc2'
+    conda     "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/medicc2:1.0.2--py38hcbe9525_0' :
         'biocontainers/medicc2:1.1.2--py39h0dd7abe_0' }"
