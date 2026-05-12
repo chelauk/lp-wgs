@@ -76,9 +76,9 @@ patient1,sample2,1,/data/patient1_sample2_L001_R1.fastq.gz,/data/patient1_sample
 BAM input:
 
 ```csv
-patient,sample,bam,bai,predicted_ploidy
-patient1,sample1,/data/patient1_sample1.bam,/data/patient1_sample1.bam.bai,2
-patient1,sample2,/data/patient1_sample2.bam,/data/patient1_sample2.bam.bai,3
+patient,sample,bam,bai
+patient1,sample1,/data/patient1_sample1.bam,/data/patient1_sample1.bam.bai
+patient1,sample2,/data/patient1_sample2.bam,/data/patient1_sample2.bam.bai
 ```
 
 `patient` and `sample` are required. `lane` is required for FASTQ input. `predicted_ploidy` is optional and defaults to `2`; it is used by ACE/ASCAT-related copy number steps.
