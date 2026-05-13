@@ -3,7 +3,7 @@ process PUBLISH_MAPPED_BAM {
     label 'process_low'
 
     input:
-    tuple val(meta), path(bam), path(index)
+    tuple val(meta), path(bam, stageAs: "input/*"), path(index, stageAs: "input/*")
 
     output:
     tuple val(meta), path("*.bam"), path("*.{bai,csi,crai}"), emit: bam
@@ -12,7 +12,9 @@ process PUBLISH_MAPPED_BAM {
     task.ext.when == null || task.ext.when
 
     script:
+    def prefix = "${meta.id}_${meta.filter_status ?: 'filter_none'}"
     """
-    true
+    ln -s ${bam} ${prefix}.bam
+    ln -s ${index} ${prefix}.bam.${index.getExtension()}
     """
 }

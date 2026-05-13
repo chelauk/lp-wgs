@@ -37,9 +37,13 @@ workflow MAPPING_QC {
     versions = versions.mix(MERGE_LANES.out.versions.first())
 
     if (!filter_bam) {
-        ch_mapped_bam = MERGE_LANES.out.bam
+        ch_mapped_bam = MERGE_LANES.out.bam.map { meta, bam, bai ->
+            [meta + [filter_status: filter_status], bam, bai]
+        }
     } else {
-        ch_filter_input = MERGE_LANES.out.bam
+        ch_filter_input = MERGE_LANES.out.bam.map { meta, bam, bai ->
+            [meta + [filter_status: filter_status], bam, bai]
+        }
         SAMTOOLS_VIEW(ch_filter_input, filter_bam_min, filter_bam_max)
         ch_mapped_bam = SAMTOOLS_VIEW.out.bam
         versions = versions.mix(SAMTOOLS_VIEW.out.versions.first())
