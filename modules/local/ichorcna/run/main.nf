@@ -24,6 +24,7 @@ process ICHORCNA_RUN {
     tuple val(meta), path("${prefix}.seg.txt")           , emit: seg_txt
     tuple val(meta), path("${prefix}.correctedDepth.txt"), emit: corrected_depth
     tuple val(meta), path("${prefix}.params.txt")        , emit: ichorcna_params
+    tuple val(meta), path("${prefix}")                   , emit: output_dir
     tuple val(meta), path("${prefix}/*.pdf")             , emit: plots
     tuple val(meta), path("**/${prefix}_genomeWide.pdf") , emit: genome_plot
     path "versions.yml"                                  , emit: versions, topic: versions
