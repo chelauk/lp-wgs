@@ -33,7 +33,7 @@ process ICHORCNA_RUN {
 
     script:
     def args = task.ext.args       ?: ''
-    prefix = task.ext.prefix       ?: "${meta.id}"
+    prefix = task.ext.prefix       ?: "${meta.patient}_${meta.sample}"
     def norm   = normal_wig        ? "normal_wig='${normal_wig}',"          : 'normal_wig=NULL,'
     def pon    = normal_background ? "normal_panel='${normal_background}'," : 'normal_panel=NULL,'
     def map    = map_wig           ? "mapWig='${map_wig}',"                 : 'mapWig=NULL,'
