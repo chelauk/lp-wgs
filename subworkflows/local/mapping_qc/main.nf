@@ -5,6 +5,7 @@ include { MOSDEPTH                             } from '../../../modules/nf-core/
 include { PICARD_COLLECTINSERTSIZEMETRICS      } from '../../../modules/nf-core/picard/collectinsertsizemetrics/main'
 include { SAMTOOLS_VIEW                        } from '../../../modules/local/samtools/view/main'
 include { PICARD_COLLECTALIGNMENTSUMMARYMETRICS } from '../../../modules/local/picard/collectalignmentmummarymetrics/main'
+include { PUBLISH_MAPPED_BAM                   } from '../../../modules/local/publish_mapped_bam/main'
 
 workflow MAPPING_QC {
     take:
@@ -43,6 +44,9 @@ workflow MAPPING_QC {
         ch_mapped_bam = SAMTOOLS_VIEW.out.bam
         versions = versions.mix(SAMTOOLS_VIEW.out.versions.first())
     }
+
+    PUBLISH_MAPPED_BAM(ch_mapped_bam)
+    ch_mapped_bam = PUBLISH_MAPPED_BAM.out.bam
 
     PICARD_COLLECTALIGNMENTSUMMARYMETRICS(
         ch_mapped_bam,
