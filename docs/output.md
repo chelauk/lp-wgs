@@ -119,7 +119,7 @@ below.
 ### ASCAT Low-Pass
 
 ```text
-<patient>/<patient>_<sample>/low_pass_wgs/ascat/
+<patient>/<patient>_<sample>/low_pass_wgs/ascat/ascat_ploidy_<ploidy>/
 ```
 
 Files:
@@ -127,7 +127,7 @@ Files:
 - `*_ascat_lp_plot.pdf`: low-pass copy number plot with segment means and integer calls.
 - `*_cna_ploidy_search_calls.txt`: integer copy number calls from ASCAT-style low-pass fitting.
 
-ASCATlp is the piecewise constant fitting caller in the pipeline. Segmentation uses `copynumber::pcf()` with `--ascat_pcf_gamma` controlling the breakpoint penalty.
+ASCATlp is the piecewise constant fitting caller in the pipeline. It creates one `ascat_ploidy_<ploidy>` folder per value in `--ploidy`. Segmentation uses `copynumber::pcf()` with `--ascat_pcf_gamma` controlling the breakpoint penalty.
 
 ### ACE
 

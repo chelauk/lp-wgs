@@ -90,7 +90,7 @@ patient1,sample2,/data/patient1_sample2.bam,/data/patient1_sample2.bam.bai
 | `--step` | `mapping` | Use `mapping` for FASTQ input or `calling` for BAM input. |
 | `--tools` | `ace,ichor,ascat,bayes_cna` | Comma-separated copy number tools to run. |
 | `--bin` | `1000` | Bin size in kb for HMMcopy/ichorCNA-style read counting. Supported values in the bundled config are `10`, `50`, `500`, and `1000`. |
-| `--ploidy` | `2` | Default ploidy used by ASCAT-style fitting when sample-level ploidy is not supplied. |
+| `--ploidy` | `2,3,4` | Comma-separated ploidy values passed to ACE and ASCATlp. |
 | `--ascat_pcf_gamma` | `10` | Penalty passed to `copynumber::pcf()` for ASCAT low-pass segmentation. Higher values produce fewer segments. |
 | `--filter_bam` | `false` | Filter BAMs by insert size before calling/QC. |
 | `--filter_bam_min` | `90` | Minimum insert size when `--filter_bam` is enabled. |
@@ -128,7 +128,7 @@ The main result areas are:
 - `reports/`: FastQC, Picard, mosdepth, and other QC outputs.
 - `ichorcna_<bin>/`: ichorCNA outputs for the chosen bin size.
 - `ace/`: ACE outputs.
-- `ascat/`: ASCAT low-pass copy number calls and plot PDFs.
+- `ascat/ascat_ploidy_<ploidy>/`: ASCAT low-pass copy number calls and plot PDFs for each `--ploidy` value.
 - `bwa/`: mapped BAM/BAM index outputs when mapping is run.
 - `<outdir>/reports/low_pass_wgs/`: MultiQC report and pipeline-level reporting files.
 

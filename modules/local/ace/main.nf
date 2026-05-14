@@ -9,7 +9,7 @@ process ACE {
     tuple val(meta), path(qdnaseq_rds)
     val(filter_status)
     val(qdnaseq_genome)
-    val(ace_ploidy)
+    val(ploidy)
     val(bin)
 
     output:
@@ -26,7 +26,7 @@ process ACE {
     if [ ! -d "${meta.sample}_${filter_status}" ]; then
     mkdir "${meta.sample}_${filter_status}"
     fi
-    ace.R ${meta.sample}_${filter_status} ${genome} "${ace_ploidy}" ${bin} .
+    ace.R ${meta.sample}_${filter_status} ${genome} "${ploidy}" ${bin} .
     if [ ! -e "${meta.sample}_${filter_status}/${bin}kbp.rds" ]; then
         cp ${qdnaseq_rds} "${meta.sample}_${filter_status}/${bin}kbp.rds"
     fi
@@ -41,7 +41,7 @@ process ACE {
     def genome = qdnaseq_genome ?: 'hg38'
     """
     mkdir ${meta.sample}_${filter_status}
-    echo "ace.R ${meta.sample}_${filter_status} ${genome} \"${ace_ploidy}\" ${bin} ."
+    echo "ace.R ${meta.sample}_${filter_status} ${genome} \"${ploidy}\" ${bin} ."
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         ace: stub version

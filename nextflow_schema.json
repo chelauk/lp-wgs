@@ -110,13 +110,9 @@
             "default": 150
         },
         "ploidy": {
-            "type": "integer",
-            "default": 2
-        },
-        "ace_ploidy": {
             "type": ["string", "integer"],
             "default": "2,3,4",
-            "description": "Comma-separated ploidy values passed to ACE, e.g. 2 or 2,3,4."
+            "description": "Comma-separated ploidy values passed to ACE and ASCATlp, e.g. 2 or 2,3,4."
         },
         "ascat_pcf_gamma": {
             "type": "number",

@@ -59,7 +59,6 @@ workflow LP_WGS {
     call_gc
     bin_size
     ploidy
-    ace_ploidy
     ascat_pcf_gamma
     outdir
     multiqc_config
@@ -152,7 +151,7 @@ workflow LP_WGS {
 
     // run ACE
     if (selected_tools.contains('ace')) {
-        ACE(RUN_QDNASEQ.out.for_ace, filter_status, qdnaseq_genome, ace_ploidy, bin_size)
+        ACE(RUN_QDNASEQ.out.for_ace, filter_status, qdnaseq_genome, ploidy, bin_size)
         versions = versions.mix(ACE.out.versions)
         ACE.out.ace
             .map { meta, ace ->

@@ -173,13 +173,13 @@ For low tumour fraction or cfDNA-style data, use:
 For human genomes this applies ichorCNA settings equivalent to:
 
 ```text
---normal "c(0.95, 0.99, 0.995, 0.999)"
---ploidy "c(2)"
---maxCN 3
---estimateScPrevalence FALSE
---scStates "c()"
---chrs 'paste0("chr",c(1:22))'
---chrTrain 'paste0("chr", c(1:22))'
+normal=c(0.95, 0.99, 0.995, 0.999)
+ploidy=c(2)
+maxCN=3
+estimateScPrevalence=FALSE
+scStates=c()
+chrs=paste0("chr",c(1:22))
+chrTrain=paste0("chr", c(1:22))
 ```
 
 To provide normal fractions manually:
@@ -191,6 +191,7 @@ To provide normal fractions manually:
 ## ASCAT Low-Pass Segmentation
 
 ASCAT low-pass fitting uses QDNAseq-style bin log2 ratios and `copynumber::pcf()` segmentation before purity/ploidy fitting.
+It runs once per comma-separated value in `--ploidy`, for example `--ploidy 2,3,4`, and writes one `ascat_ploidy_<ploidy>` output folder per run.
 
 The PCF penalty is controlled by:
 
