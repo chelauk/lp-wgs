@@ -35,10 +35,7 @@ process RUN_ASCAT {
     """
     ${ploidyCommands}
 
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        ascat_lp: 0.01
-    END_VERSIONS
+    printf '"%s":\n    ascat_lp: 0.01\n' "${task.process}" > versions.yml
     """
 
     stub:
@@ -57,9 +54,6 @@ process RUN_ASCAT {
     """
     ${ploidyCommands}
 
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        ascat_lp: stub version
-    END_VERSIONS
+    printf '"%s":\n    ascat_lp: stub version\n' "${task.process}" > versions.yml
     """
 }
