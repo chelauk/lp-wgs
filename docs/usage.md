@@ -167,7 +167,7 @@ The defaults are `90` and `150`. For Illumina data, the filter is applied with t
 For low tumour fraction or cfDNA-style data, use:
 
 ```bash
---ichor_purity cf_dna
+--ichor_cfDNA true
 ```
 
 For human genomes this applies ichorCNA settings equivalent to:

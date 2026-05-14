@@ -149,8 +149,10 @@
             "format": "file-path",
             "exists": true
         },
-        "ichor_purity": {
-            "type": "string"
+        "ichor_cfDNA": {
+            "type": "boolean",
+            "default": false,
+            "description": "Use low-fraction cfDNA ichorCNA defaults."
         },
         "ichor_purity_manual": {
             "type": "string"
