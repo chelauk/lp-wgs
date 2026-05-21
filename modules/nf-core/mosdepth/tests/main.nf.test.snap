@@ -8,7 +8,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.global.dist.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "test_null.global.dist.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
                 "1": [
@@ -17,7 +17,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.summary.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "test_null.summary.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
                 "10": [
@@ -26,7 +26,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.thresholds.bed.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        "test_null.thresholds.bed.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
                     ]
                 ],
                 "11": [
@@ -35,7 +35,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.thresholds.bed.gz.csi:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "test_null.thresholds.bed.gz.csi:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
                 "12": [
@@ -58,7 +58,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.region.dist.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "test_null.region.dist.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
                 "3": [
@@ -67,7 +67,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.d4:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "test_null.per-base.d4:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
                 "4": [
@@ -76,7 +76,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        "test_null.per-base.bed.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
                     ]
                 ],
                 "5": [
@@ -85,7 +85,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz.csi:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "test_null.per-base.bed.gz.csi:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
                 "6": [
@@ -94,7 +94,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.regions.bed.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        "test_null.regions.bed.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
                     ]
                 ],
                 "7": [
@@ -103,7 +103,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.regions.bed.gz.csi:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "test_null.regions.bed.gz.csi:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
                 "8": [
@@ -112,7 +112,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.quantized.bed.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        "test_null.quantized.bed.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
                     ]
                 ],
                 "9": [
@@ -121,7 +121,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.quantized.bed.gz.csi:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "test_null.quantized.bed.gz.csi:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
                 "global_txt": [
@@ -130,7 +130,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.global.dist.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "test_null.global.dist.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
                 "per_base_bed": [
@@ -139,7 +139,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        "test_null.per-base.bed.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
                     ]
                 ],
                 "per_base_csi": [
@@ -148,7 +148,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz.csi:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "test_null.per-base.bed.gz.csi:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
                 "per_base_d4": [
@@ -157,7 +157,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.d4:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "test_null.per-base.d4:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
                 "quantized_bed": [
@@ -166,7 +166,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.quantized.bed.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        "test_null.quantized.bed.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
                     ]
                 ],
                 "quantized_csi": [
@@ -175,7 +175,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.quantized.bed.gz.csi:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "test_null.quantized.bed.gz.csi:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
                 "regions_bed": [
@@ -184,7 +184,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.regions.bed.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        "test_null.regions.bed.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
                     ]
                 ],
                 "regions_csi": [
@@ -193,7 +193,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.regions.bed.gz.csi:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "test_null.regions.bed.gz.csi:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
                 "regions_txt": [
@@ -202,7 +202,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.region.dist.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "test_null.region.dist.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
                 "summary_txt": [
@@ -211,7 +211,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.summary.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "test_null.summary.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
                 "thresholds_bed": [
@@ -220,7 +220,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.thresholds.bed.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        "test_null.thresholds.bed.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
                     ]
                 ],
                 "thresholds_csi": [
@@ -229,7 +229,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.thresholds.bed.gz.csi:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "test_null.thresholds.bed.gz.csi:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
                 "versions_gzip": [
@@ -248,10 +248,10 @@
                 ]
             }
         ],
-        "timestamp": "2026-04-28T16:21:32.6884639",
+        "timestamp": "2026-05-21T10:24:45.115023",
         "meta": {
-            "nf-test": "0.9.4",
-            "nextflow": "25.10.4"
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
         }
     },
     "homo_sapiens - cram, crai, bed": {
@@ -263,7 +263,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
+                        "test_null.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
                     ]
                 ],
                 "1": [
@@ -272,7 +272,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.summary.txt:md5,96c037f769974b904beb53edc4f56d82"
+                        "test_null.mosdepth.summary.txt:md5,96c037f769974b904beb53edc4f56d82"
                     ]
                 ],
                 "10": [
@@ -301,7 +301,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.region.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
+                        "test_null.mosdepth.region.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
                     ]
                 ],
                 "3": [
@@ -313,7 +313,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
+                        "test_null.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
                     ]
                 ],
                 "5": [
@@ -322,7 +322,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
+                        "test_null.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
                     ]
                 ],
                 "6": [
@@ -331,7 +331,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.regions.bed.gz:md5,9ded0397623fda26a6a3514d6a0e2a2c"
+                        "test_null.regions.bed.gz:md5,9ded0397623fda26a6a3514d6a0e2a2c"
                     ]
                 ],
                 "7": [
@@ -340,7 +340,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.regions.bed.gz.csi:md5,e0045e73eb8e8c2b88544f0bc346e002"
+                        "test_null.regions.bed.gz.csi:md5,e0045e73eb8e8c2b88544f0bc346e002"
                     ]
                 ],
                 "8": [
@@ -355,7 +355,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
+                        "test_null.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
                     ]
                 ],
                 "per_base_bed": [
@@ -364,7 +364,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
+                        "test_null.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
                     ]
                 ],
                 "per_base_csi": [
@@ -373,7 +373,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
+                        "test_null.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
                     ]
                 ],
                 "per_base_d4": [
@@ -391,7 +391,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.regions.bed.gz:md5,9ded0397623fda26a6a3514d6a0e2a2c"
+                        "test_null.regions.bed.gz:md5,9ded0397623fda26a6a3514d6a0e2a2c"
                     ]
                 ],
                 "regions_csi": [
@@ -400,7 +400,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.regions.bed.gz.csi:md5,e0045e73eb8e8c2b88544f0bc346e002"
+                        "test_null.regions.bed.gz.csi:md5,e0045e73eb8e8c2b88544f0bc346e002"
                     ]
                 ],
                 "regions_txt": [
@@ -409,7 +409,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.region.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
+                        "test_null.mosdepth.region.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
                     ]
                 ],
                 "summary_txt": [
@@ -418,7 +418,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.summary.txt:md5,96c037f769974b904beb53edc4f56d82"
+                        "test_null.mosdepth.summary.txt:md5,96c037f769974b904beb53edc4f56d82"
                     ]
                 ],
                 "thresholds_bed": [
@@ -443,10 +443,10 @@
                 ]
             }
         ],
-        "timestamp": "2026-04-28T16:21:04.254064193",
+        "timestamp": "2026-05-21T10:24:23.030414",
         "meta": {
-            "nf-test": "0.9.4",
-            "nextflow": "25.10.4"
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
         }
     },
     "homo_sapiens - bam, bai, [] - quantized": {
@@ -458,7 +458,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
+                        "test_null.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
                     ]
                 ],
                 "1": [
@@ -467,7 +467,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.summary.txt:md5,4f0d231060cbde4efdd673863bd2fb59"
+                        "test_null.mosdepth.summary.txt:md5,4f0d231060cbde4efdd673863bd2fb59"
                     ]
                 ],
                 "10": [
@@ -502,7 +502,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
+                        "test_null.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
                     ]
                 ],
                 "5": [
@@ -511,7 +511,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
+                        "test_null.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
                     ]
                 ],
                 "6": [
@@ -526,7 +526,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.quantized.bed.gz:md5,02fcfd09862c63b717e519abb4897e2e"
+                        "test_null.quantized.bed.gz:md5,02fcfd09862c63b717e519abb4897e2e"
                     ]
                 ],
                 "9": [
@@ -535,7 +535,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.quantized.bed.gz.csi:md5,59bb21dd686bf095ea8ef75bfbe2c85c"
+                        "test_null.quantized.bed.gz.csi:md5,59bb21dd686bf095ea8ef75bfbe2c85c"
                     ]
                 ],
                 "global_txt": [
@@ -544,7 +544,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
+                        "test_null.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
                     ]
                 ],
                 "per_base_bed": [
@@ -553,7 +553,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
+                        "test_null.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
                     ]
                 ],
                 "per_base_csi": [
@@ -562,7 +562,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
+                        "test_null.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
                     ]
                 ],
                 "per_base_d4": [
@@ -574,7 +574,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.quantized.bed.gz:md5,02fcfd09862c63b717e519abb4897e2e"
+                        "test_null.quantized.bed.gz:md5,02fcfd09862c63b717e519abb4897e2e"
                     ]
                 ],
                 "quantized_csi": [
@@ -583,7 +583,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.quantized.bed.gz.csi:md5,59bb21dd686bf095ea8ef75bfbe2c85c"
+                        "test_null.quantized.bed.gz.csi:md5,59bb21dd686bf095ea8ef75bfbe2c85c"
                     ]
                 ],
                 "regions_bed": [
@@ -601,7 +601,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.summary.txt:md5,4f0d231060cbde4efdd673863bd2fb59"
+                        "test_null.mosdepth.summary.txt:md5,4f0d231060cbde4efdd673863bd2fb59"
                     ]
                 ],
                 "thresholds_bed": [
@@ -626,10 +626,10 @@
                 ]
             }
         ],
-        "timestamp": "2026-04-28T16:21:15.811323229",
+        "timestamp": "2026-05-21T10:24:32.389759",
         "meta": {
-            "nf-test": "0.9.4",
-            "nextflow": "25.10.4"
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
         }
     },
     "homo_sapiens - bam, bai, bed": {
@@ -641,7 +641,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
+                        "test_null.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
                     ]
                 ],
                 "1": [
@@ -650,7 +650,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.summary.txt:md5,96c037f769974b904beb53edc4f56d82"
+                        "test_null.mosdepth.summary.txt:md5,96c037f769974b904beb53edc4f56d82"
                     ]
                 ],
                 "10": [
@@ -679,7 +679,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.region.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
+                        "test_null.mosdepth.region.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
                     ]
                 ],
                 "3": [
@@ -691,7 +691,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
+                        "test_null.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
                     ]
                 ],
                 "5": [
@@ -700,7 +700,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
+                        "test_null.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
                     ]
                 ],
                 "6": [
@@ -709,7 +709,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.regions.bed.gz:md5,9ded0397623fda26a6a3514d6a0e2a2c"
+                        "test_null.regions.bed.gz:md5,9ded0397623fda26a6a3514d6a0e2a2c"
                     ]
                 ],
                 "7": [
@@ -718,7 +718,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.regions.bed.gz.csi:md5,e0045e73eb8e8c2b88544f0bc346e002"
+                        "test_null.regions.bed.gz.csi:md5,e0045e73eb8e8c2b88544f0bc346e002"
                     ]
                 ],
                 "8": [
@@ -733,7 +733,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
+                        "test_null.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
                     ]
                 ],
                 "per_base_bed": [
@@ -742,7 +742,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
+                        "test_null.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
                     ]
                 ],
                 "per_base_csi": [
@@ -751,7 +751,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
+                        "test_null.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
                     ]
                 ],
                 "per_base_d4": [
@@ -769,7 +769,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.regions.bed.gz:md5,9ded0397623fda26a6a3514d6a0e2a2c"
+                        "test_null.regions.bed.gz:md5,9ded0397623fda26a6a3514d6a0e2a2c"
                     ]
                 ],
                 "regions_csi": [
@@ -778,7 +778,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.regions.bed.gz.csi:md5,e0045e73eb8e8c2b88544f0bc346e002"
+                        "test_null.regions.bed.gz.csi:md5,e0045e73eb8e8c2b88544f0bc346e002"
                     ]
                 ],
                 "regions_txt": [
@@ -787,7 +787,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.region.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
+                        "test_null.mosdepth.region.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
                     ]
                 ],
                 "summary_txt": [
@@ -796,7 +796,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.summary.txt:md5,96c037f769974b904beb53edc4f56d82"
+                        "test_null.mosdepth.summary.txt:md5,96c037f769974b904beb53edc4f56d82"
                     ]
                 ],
                 "thresholds_bed": [
@@ -821,10 +821,10 @@
                 ]
             }
         ],
-        "timestamp": "2026-04-28T16:20:50.674770475",
+        "timestamp": "2026-05-21T10:24:13.739935",
         "meta": {
-            "nf-test": "0.9.4",
-            "nextflow": "25.10.4"
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
         }
     },
     "homo_sapiens - bam, bai, [] - window": {
@@ -836,7 +836,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
+                        "test_null.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
                     ]
                 ],
                 "1": [
@@ -845,7 +845,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.summary.txt:md5,96c037f769974b904beb53edc4f56d82"
+                        "test_null.mosdepth.summary.txt:md5,96c037f769974b904beb53edc4f56d82"
                     ]
                 ],
                 "10": [
@@ -874,7 +874,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.region.dist.txt:md5,0b6ea9f0da1228252d9aef2d3b6f7f76"
+                        "test_null.mosdepth.region.dist.txt:md5,0b6ea9f0da1228252d9aef2d3b6f7f76"
                     ]
                 ],
                 "3": [
@@ -886,7 +886,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
+                        "test_null.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
                     ]
                 ],
                 "5": [
@@ -895,7 +895,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
+                        "test_null.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
                     ]
                 ],
                 "6": [
@@ -904,7 +904,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.regions.bed.gz:md5,34f48d16fcdd61e44d812e29e02c77b8"
+                        "test_null.regions.bed.gz:md5,34f48d16fcdd61e44d812e29e02c77b8"
                     ]
                 ],
                 "7": [
@@ -913,7 +913,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.regions.bed.gz.csi:md5,fb57a83d60532cb601d274fb53854bea"
+                        "test_null.regions.bed.gz.csi:md5,fb57a83d60532cb601d274fb53854bea"
                     ]
                 ],
                 "8": [
@@ -928,7 +928,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
+                        "test_null.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
                     ]
                 ],
                 "per_base_bed": [
@@ -937,7 +937,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
+                        "test_null.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
                     ]
                 ],
                 "per_base_csi": [
@@ -946,7 +946,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
+                        "test_null.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
                     ]
                 ],
                 "per_base_d4": [
@@ -964,7 +964,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.regions.bed.gz:md5,34f48d16fcdd61e44d812e29e02c77b8"
+                        "test_null.regions.bed.gz:md5,34f48d16fcdd61e44d812e29e02c77b8"
                     ]
                 ],
                 "regions_csi": [
@@ -973,7 +973,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.regions.bed.gz.csi:md5,fb57a83d60532cb601d274fb53854bea"
+                        "test_null.regions.bed.gz.csi:md5,fb57a83d60532cb601d274fb53854bea"
                     ]
                 ],
                 "regions_txt": [
@@ -982,7 +982,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.region.dist.txt:md5,0b6ea9f0da1228252d9aef2d3b6f7f76"
+                        "test_null.mosdepth.region.dist.txt:md5,0b6ea9f0da1228252d9aef2d3b6f7f76"
                     ]
                 ],
                 "summary_txt": [
@@ -991,7 +991,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.summary.txt:md5,96c037f769974b904beb53edc4f56d82"
+                        "test_null.mosdepth.summary.txt:md5,96c037f769974b904beb53edc4f56d82"
                     ]
                 ],
                 "thresholds_bed": [
@@ -1016,10 +1016,10 @@
                 ]
             }
         ],
-        "timestamp": "2026-04-28T16:21:10.058663002",
+        "timestamp": "2026-05-21T10:24:27.835265",
         "meta": {
-            "nf-test": "0.9.4",
-            "nextflow": "25.10.4"
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
         }
     },
     "homo_sapiens - bam, bai, []": {
@@ -1031,7 +1031,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
+                        "test_null.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
                     ]
                 ],
                 "1": [
@@ -1040,7 +1040,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.summary.txt:md5,4f0d231060cbde4efdd673863bd2fb59"
+                        "test_null.mosdepth.summary.txt:md5,4f0d231060cbde4efdd673863bd2fb59"
                     ]
                 ],
                 "10": [
@@ -1075,7 +1075,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
+                        "test_null.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
                     ]
                 ],
                 "5": [
@@ -1084,7 +1084,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
+                        "test_null.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
                     ]
                 ],
                 "6": [
@@ -1105,7 +1105,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
+                        "test_null.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
                     ]
                 ],
                 "per_base_bed": [
@@ -1114,7 +1114,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
+                        "test_null.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
                     ]
                 ],
                 "per_base_csi": [
@@ -1123,7 +1123,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
+                        "test_null.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
                     ]
                 ],
                 "per_base_d4": [
@@ -1150,7 +1150,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.summary.txt:md5,4f0d231060cbde4efdd673863bd2fb59"
+                        "test_null.mosdepth.summary.txt:md5,4f0d231060cbde4efdd673863bd2fb59"
                     ]
                 ],
                 "thresholds_bed": [
@@ -1175,10 +1175,10 @@
                 ]
             }
         ],
-        "timestamp": "2026-04-28T16:20:44.067692046",
+        "timestamp": "2026-05-21T10:24:09.149354",
         "meta": {
-            "nf-test": "0.9.4",
-            "nextflow": "25.10.4"
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
         }
     },
     "homo_sapiens - cram, crai, []": {
@@ -1190,7 +1190,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
+                        "test_null.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
                     ]
                 ],
                 "1": [
@@ -1199,7 +1199,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.summary.txt:md5,4f0d231060cbde4efdd673863bd2fb59"
+                        "test_null.mosdepth.summary.txt:md5,4f0d231060cbde4efdd673863bd2fb59"
                     ]
                 ],
                 "10": [
@@ -1234,7 +1234,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
+                        "test_null.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
                     ]
                 ],
                 "5": [
@@ -1243,7 +1243,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
+                        "test_null.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
                     ]
                 ],
                 "6": [
@@ -1264,7 +1264,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
+                        "test_null.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
                     ]
                 ],
                 "per_base_bed": [
@@ -1273,7 +1273,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
+                        "test_null.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
                     ]
                 ],
                 "per_base_csi": [
@@ -1282,7 +1282,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
+                        "test_null.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
                     ]
                 ],
                 "per_base_d4": [
@@ -1309,7 +1309,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.summary.txt:md5,4f0d231060cbde4efdd673863bd2fb59"
+                        "test_null.mosdepth.summary.txt:md5,4f0d231060cbde4efdd673863bd2fb59"
                     ]
                 ],
                 "thresholds_bed": [
@@ -1334,10 +1334,10 @@
                 ]
             }
         ],
-        "timestamp": "2026-04-28T16:20:57.800996078",
+        "timestamp": "2026-05-21T10:24:18.272644",
         "meta": {
-            "nf-test": "0.9.4",
-            "nextflow": "25.10.4"
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
         }
     },
     "homo_sapiens - bam, bai, bed - thresholds": {
@@ -1349,7 +1349,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
+                        "test_null.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
                     ]
                 ],
                 "1": [
@@ -1358,7 +1358,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.summary.txt:md5,96c037f769974b904beb53edc4f56d82"
+                        "test_null.mosdepth.summary.txt:md5,96c037f769974b904beb53edc4f56d82"
                     ]
                 ],
                 "10": [
@@ -1367,7 +1367,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.thresholds.bed.gz:md5,fe70ae728cd10726c42a2bcd44adfc9d"
+                        "test_null.thresholds.bed.gz:md5,fe70ae728cd10726c42a2bcd44adfc9d"
                     ]
                 ],
                 "11": [
@@ -1376,7 +1376,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.thresholds.bed.gz.csi:md5,5e0a68f8a0f2044ae36a7f50abfa291d"
+                        "test_null.thresholds.bed.gz.csi:md5,5e0a68f8a0f2044ae36a7f50abfa291d"
                     ]
                 ],
                 "12": [
@@ -1399,7 +1399,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.region.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
+                        "test_null.mosdepth.region.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
                     ]
                 ],
                 "3": [
@@ -1411,7 +1411,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
+                        "test_null.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
                     ]
                 ],
                 "5": [
@@ -1420,7 +1420,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
+                        "test_null.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
                     ]
                 ],
                 "6": [
@@ -1429,7 +1429,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.regions.bed.gz:md5,9ded0397623fda26a6a3514d6a0e2a2c"
+                        "test_null.regions.bed.gz:md5,9ded0397623fda26a6a3514d6a0e2a2c"
                     ]
                 ],
                 "7": [
@@ -1438,7 +1438,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.regions.bed.gz.csi:md5,e0045e73eb8e8c2b88544f0bc346e002"
+                        "test_null.regions.bed.gz.csi:md5,e0045e73eb8e8c2b88544f0bc346e002"
                     ]
                 ],
                 "8": [
@@ -1453,7 +1453,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
+                        "test_null.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
                     ]
                 ],
                 "per_base_bed": [
@@ -1462,7 +1462,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
+                        "test_null.per-base.bed.gz:md5,da6db0fb375a3053a89db8c935eebbaa"
                     ]
                 ],
                 "per_base_csi": [
@@ -1471,7 +1471,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
+                        "test_null.per-base.bed.gz.csi:md5,524a822fc4863b450fda9e0f99ccdf04"
                     ]
                 ],
                 "per_base_d4": [
@@ -1489,7 +1489,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.regions.bed.gz:md5,9ded0397623fda26a6a3514d6a0e2a2c"
+                        "test_null.regions.bed.gz:md5,9ded0397623fda26a6a3514d6a0e2a2c"
                     ]
                 ],
                 "regions_csi": [
@@ -1498,7 +1498,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.regions.bed.gz.csi:md5,e0045e73eb8e8c2b88544f0bc346e002"
+                        "test_null.regions.bed.gz.csi:md5,e0045e73eb8e8c2b88544f0bc346e002"
                     ]
                 ],
                 "regions_txt": [
@@ -1507,7 +1507,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.region.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
+                        "test_null.mosdepth.region.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e"
                     ]
                 ],
                 "summary_txt": [
@@ -1516,7 +1516,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.mosdepth.summary.txt:md5,96c037f769974b904beb53edc4f56d82"
+                        "test_null.mosdepth.summary.txt:md5,96c037f769974b904beb53edc4f56d82"
                     ]
                 ],
                 "thresholds_bed": [
@@ -1525,7 +1525,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.thresholds.bed.gz:md5,fe70ae728cd10726c42a2bcd44adfc9d"
+                        "test_null.thresholds.bed.gz:md5,fe70ae728cd10726c42a2bcd44adfc9d"
                     ]
                 ],
                 "thresholds_csi": [
@@ -1534,7 +1534,7 @@
                             "id": "test",
                             "single_end": true
                         },
-                        "test.thresholds.bed.gz.csi:md5,5e0a68f8a0f2044ae36a7f50abfa291d"
+                        "test_null.thresholds.bed.gz.csi:md5,5e0a68f8a0f2044ae36a7f50abfa291d"
                     ]
                 ],
                 "versions_gzip": [
@@ -1553,10 +1553,10 @@
                 ]
             }
         ],
-        "timestamp": "2026-04-28T16:21:21.687826049",
+        "timestamp": "2026-05-21T10:24:37.297409",
         "meta": {
-            "nf-test": "0.9.4",
-            "nextflow": "25.10.4"
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
         }
     }
 }
