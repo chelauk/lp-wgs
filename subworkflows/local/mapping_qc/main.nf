@@ -1,4 +1,4 @@
-include { BWA_MEM                              } from '../../../modules/nf-core/bwa/mem/main'
+include { BWA_MEM                              } from '../../../modules/local/bwa/mem/main'
 include { QC_TRIM                              } from '../../../subworkflows/local/qc_trim/main'
 include { MERGE_LANES                          } from '../../../subworkflows/local/merge_lanes/main'
 include { MOSDEPTH                             } from '../../../modules/nf-core/mosdepth/main'
