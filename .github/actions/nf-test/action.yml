@@ -1,0 +1,52 @@
+name: "nf-test Action"
+description: "Runs nf-test with common setup steps"
+inputs:
+  profile:
+    description: "Profile to use"
+    required: true
+  shard:
+    description: "Shard number for this CI job"
+    required: true
+  total_shards:
+    description: "Total number of test shards"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Nextflow
+      uses: nf-core/setup-nextflow@b4ec1bc7c16a94435159de94a05253542fddf6ef # v3
+      with:
+        version: ${{ env.NXF_VERSION }}
+
+    - name: Install nf-test
+      uses: nf-core/setup-nf-test@4069fbbaabe94c08faba4ad261bfa88225ba133f # v2
+      with:
+        version: ${{ env.NFT_VER }}
+        install-pdiff: true
+
+    - name: Setup Apptainer
+      if: contains(inputs.profile, 'singularity')
+      uses: eWaterCycle/setup-apptainer@3f706d898c9db585b1d741b4692e66755f3a1b40 # v2
+
+    - name: Conda setup
+      if: contains(inputs.profile, 'conda')
+      uses: conda-incubator/setup-miniconda@8ee1f361103df19b6f8c8655fd3967a8ecb162d5 # v4
+      with:
+        auto-update-conda: true
+        conda-solver: libmamba
+        channels: conda-forge,bioconda
+        channel-priority: strict
+        conda-remove-defaults: true
+
+    - name: Run nf-test
+      shell: bash
+      env:
+        NFT_WORKDIR: ${{ env.NFT_WORKDIR }}
+      run: |
+        nf-test test \
+          --profile=+${{ inputs.profile }} \
+          --ci \
+          --changed-since HEAD^ \
+          --verbose \
+          --tap=test.tap \
+          --shard ${{ inputs.shard }}/${{ inputs.total_shards }}

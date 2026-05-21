@@ -2,23 +2,39 @@ nextflow_pipeline {
 
     name "Test pipeline"
     script "../main.nf"
+    tag "pipeline"
 
-    def test_scenario = [
-        [
-            name: "-profile test",
-            params: [],
-            snapshot: 'stderr,stdout',
-            snapshot_ignore: 'Downloading plugin|Staging foreign file',
-        ],
-        [
-            name: "-profile test -stub",
-            params: [],
-            stub: true
-        ]
-    ]
+    test("-profile test") {
 
-    // Generate tests for each scenario
-    test_scenario.each { scenario ->
-        test(scenario.name, UTILS.getTest(scenario))
+        when {
+            params {
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.trace.succeeded().size(),
+                    removeNextflowVersion("$outputDir/pipeline_info/lp_wgs_software_mqc_versions.yml")
+                ).match() }
+            )
+        }
+    }
+
+    test("-profile test -stub") {
+
+        options "-stub"
+
+        when {
+            params {
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            assert workflow.success
+        }
     }
 }
