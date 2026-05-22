@@ -156,6 +156,48 @@ def read_seg(path, coordinate_system, requested_copy_column):
     return sample_id, copy_column, records
 
 
+def compress_common_runs(samples, intervals):
+    """Merge adjacent intervals with identical CN states across all samples."""
+    copy_number_by_sample = [
+        [copy_number for _interval, copy_number in sample["records"]]
+        for sample in samples
+    ]
+
+    compressed_intervals = []
+    compressed_copy_numbers = [[] for _sample in samples]
+    current_chrom, current_start, current_end = intervals[0]
+    current_state = tuple(sample_copy_numbers[0] for sample_copy_numbers in copy_number_by_sample)
+
+    for index in range(1, len(intervals)):
+        chrom, start, end = intervals[index]
+        state = tuple(
+            sample_copy_numbers[index] for sample_copy_numbers in copy_number_by_sample
+        )
+        if chrom == current_chrom and start == current_end and state == current_state:
+            current_end = end
+            continue
+
+        compressed_intervals.append((current_chrom, current_start, current_end))
+        for sample_index, copy_number in enumerate(current_state):
+            compressed_copy_numbers[sample_index].append(copy_number)
+        current_chrom, current_start, current_end = chrom, start, end
+        current_state = state
+
+    compressed_intervals.append((current_chrom, current_start, current_end))
+    for sample_index, copy_number in enumerate(current_state):
+        compressed_copy_numbers[sample_index].append(copy_number)
+
+    compressed_samples = []
+    for sample, sample_copy_numbers in zip(samples, compressed_copy_numbers):
+        compressed_samples.append(
+            {
+                "sample_id": sample["sample_id"],
+                "records": list(zip(compressed_intervals, sample_copy_numbers)),
+            }
+        )
+    return compressed_samples, compressed_intervals
+
+
 def main():
     args = parse_args()
     if len(args.seg_files) < 2:
@@ -192,6 +234,9 @@ def main():
             f"{len(nondiploid_samples)}"
         )
 
+    original_segment_count = len(interval_template or [])
+    samples, compressed_intervals = compress_common_runs(samples, interval_template)
+
     with open(args.out, "w", newline="") as handle:
         writer = csv.writer(handle, delimiter="\t", lineterminator="\n")
         writer.writerow(["sample_id", "chrom", "start", "end", "Copies", "Diploid"])
@@ -202,7 +247,8 @@ def main():
     with open(args.report, "w") as handle:
         handle.write(f"patient\t{args.patient}\n")
         handle.write(f"samples\t{len(samples)}\n")
-        handle.write(f"segments_per_sample\t{len(interval_template or [])}\n")
+        handle.write(f"segments_per_sample_in\t{original_segment_count}\n")
+        handle.write(f"segments_per_sample_out\t{len(compressed_intervals)}\n")
         handle.write(f"coordinate_system_in\t{args.coordinate_system}\n")
         handle.write("coordinate_system_out\tbed\n")
         handle.write("copy_columns\t")

@@ -185,7 +185,7 @@ workflow LP_WGS {
             if (!selected_tools.contains('ichor')) {
                 exit 1, "The 'medicc' workflow with medicc_source='ichor' requires 'ichor'."
             }
-            ICHORCNA_RUN.out.seg
+            ICHORCNA_RUN.out.cna_seg
                 .map { meta, seg -> [meta.patient, meta.sample, meta.id, seg] }
                 .groupTuple()
                 .filter { tuple -> tuple[1].size() > 1 }
