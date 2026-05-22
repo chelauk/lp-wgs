@@ -149,11 +149,11 @@ BayesCNA is the Bayesian inference caller in the pipeline. Its outputs are publi
 
 ### MEDICC2
 
-When `medicc` is included in `--tools`, the pipeline prepares MEDICC2 input from copy number calls and runs MEDICC2 at patient level.
+When `medicc` is included in `--tools`, the pipeline prepares MEDICC2 input from copy number calls and runs MEDICC2 at patient level. By default MEDICC2 input is prepared from ACE-derived calls. Set `--medicc_source ichor` to prepare input from ichorCNA SEG output instead.
 
 Main outputs:
 
-- MEDICC2 input TSV files from `PREP_MEDICC2`.
+- MEDICC2 input TSV files from `PREP_MEDICC2` or `PREP_MEDICC2_ICHOR`.
 - `medicc2_output/`: MEDICC2 output directory.
 
 MEDICC is currently treated as human-specific by the workflow and is blocked for `mm10` runs.

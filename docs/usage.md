@@ -117,7 +117,15 @@ Examples:
 ```bash
 --tools ichor
 --tools ace,ascat
---tools ichor,ascat,medicc
+--tools ace,medicc
+--tools ichor,ascat,medicc --medicc_source ichor
+```
+
+By default, `medicc` prepares MEDICC2 input from ACE-derived copy-number calls.
+To prepare MEDICC2 input from ichorCNA SEG output instead, include `ichor` and set:
+
+```bash
+--tools ichor,medicc --medicc_source ichor
 ```
 
 For mouse genomes (`qdnaseq_genome = mm10`), MEDICC is currently blocked by the workflow because it remains human-specific in this pipeline.

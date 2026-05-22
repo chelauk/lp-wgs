@@ -18,6 +18,7 @@ include { RUN_QDNASEQ                 } from '../modules/local/prep_ascat/main'
 include { RUN_ASCAT                   } from '../modules/local/ascat_lp/main'
 include { RUN_BAYES                   } from '../modules/local/bayes_cn/main'
 include { PREP_MEDICC2                } from '../modules/local/prep_medicc2/main'
+include { PREP_MEDICC2_ICHOR          } from '../modules/local/prep_medicc2_ichor/main'
 include { MEDICC2                     } from '../modules/local/medicc2/main'
 
 
@@ -67,6 +68,7 @@ workflow LP_WGS {
 
     main:
     selected_tools = tools.tokenize(',').collect { it.trim() }.findAll { it }
+    medicc_source = params.medicc_source ?: 'ace'
 
     if (qdnaseq_genome?.startsWith('mm')) {
         unsupported_tools = selected_tools.intersect(['medicc'])
@@ -172,14 +174,31 @@ workflow LP_WGS {
 
     //run prep_medicc
     if (selected_tools.contains('medicc')) {
-        if (!selected_tools.contains('ace')) {
-            exit 1, "The 'medicc' workflow currently requires 'ace' so that ploidy-grouped inputs can be prepared."
+        if (medicc_source == 'ace') {
+            if (!selected_tools.contains('ace')) {
+                exit 1, "The 'medicc' workflow with medicc_source='ace' requires 'ace' so that ploidy-grouped inputs can be prepared."
+            }
+            PREP_MEDICC2(prep_medicc2_input, bin_dir, bin_size)
+            versions = versions.mix(PREP_MEDICC2.out.versions)
+            ch_medicc_input = PREP_MEDICC2.out.for_medicc
+        } else if (medicc_source == 'ichor') {
+            if (!selected_tools.contains('ichor')) {
+                exit 1, "The 'medicc' workflow with medicc_source='ichor' requires 'ichor'."
+            }
+            ICHORCNA_RUN.out.seg
+                .map { meta, seg -> [meta.patient, meta.sample, meta.id, seg] }
+                .groupTuple()
+                .filter { tuple -> tuple[1].size() > 1 }
+                .set { prep_medicc2_ichor_input }
+            PREP_MEDICC2_ICHOR(prep_medicc2_ichor_input)
+            versions = versions.mix(PREP_MEDICC2_ICHOR.out.versions)
+            ch_medicc_input = PREP_MEDICC2_ICHOR.out.for_medicc
+        } else {
+            exit 1, "Unsupported medicc_source '${medicc_source}'. Supported values: ace, ichor."
         }
-        PREP_MEDICC2(prep_medicc2_input, bin_dir, bin_size)
-        versions = versions.mix(PREP_MEDICC2.out.versions)
 
         // run medicc2
-        MEDICC2(PREP_MEDICC2.out.for_medicc, medicc_arms, medicc_genes)
+        MEDICC2(ch_medicc_input, medicc_arms, medicc_genes)
         versions = versions.mix(MEDICC2.out.versions)
     }
 

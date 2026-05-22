@@ -124,6 +124,12 @@
             "type": "integer",
             "default": 1000
         },
+        "medicc_source": {
+            "type": "string",
+            "default": "ace",
+            "enum": ["ace", "ichor"],
+            "description": "Copy-number caller output used to prepare MEDICC2 input."
+        },
         "insertsizemetrics": {
             "type": "string"
         },

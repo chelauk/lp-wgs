@@ -92,6 +92,7 @@ patient1,sample2,/data/patient1_sample2.bam,/data/patient1_sample2.bam.bai
 | `--bin` | `1000` | Bin size in kb for HMMcopy/ichorCNA-style read counting. Supported values in the bundled config are `10`, `50`, `500`, and `1000`. |
 | `--ploidy` | `2,3,4` | Comma-separated ploidy values passed to ACE and ASCATlp. |
 | `--ascat_pcf_gamma` | `10` | Penalty passed to `copynumber::pcf()` for ASCAT low-pass segmentation. Higher values produce fewer segments. |
+| `--medicc_source` | `ace` | Caller output used to prepare MEDICC2 input. Supported values: `ace`, `ichor`. |
 | `--filter_bam` | `false` | Filter BAMs by insert size before calling/QC. |
 | `--filter_bam_min` | `90` | Minimum insert size when `--filter_bam` is enabled. |
 | `--filter_bam_max` | `150` | Maximum insert size when `--filter_bam` is enabled. |
