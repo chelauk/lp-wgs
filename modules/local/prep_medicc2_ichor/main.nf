@@ -2,7 +2,7 @@ process PREP_MEDICC2_ICHOR {
     tag "$patient"
     label 'process_low'
 
-    container "python:3.11-slim"
+    container "python:3.11-bookworm"
 
     input:
     tuple val(patient), val(samples), val(ids), path(segs)
