@@ -46,6 +46,60 @@ process ICHORCNA_RUN {
     library("ichorCNA")
     library("yaml")
 
+    # Preserve the original plotting function
+    original_plotCorrectionGenomeWide <- get(
+        "plotCorrectionGenomeWide",
+        envir = asNamespace("ichorCNA")
+    )
+    
+    # Skip chromosome correction plots when median read count is zero
+    safe_plotCorrectionGenomeWide <- function(
+        correctOutput,
+        chr = NULL,
+        seqinfo = NULL,
+        ...
+    ) {
+        x <- correctOutput
+    
+        if (!is.null(chr)) {
+            x <- x[
+                as.character(seqnames(x)) ==
+                    as.character(chr)
+            ]
+        }
+    
+        med <- median(x\$reads, na.rm = TRUE)
+    
+        if (
+            length(x) == 0 ||
+            !is.finite(med) ||
+            med <= 0
+        ) {
+            warning(
+                "Skipping correction plot for ",
+                if (is.null(chr)) "genome-wide data" else chr,
+                ": median read count is zero or unavailable"
+            )
+    
+            return(invisible(NULL))
+        }
+    
+        original_plotCorrectionGenomeWide(
+            correctOutput = correctOutput,
+            chr = chr,
+            seqinfo = seqinfo,
+            ...
+        )
+    }
+    
+    # Override only for this R session
+    assignInNamespace(
+        "plotCorrectionGenomeWide",
+        safe_plotCorrectionGenomeWide,
+        ns = "ichorCNA"
+    )
+
+
     run_ichorCNA(
         tumor_wig='${wig}',
         id='${prefix}',
