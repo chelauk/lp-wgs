@@ -50,9 +50,8 @@ workflow {
     main:
     // Initialise genome resources close to the workflow entrypoint.
     ch_fasta = ref_fasta ? Channel.fromPath(ref_fasta).map { path -> [[id: path.baseName], path] }.collect() : Channel.empty()
-
+    ch_fasta_fai = ref_fasta_fai ? Channel.fromPath(ref_fasta_fai).map { path -> [[id: path.name.replaceFirst(/\.(fa|fasta)\.fai$/, '')], path] }.collect() : Channel.empty()
     ch_dict = ref_dict ? Channel.fromPath(ref_dict).collect() : Channel.empty()
-    ch_fasta_fai = ref_fasta_fai ? Channel.fromPath(ref_fasta_fai).map { path -> [[id: 'fai'], path] }.collect() : Channel.empty()
     ch_chr_arm_boundaries = ref_chr_arm_boundaries ? Channel.fromPath(ref_chr_arm_boundaries).collect() : Channel.empty()
     if (params.step == 'mapping' && !ref_bwa) {
         error "No BWA index configured. genome=${params.genome}, igenomes_base=${params.igenomes_base}, genome_bwa=${getGenomeAttribute('bwa')}"
