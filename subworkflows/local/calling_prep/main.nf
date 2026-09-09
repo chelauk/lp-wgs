@@ -2,12 +2,14 @@ include { HMMCOPY_GCCOUNTER } from '../../../modules/nf-core/hmmcopy/gccounter/m
 include { HMMCOPY_READCOUNTER } from '../../../modules/nf-core/hmmcopy/readcounter/main'
 include { SAMTOOLS_VIEW } from '../../../modules/local/samtools/view/main'
 include { SAMTOOLS_VIEW as SAMTOOLS_NVIEW } from '../../../modules/local/samtools/view/main'
+include { PICARD_MARKDUPLICATES } from '../../../modules/nf-core/picard/markduplicates/main'
 
 workflow CALLING_PREP {
     take:
     ch_input_sample
     ch_mapped_bam
     fasta
+    fasta_fai
     gc_wig
     step
     tech
@@ -46,11 +48,18 @@ workflow CALLING_PREP {
     } else {
         ch_gc_wig = gc_wig
     }
+    
+    picard_input_bam = ch_analysis_input
+                                .map{ meta, bam , bai -> tuple(meta, bam)}
+    
+    picard_fasta = fasta.join(fasta_fai).first()
+    PICARD_MARKDUPLICATES ( picard_input_bam, picard_fasta)
 
-    HMMCOPY_READCOUNTER(ch_analysis_input, fasta)
+    dups_marked = PICARD_MARKDUPLICATES.out.bam.join(PICARD_MARKDUPLICATES.out.bai)
+    HMMCOPY_READCOUNTER( dups_marked, fasta )
 
     emit:
-    analysis_input = ch_analysis_input
+    analysis_input = dups_marked
     gc_wig = ch_gc_wig
     readcounter_wig = HMMCOPY_READCOUNTER.out.wig
     versions
