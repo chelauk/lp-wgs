@@ -111,6 +111,7 @@ workflow LP_WGS {
         ch_input_sample,
         ch_mapped_bam,
         fasta,
+        fasta_fai,
         gc_wig,
         step,
         tech,
