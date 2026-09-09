@@ -30,6 +30,7 @@ process HMMCOPY_READCOUNTER {
     def cleanup = bam.Extension == "cram" ? "rm temp.bam{,.bai}" : ""
     """
     ${convert_cram}
+    ln -s ${bai} ${bam}.bai
 
     readCounter \\
         ${args} \\
