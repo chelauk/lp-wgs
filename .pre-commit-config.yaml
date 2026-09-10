@@ -1,0 +1,5 @@
+repos:  
+  - repo: https://github.com/seqeralabs/nf-lint-pre-commit  
+    rev: v0.2.0  # Use the latest release tag  
+    hooks:  
+      - id: nextflow-lint
