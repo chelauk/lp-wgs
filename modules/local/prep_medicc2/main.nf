@@ -23,7 +23,6 @@ process PREP_MEDICC2 {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
     """
     prep_medicc.R $patient "${ploidy.join(' ')}" $bin_dir $bin
 
@@ -33,7 +32,6 @@ process PREP_MEDICC2 {
     END_VERSIONS
     """
     stub:
-    def args = task.ext.args ?: ''
     """
     echo "prep_medicc.R $patient $ploidy $bin_dir $bin"
 

@@ -17,10 +17,9 @@ workflow CALLING_PREP {
     filter_bam_min
     filter_bam_max
     call_gc
-    bin_size
 
     main:
-    versions = Channel.empty()
+    versions = channel.empty()
 
     ch_analysis_input = step == 'calling' ? ch_input_sample : ch_mapped_bam
 
@@ -50,7 +49,7 @@ workflow CALLING_PREP {
     }
     
     picard_input_bam = ch_analysis_input
-                                .map{ meta, bam , bai -> tuple(meta, bam)}
+                                .map{ meta, bam , _bai -> tuple(meta, bam)}
     
     picard_fasta = fasta.join(fasta_fai).first()
     PICARD_MARKDUPLICATES ( picard_input_bam, picard_fasta)

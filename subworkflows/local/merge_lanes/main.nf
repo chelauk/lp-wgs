@@ -12,7 +12,7 @@ workflow MERGE_LANES {
     ch_bam_bwa
 
     main:
-    versions = Channel.empty()
+    versions = channel.empty()
 
     ch_bam_bwa
         .map { meta, bam ->
@@ -21,17 +21,17 @@ workflow MERGE_LANES {
         }
         .map { meta, bam -> [[meta.patient, meta.sample], [meta, bam]] }
         .groupTuple()
-        .branch { sample_key, grouped_records ->
+        .branch { _sample_key, grouped_records ->
             single: grouped_records.size() == 1
             multiple: grouped_records.size() > 1
         }
         .set { ch_bam_grouped }
 
     ch_bam_single = ch_bam_grouped.single
-        .map { sample_key, grouped_records -> grouped_records[0] }
+        .map { _sample_key, grouped_records -> grouped_records[0] }
 
     ch_bam_multiple = ch_bam_grouped.multiple
-        .map { sample_key, grouped_records ->
+        .map { _sample_key, grouped_records ->
             def meta = grouped_records[0][0]
             def bams = grouped_records.collect { record -> record[1] }
             [meta, bams]
@@ -41,10 +41,9 @@ workflow MERGE_LANES {
     SAMBAMBA_MERGE(ch_bam_multiple)
     ch_bam_unindexed = ch_bam_single.mix(SAMBAMBA_MERGE.out.bam)
     SAMTOOLS_INDEX(ch_bam_unindexed)
-    bam = ch_bam_unindexed.join(SAMTOOLS_INDEX.out.index)
     versions = versions.mix(SAMBAMBA_MERGE.out.versions.first())
 
     emit:
-    bam
+    bam = ch_bam_unindexed.join(SAMTOOLS_INDEX.out.index)
     versions
 }

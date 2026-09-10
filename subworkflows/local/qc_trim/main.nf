@@ -11,8 +11,8 @@ workflow QC_TRIM {
     fastp_adapter_fasta
 
     main:
-    versions = Channel.empty()
-    reports  = Channel.empty()
+    versions = channel.empty()
+    reports  = channel.empty()
 
     ch_reads
         .map { meta, fastq_1, fastq_2 -> [meta, [fastq_1, fastq_2]] }
@@ -20,7 +20,7 @@ workflow QC_TRIM {
 
     FASTQC(ch_reads_for_qc)
     versions = versions.mix(FASTQC.out.versions_fastqc)
-    reports  = reports.mix(FASTQC.out.zip.collect { meta, logs -> logs })
+    reports  = reports.mix(FASTQC.out.zip.collect { _meta, logs -> logs })
 
     adapter_fasta = fastp_adapter_fasta ? file(fastp_adapter_fasta, checkIfExists: true) : []
 
@@ -40,8 +40,8 @@ workflow QC_TRIM {
     )
     versions = versions.mix(FASTP.out.versions_fastp)
     reports  = reports.mix(
-        FASTP.out.json.collect { meta, json -> json },
-        FASTP.out.html.collect { meta, html -> html }
+        FASTP.out.json.collect { _meta, json -> json },
+        FASTP.out.html.collect { _meta, html -> html }
     )
 
     emit:

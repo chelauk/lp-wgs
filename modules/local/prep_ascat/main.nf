@@ -21,7 +21,6 @@ process RUN_QDNASEQ {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
     def genome = qdnaseq_genome ?: 'hg38'
     def qdnaseqPackage = qdnaseq_package ?: 'QDNAseq.hg38'
     """
@@ -34,7 +33,6 @@ process RUN_QDNASEQ {
     """
 
     stub:
-    def args = task.ext.args ?: ''
     def genome = qdnaseq_genome ?: 'hg38'
     def qdnaseqPackage = qdnaseq_package ?: 'QDNAseq.hg38'
     """

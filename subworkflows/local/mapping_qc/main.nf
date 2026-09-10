@@ -22,8 +22,8 @@ workflow MAPPING_QC {
     filter_status
 
     main:
-    reports  = Channel.empty()
-    versions = Channel.empty()
+    reports  = channel.empty()
+    versions = channel.empty()
 
     QC_TRIM(ch_input_sample, fastp_adapter_fasta)
     versions = versions.mix(QC_TRIM.out.versions)
@@ -59,14 +59,14 @@ workflow MAPPING_QC {
         filter_status
     )
     versions = versions.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.versions.first())
-    reports  = reports.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.metrics.collect { meta, report -> report })
+    reports  = reports.mix(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.metrics.collect { _meta, report -> report })
 
-    ch_insert_metrics_input = ch_mapped_bam.map { meta, bam, bai -> [meta, bam] }
+    ch_insert_metrics_input = ch_mapped_bam.map { meta, bam, _bai -> [meta, bam] }
     PICARD_COLLECTINSERTSIZEMETRICS(ch_insert_metrics_input)
     versions = versions.mix(PICARD_COLLECTINSERTSIZEMETRICS.out.versions_picard)
     reports  = reports.mix(
-        PICARD_COLLECTINSERTSIZEMETRICS.out.metrics.collect { meta, report -> report },
-        PICARD_COLLECTINSERTSIZEMETRICS.out.histogram.collect { meta, report -> report }
+        PICARD_COLLECTINSERTSIZEMETRICS.out.metrics.collect { _meta, report -> report },
+        PICARD_COLLECTINSERTSIZEMETRICS.out.histogram.collect { _meta, report -> report }
     )
 
     ch_mosdepth_input = ch_mapped_bam
@@ -84,9 +84,9 @@ workflow MAPPING_QC {
     versions = versions.mix(MOSDEPTH.out.versions_mosdepth)
     versions = versions.mix(MOSDEPTH.out.versions_gzip)
     reports  = reports.mix(
-        MOSDEPTH.out.global_txt.collect { meta, report -> report },
-        MOSDEPTH.out.summary_txt.collect { meta, report -> report },
-        MOSDEPTH.out.regions_txt.collect { meta, report -> report }
+        MOSDEPTH.out.global_txt.collect { _meta, report -> report },
+        MOSDEPTH.out.summary_txt.collect { _meta, report -> report },
+        MOSDEPTH.out.regions_txt.collect { _meta, report -> report }
     )
 
     emit:

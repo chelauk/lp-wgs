@@ -48,8 +48,8 @@ workflow LP_WGS {
     genome
     qdnaseq_genome
     qdnaseq_package
-    ichor_genome_build
-    ichor_genome_style
+    _ichor_genome_build
+    _ichor_genome_style
     step
     tech
     sort
@@ -65,9 +65,10 @@ workflow LP_WGS {
     multiqc_config
     multiqc_logo
     multiqc_methods_description
+    bin_dir
 
     main:
-    selected_tools = tools.tokenize(',').collect { it.trim() }.findAll { it }
+    selected_tools = tools.tokenize(',').collect { t -> t.trim() }.findAll { t -> t }    
     medicc_source = params.medicc_source ?: 'ace'
 
     if (qdnaseq_genome?.startsWith('mm')) {
@@ -81,12 +82,12 @@ workflow LP_WGS {
     filter_status = filter_bam ? "filter_${filter_bam_min}_${filter_bam_max}" : "filter_none"
 
     // To gather QC reports and software versions for reporting
-    reports  = Channel.empty()
-    versions = Channel.empty()
+    reports  = channel.empty()
+    versions = channel.empty()
 
     // bin_dir for Rscripts
-    bin_dir = Channel.fromPath("$projectDir/bin").collect()
-    ch_mapped_bam = Channel.empty()
+    bin_dir = channel.fromPath("$projectDir/bin").collect()
+    ch_mapped_bam = channel.empty()
 
     if (step == 'mapping') {
         MAPPING_QC(
@@ -119,7 +120,6 @@ workflow LP_WGS {
         filter_bam_min,
         filter_bam_max,
         call_gc,
-        bin_size
     )
     ch_analysis_input = CALLING_PREP.out.analysis_input
     ch_gc_wig = CALLING_PREP.out.gc_wig
@@ -148,7 +148,7 @@ workflow LP_WGS {
     }
 
     if (selected_tools.contains('ascat')) {
-        RUN_ASCAT(RUN_QDNASEQ.out.for_ascat, ploidy, chr_arm_boundaries, qdnaseq_genome, ascat_pcf_gamma)
+        RUN_ASCAT(RUN_QDNASEQ.out.for_ascat, ploidy, chr_arm_boundaries, qdnaseq_genome, ascat_pcf_gamma, bin_dir)
         versions = versions.mix(RUN_ASCAT.out.versions)
     }
 
@@ -169,7 +169,7 @@ workflow LP_WGS {
 
     // run bayes_cna
     if (selected_tools.contains('bayes_cna')) {
-        RUN_BAYES(ch_analysis_input, bin_size, qdnaseq_genome)
+        RUN_BAYES(ch_analysis_input, bin_size, qdnaseq_genome, bin_dir)
         versions = versions.mix(RUN_BAYES.out.versions)
     }
 
@@ -191,7 +191,7 @@ workflow LP_WGS {
                 .groupTuple()
                 .filter { tuple -> tuple[1].size() > 1 }
                 .set { prep_medicc2_ichor_input }
-            PREP_MEDICC2_ICHOR(prep_medicc2_ichor_input)
+            PREP_MEDICC2_ICHOR(prep_medicc2_ichor_input,bin_dir)
             versions = versions.mix(PREP_MEDICC2_ICHOR.out.versions)
             ch_medicc_input = PREP_MEDICC2_ICHOR.out.for_medicc
         } else {
@@ -213,6 +213,6 @@ workflow LP_WGS {
     )
 
     emit:
-    multiqc_report = REPORTING_MULTIQC.out.report // channel: /path/to/multiqc_report.html
+    multiqc_report = REPORTING_MULTIQC.out // channel: /path/to/multiqc_report.html
     versions
 }

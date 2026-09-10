@@ -57,5 +57,5 @@ workflow UTILS_NFVALIDATION_PLUGIN {
     }
 
     emit:
-    dummy_emit = true
+    true
 }

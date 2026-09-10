@@ -41,7 +41,7 @@ workflow UTILS_NEXTFLOW_PIPELINE {
     }
 
     emit:
-    dummy_emit = true
+    true
 }
 
 /*
@@ -91,7 +91,7 @@ def checkCondaChannels() {
     try {
         def config = parser.load("conda config --show channels".execute().text)
         channels = config.channels
-    } catch(NullPointerException | IOException e) {
+    } catch(NullPointerException | IOException _e) {
         log.warn "Could not verify conda channel configuration."
         return
     }

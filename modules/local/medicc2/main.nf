@@ -22,7 +22,6 @@ process MEDICC2 {
 
     script:
     def plot_style = task.attempt == 1 ? 'both' : 'auto'
-    def args = task.ext.args ?: ''
     """
     if [ ! -d medicc2_output ]; then
         mkdir medicc2_output
@@ -48,8 +47,6 @@ process MEDICC2 {
     END_VERSIONS
     """
     stub:
-    def plot_style = task.attempt == 1 ? 'heatmap' : 'auto'
-    def args = task.ext.args ?: ''
     """
     mkdir -p medicc2_output
 

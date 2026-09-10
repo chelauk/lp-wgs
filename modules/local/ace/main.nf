@@ -20,7 +20,6 @@ process ACE {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
     def genome = qdnaseq_genome ?: 'hg38'
     """
     if [ ! -d "${meta.sample}_${filter_status}" ]; then
@@ -37,7 +36,6 @@ process ACE {
     END_VERSIONS
     """
     stub:
-    def args = task.ext.args ?: ''
     def genome = qdnaseq_genome ?: 'hg38'
     """
     mkdir ${meta.sample}_${filter_status}

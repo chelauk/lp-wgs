@@ -6,6 +6,7 @@ process PREP_MEDICC2_ICHOR {
 
     input:
     tuple val(patient), val(samples), val(ids), path(segs)
+    path(bin_dir)
 
     output:
     tuple val(patient), path("${patient}.tsv"), emit: for_medicc
@@ -16,9 +17,8 @@ process PREP_MEDICC2_ICHOR {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
     """
-    python3 ${projectDir}/bin/prep_medicc_ichor.py \\
+    python3 ${bin_dir}prep_medicc_ichor.py \\
         --patient ${patient} \\
         --out ${patient}.tsv \\
         --report medicc2_ichor_prep.txt \\
