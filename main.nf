@@ -10,30 +10,6 @@
 nextflow.enable.dsl = 2
 
 /*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    GENOME PARAMETER VALUES
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-def ref_dict                  = params.dict ?: getGenomeAttribute('dict')
-def ref_fasta                 = params.fasta ?: getGenomeAttribute('fasta')
-def ref_fasta_fai             = params.fasta_fai ?: getGenomeAttribute('fasta_fai')
-def ref_bwa                   = params.bwa ?: getGenomeAttribute('bwa')
-def ref_centromere            = params.centromere ?: getGenomeAttribute('centromere')
-def ref_map_wig               = params.map_wig ?: getGenomeAttribute('map_wig')
-def ref_map_wig_file          = params.map_wig_file ?: getGenomeAttribute('map_wig_file')
-def ref_gc_wig                = params.gc_wig ?: getGenomeAttribute('gc_wig')
-def ref_ichor_genome_build    = params.ichor_genome_build ?: getGenomeAttribute('ichor_genome_build')
-def ref_ichor_genome_style    = params.ichor_genome_style ?: getGenomeAttribute('ichor_genome_style')
-def ref_chr_bed               = params.mosdepth_bed ?: getGenomeAttribute('mosdepth_bed') ?: params.chr_bed ?: getGenomeAttribute('chr_bed')
-def ref_medicc_arms           = params.medicc_arms ?: getGenomeAttribute('medicc_arms')
-def ref_medicc_genes          = params.medicc_genes ?: getGenomeAttribute('medicc_genes')
-def ref_chr_arm_boundaries    = params.chr_arm_boundaries ?: getGenomeAttribute('chr_arm_boundaries')
-def ref_qdnaseq_genome        = params.qdnaseq_genome ?: getGenomeAttribute('qdnaseq_genome')
-def ref_qdnaseq_package       = params.qdnaseq_package ?: getGenomeAttribute('qdnaseq_package')
-def ref_hmmcopy_chromosomes   = params.hmmcopy_chromosomes ?: getGenomeAttribute('hmmcopy_chromosomes')
-
-/*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT FUNCTIONS / MODULES / SUBWORKFLOWS / WORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -47,6 +23,30 @@ include { PIPELINE_COMPLETION              } from './subworkflows/local/utils_nf
 // WORKFLOW: Run main lp-wgs analysis pipeline
 //
 workflow {
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        GENOME PARAMETER VALUES
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
+    
+    def ref_dict                  = params.dict ?: getGenomeAttribute('dict')
+    def ref_fasta                 = params.fasta ?: getGenomeAttribute('fasta')
+    def ref_fasta_fai             = params.fasta_fai ?: getGenomeAttribute('fasta_fai')
+    def ref_bwa                   = params.bwa ?: getGenomeAttribute('bwa')
+    def ref_centromere            = params.centromere ?: getGenomeAttribute('centromere')
+    def ref_map_wig               = params.map_wig ?: getGenomeAttribute('map_wig')
+    def ref_map_wig_file          = params.map_wig_file ?: getGenomeAttribute('map_wig_file')
+    def ref_gc_wig                = params.gc_wig ?: getGenomeAttribute('gc_wig')
+    def ref_ichor_genome_build    = params.ichor_genome_build ?: getGenomeAttribute('ichor_genome_build')
+    def ref_ichor_genome_style    = params.ichor_genome_style ?: getGenomeAttribute('ichor_genome_style')
+    def ref_chr_bed               = params.mosdepth_bed ?: getGenomeAttribute('mosdepth_bed') ?: params.chr_bed ?: getGenomeAttribute('chr_bed')
+    def ref_medicc_arms           = params.medicc_arms ?: getGenomeAttribute('medicc_arms')
+    def ref_medicc_genes          = params.medicc_genes ?: getGenomeAttribute('medicc_genes')
+    def ref_chr_arm_boundaries    = params.chr_arm_boundaries ?: getGenomeAttribute('chr_arm_boundaries')
+    def ref_qdnaseq_genome        = params.qdnaseq_genome ?: getGenomeAttribute('qdnaseq_genome')
+    def ref_qdnaseq_package       = params.qdnaseq_package ?: getGenomeAttribute('qdnaseq_package')
+    def ref_hmmcopy_chromosomes   = params.hmmcopy_chromosomes ?: getGenomeAttribute('hmmcopy_chromosomes')
+
     main:
     // Initialise genome resources close to the workflow entrypoint.
     ch_fasta = ref_fasta ? Channel.fromPath(ref_fasta).map { path -> [[id: path.baseName], path] }.collect() : Channel.empty()
