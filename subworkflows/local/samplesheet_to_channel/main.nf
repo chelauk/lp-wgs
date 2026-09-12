@@ -64,18 +64,22 @@ workflow SAMPLESHEET_TO_CHANNEL {
 
 def flowcellInfoFromFastq(file) {
     if (workflow.stubRun) {
-        return [ "genericid", "genericnumber", "genericflowcell", "genericlane" ]
+        return ["genericid", "genericnumber", "genericflowcell", "genericlane"]
     }
+
     def line
-    file.withInputStream {
-        InputStream gzipStream = new java.util.zip.GZIPInputStream(InputStream)
-        Reader decoder = new InputStreamReader(gzipStream, 'ASCII')
-        BufferedReader buffered = new BufferedReader(decoder)
+
+    file.withInputStream { inputStream ->
+        def gzipStream = new java.util.zip.GZIPInputStream(inputStream)
+        def decoder    = new InputStreamReader(gzipStream, 'ASCII')
+        def buffered   = new BufferedReader(decoder)
         line = buffered.readLine()
     }
+
     assert line.startsWith('@')
     def fields = line.substring(1).split(':')
-    return fields.size() >= 7 ?
-        [ fields[0], fields[1], fields[2], fields[3] ] :
-        [ "genericid", "genericnumber", fields[0], "genericlane" ]
+
+    return fields.size() >= 7
+        ? [fields[0], fields[1], fields[2], fields[3]]
+        : ["genericid", "genericnumber", fields[0], "genericlane"]
 }

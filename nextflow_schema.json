@@ -1,10 +1,10 @@
 {
-    "$schema": "https://json-schema.org/draft-07/schema",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://raw.githubusercontent.com/chelauk/lp-wgs/main/nextflow_schema.json",
     "title": "fht/lp-wgs pipeline parameters",
     "description": "An open-source shallow whole genome sequence analysis",
     "type": "object",
-    "definitions": {
+    "$defs": {
         "input_output_options": {
             "title": "Input/output options",
             "type": "object",
@@ -63,10 +63,10 @@
     },
     "allOf": [
         {
-            "$ref": "#/definitions/input_output_options"
+            "$ref": "#/$defs/input_output_options"
         },
         {
-            "$ref": "#/definitions/generic_options"
+            "$ref": "#/$defs/generic_options"
         }
     ],
     "properties": {
@@ -108,6 +108,20 @@
         "filter_bam_max": {
             "type": "integer",
             "default": 150
+        },
+        "map_bin": {
+            "type": "string",
+            "default": "1000kb",
+            "description": "Bin size used for copy number analysis"
+        },
+        "ichor_ploidy_manual": {
+            "type": "string",
+            "description": "Manual supply of ICHORcna ploidy rather than allowing it to calculate."
+        },
+        "low_reads": {
+            "type": "boolean",
+            "default": false,
+            "description": "Enable settings for extremely low reads"
         },
         "ploidy": {
             "type": ["string", "integer"],

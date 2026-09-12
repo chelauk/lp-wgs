@@ -11,7 +11,6 @@
 include { MAPPING_QC                  } from '../subworkflows/local/mapping_qc/main'
 include { CALLING_PREP                } from '../subworkflows/local/calling_prep/main'
 include { REPORTING_MULTIQC           } from '../subworkflows/local/reporting_multiqc/main'
-//include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 include { ICHORCNA_RUN                } from '../modules/local/ichorcna/run/main'
 include { ACE                         } from '../modules/local/ace/main'
 include { RUN_QDNASEQ                 } from '../modules/local/prep_ascat/main'
@@ -149,14 +148,13 @@ workflow LP_WGS {
     }
 
     if (selected_tools.contains('ascat')) {
-        RUN_ASCAT(RUN_QDNASEQ.out.for_ascat, ploidy, chr_arm_boundaries, qdnaseq_genome, ascat_pcf_gamma, bin_dir)
+        RUN_ASCAT(RUN_QDNASEQ.out.for_ascat, ploidy, chr_arm_boundaries, qdnaseq_genome, ascat_pcf_gamma)
         versions = versions.mix(RUN_ASCAT.out.versions)
     }
 
     // run ACE
     if (selected_tools.contains('ace')) {
         ACE(RUN_QDNASEQ.out.for_ace, filter_status, qdnaseq_genome, ploidy, bin_size)
-        versions = versions.mix(ACE.out.versions)
         ACE.out.ace
             .map { meta, ace ->
                 // If meta.predicted_ploidy is null, set it to 2

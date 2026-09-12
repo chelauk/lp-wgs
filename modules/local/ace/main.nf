@@ -14,7 +14,7 @@ process ACE {
 
     output:
     tuple val(meta), path("${meta.sample}_${filter_status}"),  emit: ace
-    path "versions.yml"             , emit: versions, topic: versions
+    path "versions.yml", emit: versions, topic: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -29,20 +29,32 @@ process ACE {
     if [ ! -e "${meta.sample}_${filter_status}/${bin}kbp.rds" ]; then
         cp ${qdnaseq_rds} "${meta.sample}_${filter_status}/${bin}kbp.rds"
     fi
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        ace: 3.16
-    END_VERSIONS
+    
+    Rscript -e '
+     versions <- list(
+         "r-base" = as.character(getRversion()),
+         "r-ACE"  = as.character(packageVersion("ACE"))
+     )
+     yaml::write_yaml(
+         setNames(list(versions), "${task.process}"),
+         "versions.yml"
+     )
+    ' 
     """
     stub:
     def genome = qdnaseq_genome ?: 'hg38'
     """
     mkdir ${meta.sample}_${filter_status}
     echo "ace.R ${meta.sample}_${filter_status} ${genome} \"${ploidy}\" ${bin} ."
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        ace: stub version
-    END_VERSIONS
+    Rscript -e '
+     versions <- list(
+         "r-base" = as.character(getRversion()),
+         "r-ACE"  = as.character(packageVersion("ACE"))
+     )
+     yaml::write_yaml(
+         setNames(list(versions), "${task.process}"),
+         "versions.yml"
+     )
+    ' 
     """
 }

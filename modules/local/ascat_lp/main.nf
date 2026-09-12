@@ -10,7 +10,7 @@ process RUN_ASCAT {
     path(chr_arm_boundaries)
     val(qdnaseq_genome)
     val(ascat_pcf_gamma)
-    path(bin_dir)
+    //path(bin_dir)
 
     output:
     tuple val(meta), path("ascat_ploidy_*"), emit: ascat
@@ -26,17 +26,22 @@ process RUN_ASCAT {
         .collect { p -> p.trim() }  
         .findAll { p -> p }  
         .collect { ploidy ->  
-    //def ploidyCommands = ploidies.toString().split(',').collect { it.trim() }.findAll { it }.collect { ploidy ->
         def ploidyDir = "ascat_ploidy_${ploidy.replaceAll(/[^A-Za-z0-9_.-]/, '_')}"
-        """
-        mkdir -p "${ploidyDir}"
-        cp ${cna_segments} ${cna_bins} "${ploidyDir}/"
-        (
-            cd "${ploidyDir}"
-            forecast_ascat.R ${meta.id} ${ploidy} ${bin_dir} ../${chr_arm_boundaries} ${genome} ${ascat_pcf_gamma}
-        )
-        """.stripIndent().trim()
-    }.join('\n')
+    """
+    mkdir -p "${ploidyDir}"
+    cp ${cna_segments} ${cna_bins} "${ploidyDir}/"
+    (
+        cd "${ploidyDir}"
+        forecast_ascat.R \
+            ${meta.id} \
+            ${ploidy} \
+            \$(dirname "\$(command -v forecast_ascat.R)") \
+            ../${chr_arm_boundaries} \
+            ${genome} \
+            ${ascat_pcf_gamma}
+    )
+    """.stripIndent().trim()   
+     }.join('\n')
     """
     ${ploidyCommands}
 
@@ -49,11 +54,10 @@ process RUN_ASCAT {
         .collect { p -> p.trim() }  
         .findAll { p -> p }  
         .collect { ploidy ->  
-    //def ploidyCommands = ploidies.toString().split(',').collect { it.trim() }.findAll { it }.collect { ploidy ->
         def ploidyDir = "ascat_ploidy_${ploidy.replaceAll(/[^A-Za-z0-9_.-]/, '_')}"
         """
         mkdir -p "${ploidyDir}"
-        echo "forecast_ascat.R ${meta.id} ${ploidy} ${bin_dir} ../${chr_arm_boundaries} ${genome} ${ascat_pcf_gamma}" > "${ploidyDir}/${meta.id}_ploidy_${ploidy}.command.txt"
+        echo "forecast_ascat.R ${meta.id} ${ploidy} ../${chr_arm_boundaries} ${genome} ${ascat_pcf_gamma}" > "${ploidyDir}/${meta.id}_ploidy_${ploidy}.command.txt"
         touch "${ploidyDir}/${meta.id}_selected_ascat_lp_plot.pdf"
         touch "${ploidyDir}/${meta.id}_selected_cna_ploidy_search_calls.txt"
         touch "${ploidyDir}/${meta.id}_selected_ascat_lp_metrics.txt"
