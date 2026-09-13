@@ -36,7 +36,7 @@ When starting from BAM files (`--step calling`), or after mapping has completed,
 
 The caller set is controlled with `--tools`, for example `--tools ace,ichor,ascat`.
 
-![LP-WGS pipeline Metro Map](docs/images/lp-wgs-metro-map.svg)
+![LP-WGS pipeline Metro Map](docs/images/lp_wgs-metro-map.svg)
 
 
 ## Quick Start
