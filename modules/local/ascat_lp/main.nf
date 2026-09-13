@@ -10,11 +10,39 @@ process RUN_ASCAT {
     path(chr_arm_boundaries)
     val(qdnaseq_genome)
     val(ascat_pcf_gamma)
-    //path(bin_dir)
 
     output:
     tuple val(meta), path("ascat_ploidy_*"), emit: ascat
-    path "versions.yml"             , emit: versions, topic: versions
+
+    tuple val("${task.process}"),
+      val('forecast-ascat'),
+      eval('forecast_ascat.R --version'),
+      emit: versions_forecast_ascat,
+      topic: versions
+
+    tuple val("${task.process}"),
+      val('r-base'),
+      eval("Rscript --vanilla -e 'cat(as.character(getRversion()))'"),
+      emit: versions_r,
+      topic: versions
+
+    tuple val("${task.process}"),
+      val('r-copynumber'),
+      eval("Rscript --vanilla -e 'cat(as.character(packageVersion(\"copynumber\")))'"),
+      emit: versions_copynumber,
+      topic: versions
+
+    tuple val("${task.process}"),
+      val('r-ggplot2'),
+      eval("Rscript --vanilla -e 'cat(as.character(packageVersion(\"ggplot2\")))'"),
+      emit: versions_ggplot2,
+      topic: versions
+
+    tuple val("${task.process}"),
+      val('r-cowplot'),
+      eval("Rscript --vanilla -e 'cat(as.character(packageVersion(\"cowplot\")))'"),
+      emit: versions_cowplot,
+      topic: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -45,7 +73,6 @@ process RUN_ASCAT {
     """
     ${ploidyCommands}
 
-    printf '"%s":\n    ascat_lp: 0.01\n' "${task.process}" > versions.yml
     """
 
     stub:
@@ -66,6 +93,5 @@ process RUN_ASCAT {
     """
     ${ploidyCommands}
 
-    printf '"%s":\n    ascat_lp: stub version\n' "${task.process}" > versions.yml
     """
 }

@@ -12,32 +12,20 @@ process SAMBAMBA_MERGE {
 
     output:
     tuple val(meta), path("${meta.id}.bam"), emit: bam
-    path  "versions.yml"                , emit: versions, topic: versions
+    tuple val("${task.process}"), val('sambamba'), eval("sambamba --version 2>&1 | grep -oPm1 'sambamba \\\\K[0-9.]+'"), topic: versions, emit: versions_sambamba
 
     script:
-    //def prefix = task.ext.prefix ?: "${meta.patient}_${meta.sample}"
-    //if ("$bam" == "${prefix}.bam") error "Input and output names are the same, use \"task.ext.prefix\" to disambiguate!"
     """
     sambamba merge \\
     --nthreads=4 /dev/stdout ${bam.join(' ')} | \\
     sambamba sort --tmpdir . -o ${meta.id}.bam /dev/stdin
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        sambamba: \$( echo \$(sambamba --version 2>&1 | sed 's/^.*sambamba //; s/ by.*//'))
-    END_VERSIONS
     """
+
     stub:
-    //def prefix = task.ext.prefix ?: "${meta.id}"
-    //if ("$bam" == "${prefix}.bam") error "Input and output names are the same, use \"task.ext.prefix\" to disambiguate!"
     """
     echo -e "sambamba merge \\
     --nthreads=4 /dev/stdout ${bam.join(' ')} | \\
     sambamba sort --tmpdir . -o ${meta.id}.bam /dev/stdin"
     touch ${meta.id}.bam
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        sambamba: 0.8.1
-    END_VERSIONS
     """
 }

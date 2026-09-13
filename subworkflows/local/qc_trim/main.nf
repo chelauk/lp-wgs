@@ -11,7 +11,6 @@ workflow QC_TRIM {
     fastp_adapter_fasta
 
     main:
-    versions = channel.empty()
     reports  = channel.empty()
 
     ch_reads
@@ -19,8 +18,6 @@ workflow QC_TRIM {
         .set { ch_reads_for_qc }
 
     FASTQC(ch_reads_for_qc)
-    versions = versions.mix(FASTQC.out.versions_fastqc)
-    reports  = reports.mix(FASTQC.out.zip.collect { _meta, logs -> logs })
 
     adapter_fasta = fastp_adapter_fasta ? file(fastp_adapter_fasta, checkIfExists: true) : []
 
@@ -38,14 +35,11 @@ workflow QC_TRIM {
         save_trimmed_fail,
         save_merged
     )
-    versions = versions.mix(FASTP.out.versions_fastp)
-    reports  = reports.mix(
-        FASTP.out.json.collect { _meta, json -> json },
-        FASTP.out.html.collect { _meta, html -> html }
-    )
-
+    reports  = reports
+                 .mix(FASTQC.out.zip.map { _meta, zip -> zip })
+                 .mix(FASTP.out.json.map { _meta, json -> json })
+                           
     emit:
-    reads = FASTP.out.reads // channel: [ val(meta), [ reads ] ]
-    versions    // channel: fastqc, fastp versions
-    reports    // channel: fastqc, fastp reports
+    reads = FASTP.out.reads  // channel: [ val(meta), [ reads ] ]
+    multiqc_files = reports  // channel: fastqc, fastp reports
 }

@@ -131,7 +131,7 @@ workflow {
         params.outdir,
         params.monochrome_logs,
         params.hook_url,
-        LP_WGS.out.multiqc_report
+    //    LP_WGS.out.multiqc_report
     )
 }
 

@@ -4,15 +4,14 @@
 ================================================================================
 */
 
-include { SAMTOOLS_INDEX              } from '../../../modules/nf-core/samtools/index/main'
-include { SAMBAMBA_MERGE }              from '../../../modules/local/sambamba/merge/main.nf'
+include { SAMTOOLS_INDEX } from '../../../modules/nf-core/samtools/index/main'
+include { SAMBAMBA_MERGE } from '../../../modules/local/sambamba/merge/main.nf'
 
 workflow MERGE_LANES {
     take:
     ch_bam_bwa
 
     main:
-    versions = channel.empty()
 
     ch_bam_bwa
         .map { meta, bam ->
@@ -41,9 +40,10 @@ workflow MERGE_LANES {
     SAMBAMBA_MERGE(ch_bam_multiple)
     ch_bam_unindexed = ch_bam_single.mix(SAMBAMBA_MERGE.out.bam)
     SAMTOOLS_INDEX(ch_bam_unindexed)
-    versions = versions.mix(SAMBAMBA_MERGE.out.versions.first())
+
+    ch_bam_indexed = ch_bam_unindexed
+        .join(SAMTOOLS_INDEX.out.index)
 
     emit:
-    bam = ch_bam_unindexed.join(SAMTOOLS_INDEX.out.index)
-    versions
+    bam = ch_bam_indexed
 }

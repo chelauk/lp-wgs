@@ -12,10 +12,34 @@ process RUN_QDNASEQ {
     val(qdnaseq_package)
 
     output:
-    tuple val(meta), path("*.pdf"), path("*txt"), emit: qdnaseq_out
+    tuple val(meta), path("*.pdf"), path("*.txt"), emit: qdnaseq_out
     tuple val(meta), path("*cna_segments.txt"),  path("*bins.txt"),  emit: for_ascat
     tuple val(meta), path("*.rds"), emit: for_ace
-    path "versions.yml"             , emit: versions, topic: versions
+    tuple val("${task.process}"),
+          val('r-base'),
+          eval("Rscript --vanilla -e 'cat(as.character(getRversion()))'"),
+          emit: versions_r,
+          topic: versions
+    
+    tuple val("${task.process}"),
+          val('r-qdnaseq'),
+          eval("Rscript --vanilla -e 'cat(as.character(packageVersion(\"QDNAseq\")))'"),
+          emit: versions_qdnaseq,
+          topic: versions
+    
+    tuple val("${task.process}"),
+          val('r-cghcall'),
+          eval("Rscript --vanilla -e 'cat(as.character(packageVersion(\"CGHcall\")))'"),
+          emit: versions_cghcall,
+          topic: versions
+    
+    tuple val("${task.process}"),
+          val("r-${(qdnaseq_package ?: 'QDNAseq.hg38').toLowerCase()}"),
+          eval(
+              "Rscript --vanilla -e 'cat(as.character(packageVersion(\"${qdnaseq_package ?: 'QDNAseq.hg38'}\")))'"
+          ),
+          emit: versions_qdnaseq_reference,
+          topic: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -25,11 +49,6 @@ process RUN_QDNASEQ {
     def qdnaseqPackage = qdnaseq_package ?: 'QDNAseq.hg38'
     """
     QDNAseq.R ${meta.patient} ${meta.sample} $bin $bam ${genome} ${qdnaseqPackage}
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        qdnaseq: 1
-    END_VERSIONS
     """
 
     stub:
@@ -41,9 +60,5 @@ process RUN_QDNASEQ {
     touch "${meta.id}.bins.txt"
     touch "${meta.id}_${bin}kbp.rds"
     touch "${meta.id}.called_segments.pdf"
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        qdnaseq: stub version
-    END_VERSIONS
     """
 }

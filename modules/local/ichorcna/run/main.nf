@@ -27,7 +27,6 @@ process ICHORCNA_RUN {
     tuple val(meta), path("${prefix}")                   , emit: output_dir
     tuple val(meta), path("${prefix}/*.pdf")             , emit: plots
     tuple val(meta), path("**/${prefix}_genomeWide.pdf") , emit: genome_plot
-    path "versions.yml"                                  , emit: versions, topic: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -115,18 +114,6 @@ process ICHORCNA_RUN {
         outDir="."
     )
 
-
-    ### Make Versions YAML for NF-Core ###
-    versions = list()
-    versions["r"]        <- paste(R.Version()\$major, R.Version()\$minor, sep=".")
-    versions["ichorCNA"] <- paste(packageVersion("ichorCNA"), sep=".")
-
-    yaml_str <- as.yaml(
-        list(
-            "${task.process}" = versions
-        )
-    )
-    writeLines(yaml_str, file("versions.yml"))
     """
 
     stub:

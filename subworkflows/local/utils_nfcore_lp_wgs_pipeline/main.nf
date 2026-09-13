@@ -99,7 +99,7 @@ workflow PIPELINE_COMPLETION {
     outdir          //    path: Path to output directory where results will be published
     monochrome_logs // boolean: Disable ANSI colour codes in log output
     hook_url        //  string: hook URL for notifications
-    multiqc_report  //  string: Path to MultiQC report
+//    multiqc_report  //  string: Path to MultiQC report
 
     main:
 
@@ -108,17 +108,17 @@ workflow PIPELINE_COMPLETION {
     //
     // Completion email and summary
     //
-    workflow.onComplete {
-        if (email || email_on_fail) {
-            completionEmail(summary_params, email, email_on_fail, plaintext_email, outdir, monochrome_logs, multiqc_report.toList())
-        }
+  //  workflow.onComplete {
+  //      if (email || email_on_fail) {
+  //          completionEmail(summary_params, email, email_on_fail, plaintext_email, outdir, monochrome_logs, multiqc_report.toList())
+  //      }
 
-        completionSummary(monochrome_logs)
+  //      completionSummary(monochrome_logs)
 
-        if (hook_url) {
-            imNotification(summary_params, hook_url)
-        }
-    }
+  //      if (hook_url) {
+  //          imNotification(summary_params, hook_url)
+  //      }
+  //  }
 
     workflow.onError {
         log.error "Pipeline failed. Please refer to troubleshooting docs: https://nf-co.re/docs/usage/troubleshooting"

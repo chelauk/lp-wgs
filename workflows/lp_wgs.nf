@@ -8,10 +8,13 @@
 // MODULE: Installed directly from nf-core/modules
 //
 
+include { softwareVersionsToYAML      } from 'plugin/nf-core-utils'
 include { MAPPING_QC                  } from '../subworkflows/local/mapping_qc/main'
 include { CALLING_PREP                } from '../subworkflows/local/calling_prep/main'
-include { REPORTING_MULTIQC           } from '../subworkflows/local/reporting_multiqc/main'
+include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
+//include { REPORTING_MULTIQC           } from '../subworkflows/local/reporting_multiqc/main'
 include { ICHORCNA_RUN                } from '../modules/local/ichorcna/run/main'
+include { ICHORCNA_VERSIONS           } from '../modules/local/ichorcna/versions/main'
 include { ACE                         } from '../modules/local/ace/main'
 include { RUN_QDNASEQ                 } from '../modules/local/prep_ascat/main'
 include { RUN_ASCAT                   } from '../modules/local/ascat_lp/main'
@@ -104,8 +107,6 @@ workflow LP_WGS {
             filter_status
         )
         ch_mapped_bam = MAPPING_QC.out.bam
-        versions = versions.mix(MAPPING_QC.out.versions)
-        reports  = reports.mix(MAPPING_QC.out.reports)
     }
 
     CALLING_PREP(
@@ -137,19 +138,18 @@ workflow LP_WGS {
             [],
             []
         )
-        versions= versions.mix(ICHORCNA_RUN.out.versions)
     }
+
+    ICHORCNA_VERSIONS()
 
     // run QDNAseq once for ASCAT and/or ACE
 
     if (selected_tools.intersect(['ascat', 'ace'])) {
         RUN_QDNASEQ(ch_analysis_input, bin_size, qdnaseq_genome, qdnaseq_package)
-        versions = versions.mix(RUN_QDNASEQ.out.versions)
     }
 
     if (selected_tools.contains('ascat')) {
         RUN_ASCAT(RUN_QDNASEQ.out.for_ascat, ploidy, chr_arm_boundaries, qdnaseq_genome, ascat_pcf_gamma)
-        versions = versions.mix(RUN_ASCAT.out.versions)
     }
 
     // run ACE
@@ -169,7 +169,6 @@ workflow LP_WGS {
     // run bayes_cna
     if (selected_tools.contains('bayes_cna')) {
         RUN_BAYES(ch_analysis_input, bin_size, qdnaseq_genome, bin_dir)
-        versions = versions.mix(RUN_BAYES.out.versions)
     }
 
     //run prep_medicc
@@ -202,16 +201,55 @@ workflow LP_WGS {
         versions = versions.mix(MEDICC2.out.versions)
     }
 
-    REPORTING_MULTIQC(
-        versions,
-        reports,
-        outdir,
-        multiqc_config,
-        multiqc_logo,
-        multiqc_methods_description
-    )
+//    REPORTING_MULTIQC(
+//        versions,
+//        reports,
+//        outdir,
+//        multiqc_config,
+//        multiqc_logo,
+//        multiqc_methods_description
+//    )
+//
+//    emit:
+//    multiqc_report = REPORTING_MULTIQC.out // channel: /path/to/multiqc_report.html
+//    versions
+      def ch_multiqc_files = channel.empty()
 
-    emit:
-    multiqc_report = REPORTING_MULTIQC.out // channel: /path/to/multiqc_report.html
-    versions
+      ch_multiqc_files = ch_multiqc_files
+            .mix(MAPPING_QC.out.multiqc_files)
+          //.mix(PROCESS_A.out.metrics.map { meta, file -> file })
+          //.mix(PROCESS_B.out.report.map  { meta, file -> file })
+      
+      def ch_collated_versions = softwareVersionsToYAML(
+          softwareVersions: channel.topic('versions'),
+          nextflowVersion: workflow.nextflow.version,
+      ).collectFile(
+          storeDir: "${params.outdir}/pipeline_info",
+          name: 'lp_wgs_software_mqc_versions.yml',
+          sort: true,
+          newLine: true,
+      )
+      
+      ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
+
+      MULTIQC(
+             ch_multiqc_files
+                 .flatten()
+                 .collect()
+                 .map { files ->
+                     [
+                         [id: 'lp_wgs'],
+                         files,
+                         multiqc_config
+                             ? file(multiqc_config, checkIfExists: true)
+                             : file(
+                                 "${projectDir}/assets/multiqc_config.yml",
+                                 checkIfExists: true
+                             ),
+                         [],
+                         [],
+                         [],
+                     ]
+                 }
+         ) 
 }

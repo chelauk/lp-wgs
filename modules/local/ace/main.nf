@@ -16,6 +16,24 @@ process ACE {
     tuple val(meta), path("${meta.sample}_${filter_status}"),  emit: ace
     path "versions.yml", emit: versions, topic: versions
 
+    tuple val("${task.process}"),
+          val('r-base'),
+          eval("Rscript --vanilla -e 'cat(as.character(getRversion()))'"),
+          emit: versions_r,
+          topic: versions
+
+    tuple val("${task.process}"),
+          val('r-ace'),
+          eval("Rscript --vanilla -e 'cat(as.character(packageVersion(\"ACE\")))'"),
+          emit: versions_ace,
+          topic: versions
+
+    tuple val("${task.process}"),
+          val('r-ggplot2'),
+          eval("Rscript --vanilla -e 'cat(as.character(packageVersion(\"ggplot2\")))'"),
+          emit: versions_cghcall,
+          topic: versions
+
     when:
     task.ext.when == null || task.ext.when
 

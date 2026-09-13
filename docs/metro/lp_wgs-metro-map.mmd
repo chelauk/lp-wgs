@@ -1,0 +1,81 @@
+```mermaid
+%%metro title: LP-WGS Pipeline
+%%metro style: dark
+%%metro line_order: span
+%%metro line: main | Main | #2db572
+%%metro line: reporting | Reporting | #f5c542
+
+graph LR
+    subgraph qc_trim [QC Trim]
+        fastqc([FASTQC])
+        fastp([FASTP])
+    end
+
+    subgraph mapping [Mapping]
+        bwa_mem([BWA_MEM])
+    end
+
+    subgraph merge_lanes [Merge Lanes]
+        sambamba_merge([SAMBAMBA_MERGE])
+        samtools_index([SAMTOOLS_INDEX])
+    end
+
+    subgraph mapping_qc [Mapping QC]
+        picard_markduplicates([PICARD_MARKDUPLICATES])
+        publish_mapped_bam([PUBLISH_MAPPED_BAM])
+        picard_collectalignmentsummarymetrics([PICARD_COLLECTALIGNMENTSUMMARYMETRICS])
+        picard_collectinsertsizemetrics([PICARD_COLLECTINSERTSIZEMETRICS])
+        mosdepth([MOSDEPTH])
+    end
+
+    subgraph calling_prep [Calling Prep]
+        hmmcopy_readcounter([HMMCOPY_READCOUNTER])
+    end
+
+    subgraph calling [Copy-number Calling]
+        ichorcna_run([ICHORCNA_RUN])
+        ichorcna_versions([ICHORCNA_VERSIONS])
+        run_qdnaseq([RUN_QDNASEQ])
+        run_ascat([RUN_ASCAT])
+        ace([ACE])
+        run_bayes([RUN_BAYES])
+    end
+
+    subgraph reporting [Reporting]
+        multiqc([MULTIQC])
+    end
+
+    fastp -->|main| bwa_mem
+
+    bwa_mem -->|main| sambamba_merge
+    bwa_mem -->|main| samtools_index
+    sambamba_merge -->|main| samtools_index
+
+    samtools_index -->|main| picard_markduplicates
+    picard_markduplicates -->|main| publish_mapped_bam
+    picard_markduplicates -->|main| picard_collectalignmentsummarymetrics
+    picard_markduplicates -->|main| picard_collectinsertsizemetrics
+    publish_mapped_bam -->|main| mosdepth
+
+    publish_mapped_bam -->|main| hmmcopy_readcounter
+    hmmcopy_readcounter -->|main| ichorcna_run
+
+    publish_mapped_bam -->|main| run_qdnaseq
+    run_qdnaseq -->|main| run_ascat
+    run_qdnaseq -->|main| ace
+
+    publish_mapped_bam -->|main| run_bayes
+
+    fastqc -->|reporting| multiqc
+    fastp -->|reporting| multiqc
+    picard_markduplicates -->|reporting| multiqc
+    picard_collectalignmentsummarymetrics -->|reporting| multiqc
+    picard_collectinsertsizemetrics -->|reporting| multiqc
+    mosdepth -->|reporting| multiqc
+    ichorcna_run -->|reporting| multiqc
+    ichorcna_versions -->|reporting| multiqc
+    run_qdnaseq -->|reporting| multiqc
+    run_ascat -->|reporting| multiqc
+    ace -->|reporting| multiqc
+    run_bayes -->|reporting| multiqc
+```
