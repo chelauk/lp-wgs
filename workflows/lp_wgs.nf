@@ -12,7 +12,6 @@ include { softwareVersionsToYAML      } from 'plugin/nf-core-utils'
 include { MAPPING_QC                  } from '../subworkflows/local/mapping_qc/main'
 include { CALLING_PREP                } from '../subworkflows/local/calling_prep/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
-//include { REPORTING_MULTIQC           } from '../subworkflows/local/reporting_multiqc/main'
 include { ICHORCNA_RUN                } from '../modules/local/ichorcna/run/main'
 include { ICHORCNA_VERSIONS           } from '../modules/local/ichorcna/versions/main'
 include { ACE                         } from '../modules/local/ace/main'
@@ -252,4 +251,8 @@ workflow LP_WGS {
                      ]
                  }
          ) 
+
+
+    emit:
+    multiqc_report = MULTIQC.out.report
 }
