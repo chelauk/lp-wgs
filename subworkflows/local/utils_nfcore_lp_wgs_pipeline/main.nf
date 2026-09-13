@@ -10,7 +10,7 @@
 
 include { SAMPLESHEET_TO_CHANNEL    } from '../../local/samplesheet_to_channel'
 include { UTILS_NEXTFLOW_PIPELINE   } from '../../nf-core/utils_nextflow_pipeline'
-include { UTILS_NFVALIDATION_PLUGIN } from '../../nf-core/utils_nfvalidation_plugin'
+include { UTILS_NFSCHEMA_PLUGIN     } from '../local/utils_nfschema_plugin'
 include { UTILS_NFCORE_PIPELINE     } from '../../nf-core/utils_nfcore_pipeline'
 include { completionEmail           } from '../../nf-core/utils_nfcore_pipeline'
 include { completionSummary         } from '../../nf-core/utils_nfcore_pipeline'
@@ -57,7 +57,7 @@ workflow PIPELINE_INITIALISATION {
     pre_help_text = nfCoreLogo(monochrome_logs)
     post_help_text = '\n' + workflowCitation() + '\n' + dashedLine(monochrome_logs)
     
-    UTILS_NFVALIDATION_PLUGIN(
+    UTILS_NFSCHEMA_PLUGIN(
         pre_help_text,
         post_help_text,
         validate_params,

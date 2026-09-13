@@ -1,0 +1,76 @@
+nextflow_workflow {
+
+    name "Test Workflow UTILS_NFSCHEMA_PLUGIN"
+    workflow "UTILS_NFSCHEMA_PLUGIN"
+
+    tag "utils_nfschema_plugin"
+    tag "subworkflows/utils_nfschema_plugin"
+
+    test("Should print parameter summary") {
+
+        when {
+
+            params {
+                monochrome_logs = true
+                test_data       = ''
+            }
+
+            workflow {
+                """
+                pre_help_text   = null
+                post_help_text  = null
+                validate_params = false
+                schema_filename = "$moduleTestDir/nextflow_schema.json"
+
+                input[0] = pre_help_text
+                input[1] = post_help_text
+                input[2] = validate_params
+                input[3] = schema_filename
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert workflow.stdout.any { it.contains('Input/output options') } },
+                { assert workflow.stdout.any { it.contains('--outdir') } }
+            )
+        }
+    }
+
+    test("Should print summary with extra text") {
+
+        when {
+
+            params {
+                monochrome_logs = true
+                test_data       = ''
+            }
+
+            workflow {
+                """
+                pre_help_text   = "pre-help-text"
+                post_help_text  = "post-help-text"
+                validate_params = false
+                schema_filename = "$moduleTestDir/nextflow_schema.json"
+
+                input[0] = pre_help_text
+                input[1] = post_help_text
+                input[2] = validate_params
+                input[3] = schema_filename
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert workflow.stdout.any { it.contains('pre-help-text') } },
+                { assert workflow.stdout.any { it.contains('Input/output options') } },
+                { assert workflow.stdout.any { it.contains('--outdir') } },
+                { assert workflow.stdout.any { it.contains('post-help-text') } }
+            )
+        }
+    }
+}

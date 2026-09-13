@@ -1,5 +1,5 @@
 //
-// Subworkflow that uses the nf-validation plugin to render help text and parameter summary
+// Subworkflow that uses the nf-schema plugin to render help text and parameter summary
 //
 
 /*
@@ -17,7 +17,7 @@ include { validateParameters } from 'plugin/nf-schema'
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-workflow UTILS_NFVALIDATION_PLUGIN {
+workflow UTILS_NFSCHEMA_PLUGIN {
     take:
     pre_help_text    //  string: string to be printed before help text and summary log
     post_help_text   //  string: string to be printed after help text and summary log
