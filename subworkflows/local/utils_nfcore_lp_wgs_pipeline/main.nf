@@ -10,7 +10,7 @@
 
 include { SAMPLESHEET_TO_CHANNEL    } from '../../local/samplesheet_to_channel'
 include { UTILS_NEXTFLOW_PIPELINE   } from '../../nf-core/utils_nextflow_pipeline'
-include { UTILS_NFSCHEMA_PLUGIN     } from '../local/utils_nfschema_plugin'
+include { UTILS_NFSCHEMA_PLUGIN     } from '../../local/utils_nfschema_plugin'
 include { UTILS_NFCORE_PIPELINE     } from '../../nf-core/utils_nfcore_pipeline'
 include { completionEmail           } from '../../nf-core/utils_nfcore_pipeline'
 include { completionSummary         } from '../../nf-core/utils_nfcore_pipeline'

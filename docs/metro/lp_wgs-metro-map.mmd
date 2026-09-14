@@ -3,6 +3,7 @@
 %%metro style: dark
 %%metro line_order: span
 %%metro line: main | Main | #2db572
+%%metro line: medicc2 | MEDICC2 (Optional) | #9b59b6
 %%metro line: reporting | Reporting | #f5c542
 
 graph LR
@@ -41,6 +42,12 @@ graph LR
         run_bayes([RUN_BAYES])
     end
 
+    subgraph reconstruction [Evolutionary Reconstruction]
+        prep_medicc2_ichor(["PREP_MEDICC2_ICHOR"])
+        prep_medicc2_ace(["PREP_MEDICC2 (ACE)"])
+        medicc2([MEDICC2])
+    end
+
     subgraph reporting [Reporting]
         multiqc([MULTIQC])
     end
@@ -66,6 +73,11 @@ graph LR
 
     publish_mapped_bam -->|main| run_bayes
 
+    ichorcna_run -->|medicc2| prep_medicc2_ichor
+    ace -->|medicc2| prep_medicc2_ace
+    prep_medicc2_ichor -->|medicc2| medicc2
+    prep_medicc2_ace -->|medicc2| medicc2
+
     fastqc -->|reporting| multiqc
     fastp -->|reporting| multiqc
     picard_markduplicates -->|reporting| multiqc
@@ -78,4 +90,6 @@ graph LR
     run_ascat -->|reporting| multiqc
     ace -->|reporting| multiqc
     run_bayes -->|reporting| multiqc
+    prep_medicc2_ichor -->|reporting| multiqc
+    prep_medicc2_ace -->|reporting| multiqc
 ```

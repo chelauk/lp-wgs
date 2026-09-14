@@ -11,34 +11,33 @@ process PREP_MEDICC2_ICHOR {
     output:
     tuple val(patient), path("${patient}.tsv"), emit: for_medicc
     tuple val(patient), path("medicc2_ichor_prep.txt"), emit: for_report
-    path "versions.yml"             , emit: versions, topic: versions
+    tuple val("${task.process}"),
+      val('prep-medicc-ichor'),
+      eval("python3 ${bin_dir}/prep_medicc_ichor.py --version"),
+      emit: versions_prep_medicc_ichor,
+      topic: versions
+
+    tuple val("${task.process}"),
+      val('python'),
+      eval("python3 --version | sed 's/Python //'"),
+      emit: versions_python,
+      topic: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
     """
-    python3 ${bin_dir}prep_medicc_ichor.py \\
+    python3 ${bin_dir}/prep_medicc_ichor.py \\
         --patient ${patient} \\
         --out ${patient}.tsv \\
         --report medicc2_ichor_prep.txt \\
-        ${args} \\
         ${segs}
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        python: \$(python3 --version | sed 's/Python //')
-    END_VERSIONS
     """
 
     stub:
     """
     touch ${patient}.tsv
     touch medicc2_ichor_prep.txt
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        python: stub version
-    END_VERSIONS
     """
 }

@@ -8,6 +8,7 @@ import re
 import sys
 from pathlib import Path
 
+SCRIPT_VERSION = "0.1.0"
 
 COPY_COLUMN_CANDIDATES = ("Corrected_Copy_Number", "copy.number")
 
@@ -15,6 +16,11 @@ COPY_COLUMN_CANDIDATES = ("Corrected_Copy_Number", "copy.number")
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Convert patient-level ichorCNA SEG files to a MEDICC2 TSV."
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=SCRIPT_VERSION,
     )
     parser.add_argument("--patient", required=True, help="Patient identifier.")
     parser.add_argument("--out", required=True, help="Output MEDICC2 TSV path.")
@@ -92,14 +98,21 @@ def find_copy_column(header, requested):
 
 
 def parse_copy_number(value, path, line_number):
+    value = value.strip()
+
+    if value.upper() in {"NA", "NAN", "."}:
+        return None
+
     try:
         parsed = float(value)
     except ValueError as error:
         raise ValueError(
             f"{path}:{line_number}: copy number '{value}' is not numeric"
         ) from error
+
     if not math.isfinite(parsed):
-        raise ValueError(f"{path}:{line_number}: copy number '{value}' is not finite")
+        return None
+
     rounded = round(parsed)
     if abs(parsed - rounded) > 1e-6:
         raise ValueError(
@@ -107,7 +120,27 @@ def parse_copy_number(value, path, line_number):
         )
     if rounded < 0:
         raise ValueError(f"{path}:{line_number}: copy number '{value}' is negative")
+
     return int(rounded)
+
+
+def normalize_autosome(value):
+    """Return chromosome as chr1-chr22, or None for other labels."""
+    value = str(value).strip()
+
+    match = re.fullmatch(
+        r"(?:chr)?(\d+)(?:\.0+)?",
+        value,
+        flags=re.IGNORECASE,
+    )
+    if match is None:
+        return None
+
+    chromosome = int(match.group(1))
+    if not 1 <= chromosome <= 22:
+        return None
+
+    return f"chr{chromosome}"
 
 
 def read_seg(path, coordinate_system, requested_copy_column):
@@ -125,7 +158,9 @@ def read_seg(path, coordinate_system, requested_copy_column):
         records = []
         seen = set()
         for line_number, row in enumerate(reader, start=2):
-            chrom = row["chr"]
+            chrom = normalize_autosome(row["chr"])
+            if chrom is None:
+                continue
             try:
                 start = int(row["start"])
                 end = int(row["end"])
@@ -133,7 +168,6 @@ def read_seg(path, coordinate_system, requested_copy_column):
                 raise ValueError(
                     f"{path}:{line_number}: start/end must be integers"
                 ) from error
-
             if coordinate_system == "one-based-inclusive":
                 start -= 1
 
@@ -150,10 +184,76 @@ def read_seg(path, coordinate_system, requested_copy_column):
                     f"{path}:{line_number}: duplicate interval {chrom}:{start}-{end}"
                 )
             seen.add(interval)
-            records.append((interval, parse_copy_number(row[copy_column], path, line_number)))
+            records.append(
+                (interval, parse_copy_number(row[copy_column], path, line_number))
+            )
 
     records.sort(key=lambda item: (natural_key(item[0][0]), item[0][1], item[0][2]))
     return sample_id, copy_column, records
+
+
+def harmonize_samples(samples):
+    """
+    Retain genomic intervals present with non-missing CN in every sample.
+
+    The ichorCNA inputs are expected to use the same fixed-bin coordinate grid.
+    """
+    interval_maps = []
+
+    for sample in samples:
+        interval_maps.append(
+            {
+                interval: copy_number
+                for interval, copy_number in sample["records"]
+            }
+        )
+
+    common_intervals = set(interval_maps[0])
+
+    for interval_map in interval_maps[1:]:
+        common_intervals &= set(interval_map)
+
+    complete_intervals = [
+        interval
+        for interval in common_intervals
+        if all(
+            interval_map[interval] is not None
+            for interval_map in interval_maps
+        )
+    ]
+
+    complete_intervals.sort(
+        key=lambda interval: (
+            natural_key(interval[0]),
+            interval[1],
+            interval[2],
+        )
+    )
+
+    if not complete_intervals:
+        raise SystemExit(
+            "no common intervals with complete copy-number calls remain"
+        )
+
+    total_intervals = len(
+        set().union(*(set(interval_map) for interval_map in interval_maps))
+    )
+    removed_intervals = total_intervals - len(complete_intervals)
+
+    harmonized_samples = []
+
+    for sample, interval_map in zip(samples, interval_maps):
+        harmonized_samples.append(
+            {
+                "sample_id": sample["sample_id"],
+                "records": [
+                    (interval, interval_map[interval])
+                    for interval in complete_intervals
+                ],
+            }
+        )
+
+    return harmonized_samples, complete_intervals, removed_intervals
 
 
 def compress_common_runs(samples, intervals):
@@ -166,7 +266,9 @@ def compress_common_runs(samples, intervals):
     compressed_intervals = []
     compressed_copy_numbers = [[] for _sample in samples]
     current_chrom, current_start, current_end = intervals[0]
-    current_state = tuple(sample_copy_numbers[0] for sample_copy_numbers in copy_number_by_sample)
+    current_state = tuple(
+        sample_copy_numbers[0] for sample_copy_numbers in copy_number_by_sample
+    )
 
     for index in range(1, len(intervals)):
         chrom, start, end = intervals[index]
@@ -204,24 +306,30 @@ def main():
         raise SystemExit("MEDICC2 preparation requires at least two ichorCNA SEG files")
 
     samples = []
-    interval_template = None
     copy_columns = {}
+
     for seg_file in args.seg_files:
         sample_id, copy_column, records = read_seg(
             seg_file, args.coordinate_system, args.copy_column
         )
+
         if sample_id in {sample["sample_id"] for sample in samples}:
             raise SystemExit(f"duplicate sample_id '{sample_id}'")
-        intervals = [interval for interval, _copy_number in records]
-        if interval_template is None:
-            interval_template = intervals
-        elif intervals != interval_template:
-            raise SystemExit(
-                f"{seg_file}: intervals do not exactly match the first SEG file "
-                "after coordinate normalization"
-            )
-        samples.append({"sample_id": sample_id, "records": records})
+
+        samples.append(
+            {
+                "sample_id": sample_id,
+                "records": records,
+            }
+        )
         copy_columns[sample_id] = copy_column
+
+    if not samples:
+        raise SystemExit("no ichorCNA SEG files were read")
+
+    original_segment_count = sum(len(sample["records"]) for sample in samples)
+
+    samples, interval_template, removed_interval_count = harmonize_samples(samples)
 
     nondiploid_samples = [
         sample["sample_id"]
@@ -234,7 +342,6 @@ def main():
             f"{len(nondiploid_samples)}"
         )
 
-    original_segment_count = len(interval_template or [])
     samples, compressed_intervals = compress_common_runs(samples, interval_template)
 
     with open(args.out, "w", newline="") as handle:
@@ -242,15 +349,20 @@ def main():
         writer.writerow(["sample_id", "chrom", "start", "end", "Copies", "Diploid"])
         for sample in samples:
             for (chrom, start, end), copy_number in sample["records"]:
-                writer.writerow([sample["sample_id"], chrom, start, end, copy_number, 2])
+                writer.writerow(
+                    [sample["sample_id"], chrom, start, end, copy_number, 2]
+                )
 
     with open(args.report, "w") as handle:
         handle.write(f"patient\t{args.patient}\n")
         handle.write(f"samples\t{len(samples)}\n")
-        handle.write(f"segments_per_sample_in\t{original_segment_count}\n")
+        handle.write(f"segments_total_in\t{original_segment_count}\n")
+        handle.write(f"harmonized_intervals\t{len(interval_template)}\n")
+        handle.write(f"harmonized_intervals_removed\t{removed_interval_count}\n")
         handle.write(f"segments_per_sample_out\t{len(compressed_intervals)}\n")
         handle.write(f"coordinate_system_in\t{args.coordinate_system}\n")
         handle.write("coordinate_system_out\tbed\n")
+
         handle.write("copy_columns\t")
         handle.write(
             ",".join(
@@ -259,6 +371,7 @@ def main():
             )
         )
         handle.write("\n")
+
         handle.write("nondiploid_samples\t" + ",".join(nondiploid_samples) + "\n")
 
 
@@ -269,3 +382,4 @@ if __name__ == "__main__":
         sys.exit(1)
     except ValueError as error:
         raise SystemExit(str(error)) from error
+

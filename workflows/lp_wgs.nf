@@ -167,7 +167,14 @@ workflow LP_WGS {
 
     // run bayes_cna
     if (selected_tools.contains('bayes_cna')) {
-        RUN_BAYES(ch_analysis_input, bin_size, qdnaseq_genome, bin_dir)
+        ch_bayes_helpers = Channel.value([
+            file("${projectDir}/bin/segmentation.R", checkIfExists: true),
+            file("${projectDir}/bin/helper_functions.R", checkIfExists: true),
+            file("${projectDir}/bin/00_general_functions.R", checkIfExists: true),
+            file("${projectDir}/bin/runASCATlp.R", checkIfExists: true)
+        ])
+
+        RUN_BAYES(ch_analysis_input, bin_size, qdnaseq_genome, ch_bayes_helpers)
     }
 
     //run prep_medicc
@@ -177,7 +184,6 @@ workflow LP_WGS {
                 exit 1, "The 'medicc' workflow with medicc_source='ace' requires 'ace' so that ploidy-grouped inputs can be prepared."
             }
             PREP_MEDICC2(prep_medicc2_input, bin_dir, bin_size)
-            versions = versions.mix(PREP_MEDICC2.out.versions)
             ch_medicc_input = PREP_MEDICC2.out.for_medicc
         } else if (medicc_source == 'ichor') {
             if (!selected_tools.contains('ichor')) {
@@ -189,7 +195,6 @@ workflow LP_WGS {
                 .filter { tuple -> tuple[1].size() > 1 }
                 .set { prep_medicc2_ichor_input }
             PREP_MEDICC2_ICHOR(prep_medicc2_ichor_input,bin_dir)
-            versions = versions.mix(PREP_MEDICC2_ICHOR.out.versions)
             ch_medicc_input = PREP_MEDICC2_ICHOR.out.for_medicc
         } else {
             exit 1, "Unsupported medicc_source '${medicc_source}'. Supported values: ace, ichor."
@@ -197,21 +202,10 @@ workflow LP_WGS {
 
         // run medicc2
         MEDICC2(ch_medicc_input, medicc_arms, medicc_genes)
-        versions = versions.mix(MEDICC2.out.versions)
     }
 
-//    REPORTING_MULTIQC(
-//        versions,
-//        reports,
-//        outdir,
-//        multiqc_config,
-//        multiqc_logo,
-//        multiqc_methods_description
-//    )
-//
-//    emit:
-//    multiqc_report = REPORTING_MULTIQC.out // channel: /path/to/multiqc_report.html
-//    versions
+//    REPORTING_MULTIQC
+
       def ch_multiqc_files = channel.empty()
 
       ch_multiqc_files = ch_multiqc_files
