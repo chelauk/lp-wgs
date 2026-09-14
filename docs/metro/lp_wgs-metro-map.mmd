@@ -43,8 +43,8 @@ graph LR
     end
 
     subgraph reconstruction [Evolutionary Reconstruction]
-        prep_medicc2_ichor(["PREP_MEDICC2_ICHOR"])
-        prep_medicc2_ace(["PREP_MEDICC2 (ACE)"])
+        prep_medicc2_ichor([PREP_MEDICC2_ICHOR])
+        prep_medicc2_ace([PREP_MEDICC2])
         medicc2([MEDICC2])
     end
 
@@ -84,12 +84,4 @@ graph LR
     picard_collectalignmentsummarymetrics -->|reporting| multiqc
     picard_collectinsertsizemetrics -->|reporting| multiqc
     mosdepth -->|reporting| multiqc
-    ichorcna_run -->|reporting| multiqc
-    ichorcna_versions -->|reporting| multiqc
-    run_qdnaseq -->|reporting| multiqc
-    run_ascat -->|reporting| multiqc
-    ace -->|reporting| multiqc
-    run_bayes -->|reporting| multiqc
-    prep_medicc2_ichor -->|reporting| multiqc
-    prep_medicc2_ace -->|reporting| multiqc
 ```
