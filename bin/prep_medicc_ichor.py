@@ -11,7 +11,6 @@ from pathlib import Path
 SCRIPT_VERSION = "0.1.0"
 
 COPY_COLUMN_CANDIDATES = ("Corrected_Copy_Number", "copy.number")
-MISSING_COPY_NUMBER_VALUES = {"", ".", "NA", "N/A", "NaN", "nan", "NULL", "null"}
 
 
 def parse_args():
@@ -35,9 +34,7 @@ def parse_args():
         default="auto",
         help=(
             "Copy-number column suffix or full column name. Use 'auto' to prefer "
-            "Corrected_Copy_Number, then copy.number. When Corrected_Copy_Number "
-            "is selected and a row is missing, the matching copy.number value is "
-            "used for that row."
+            "Corrected_Copy_Number, then copy.number."
         ),
     )
     parser.add_argument(
@@ -100,22 +97,6 @@ def find_copy_column(header, requested):
     )
 
 
-def find_fallback_copy_column(header, primary_column):
-    corrected_suffix = ".Corrected_Copy_Number"
-    if primary_column.endswith(corrected_suffix):
-        sample_prefix = primary_column[: -len(corrected_suffix)]
-        fallback_column = f"{sample_prefix}.copy.number"
-        if fallback_column in header:
-            return fallback_column
-    if primary_column == "Corrected_Copy_Number" and "copy.number" in header:
-        return "copy.number"
-    return None
-
-
-def copy_number_is_missing(value):
-    return value is None or value.strip() in MISSING_COPY_NUMBER_VALUES
-
-
 def parse_copy_number(value, path, line_number):
     value = value.strip()
 
@@ -143,12 +124,26 @@ def parse_copy_number(value, path, line_number):
     return int(rounded)
 
 
-def read_seg(
-    path,
-    coordinate_system,
-    requested_copy_column,
-    allow_corrected_copy_number_fallback=False,
-):
+def normalize_autosome(value):
+    """Return chromosome as chr1-chr22, or None for other labels."""
+    value = str(value).strip()
+
+    match = re.fullmatch(
+        r"(?:chr)?(\d+)(?:\.0+)?",
+        value,
+        flags=re.IGNORECASE,
+    )
+    if match is None:
+        return None
+
+    chromosome = int(match.group(1))
+    if not 1 <= chromosome <= 22:
+        return None
+
+    return f"chr{chromosome}"
+
+
+def read_seg(path, coordinate_system, requested_copy_column):
     with open(path, newline="") as handle:
         reader = csv.DictReader(handle, delimiter="\t")
         if reader.fieldnames is None:
@@ -159,15 +154,9 @@ def read_seg(
             raise ValueError(f"{path}: missing required columns: {', '.join(missing)}")
 
         copy_column = find_copy_column(reader.fieldnames, requested_copy_column)
-        fallback_copy_column = None
-        if allow_corrected_copy_number_fallback:
-            fallback_copy_column = find_fallback_copy_column(
-                reader.fieldnames, copy_column
-            )
         sample_id = normalized_sample_id(path, reader.fieldnames, copy_column)
         records = []
         seen = set()
-        used_fallback = False
         for line_number, row in enumerate(reader, start=2):
             chrom = normalize_autosome(row["chr"])
             if chrom is None:
@@ -195,20 +184,11 @@ def read_seg(
                     f"{path}:{line_number}: duplicate interval {chrom}:{start}-{end}"
                 )
             seen.add(interval)
-            copy_number_value = row[copy_column]
-            if (
-                fallback_copy_column is not None
-                and copy_number_is_missing(copy_number_value)
-            ):
-                copy_number_value = row[fallback_copy_column]
-                used_fallback = True
             records.append(
-                (interval, parse_copy_number(copy_number_value, path, line_number))
+                (interval, parse_copy_number(row[copy_column], path, line_number))
             )
 
     records.sort(key=lambda item: (natural_key(item[0][0]), item[0][1], item[0][2]))
-    if used_fallback:
-        copy_column = f"{copy_column};fallback={fallback_copy_column}"
     return sample_id, copy_column, records
 
 
@@ -330,10 +310,7 @@ def main():
 
     for seg_file in args.seg_files:
         sample_id, copy_column, records = read_seg(
-            seg_file,
-            args.coordinate_system,
-            args.copy_column,
-            allow_corrected_copy_number_fallback=True,
+            seg_file, args.coordinate_system, args.copy_column
         )
 
         if sample_id in {sample["sample_id"] for sample in samples}:
