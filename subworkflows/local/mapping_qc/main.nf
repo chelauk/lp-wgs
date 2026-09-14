@@ -15,7 +15,7 @@ workflow MAPPING_QC {
     bwa
     fasta
     fasta_fai
-    dict
+//    dict
     chr_bed
     sort
     fastp_adapter_fasta

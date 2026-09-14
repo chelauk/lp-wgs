@@ -34,7 +34,6 @@ workflow LP_WGS {
     take:
     ch_input_sample
     fasta
-    dict
     fasta_fai
     chr_arm_boundaries
     bwa
@@ -62,7 +61,6 @@ workflow LP_WGS {
     bin_size
     ploidy
     ascat_pcf_gamma
-    outdir
     multiqc_config
     multiqc_logo
     multiqc_methods_description
@@ -82,10 +80,6 @@ workflow LP_WGS {
     // define filter status
     filter_status = filter_bam ? "filter_${filter_bam_min}_${filter_bam_max}" : "filter_none"
 
-    // To gather QC reports and software versions for reporting
-    reports  = channel.empty()
-    versions = channel.empty()
-
     // bin_dir for Rscripts
     bin_dir = channel.fromPath("$projectDir/bin").collect()
     ch_mapped_bam = channel.empty()
@@ -96,7 +90,7 @@ workflow LP_WGS {
             bwa,
             fasta,
             fasta_fai,
-            dict,
+        //    dict,
             chr_bed,
             sort,
             fastp_adapter_fasta,
@@ -123,7 +117,6 @@ workflow LP_WGS {
     )
     ch_analysis_input = CALLING_PREP.out.analysis_input
     ch_gc_wig = CALLING_PREP.out.gc_wig
-    versions = versions.mix(CALLING_PREP.out.versions)
 
     // run ichorcna
     if (selected_tools.contains('ichor')) {
@@ -167,7 +160,7 @@ workflow LP_WGS {
 
     // run bayes_cna
     if (selected_tools.contains('bayes_cna')) {
-        ch_bayes_helpers = Channel.value([
+        ch_bayes_helpers = channel.value([
             file("${projectDir}/bin/segmentation.R", checkIfExists: true),
             file("${projectDir}/bin/helper_functions.R", checkIfExists: true),
             file("${projectDir}/bin/00_general_functions.R", checkIfExists: true),
@@ -224,6 +217,30 @@ workflow LP_WGS {
       )
       
       ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
+      
+          multiqc_methods_template = multiqc_methods_description
+        ? file(
+            multiqc_methods_description,
+            checkIfExists: true
+        )
+        : file(
+            "${projectDir}/assets/methods_description_template.yml",
+            checkIfExists: true
+        )
+
+    ch_methods_description = channel
+        .value(
+            WorkflowWgs.methodsDescriptionText(
+                workflow,
+                multiqc_methods_template
+            )
+        )
+        .collectFile(
+            name: 'lp_wgs_methods_description_mqc.yaml',
+            sort: true
+        )
+
+    ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description)
 
       MULTIQC(
              ch_multiqc_files
@@ -239,7 +256,7 @@ workflow LP_WGS {
                                  "${projectDir}/assets/multiqc_config.yml",
                                  checkIfExists: true
                              ),
-                         [],
+                         multiqc_logo ? file(multiqc_logo, checkIfExists: true): [],
                          [],
                          [],
                      ]
@@ -248,5 +265,5 @@ workflow LP_WGS {
 
 
     emit:
-    multiqc_report = MULTIQC.out.report
+    MULTIQC.out.report
 }

@@ -29,7 +29,7 @@ workflow {
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
     
-    def ref_dict                  = params.dict ?: getGenomeAttribute('dict')
+    //def ref_dict                  = params.dict ?: getGenomeAttribute('dict')
     def ref_fasta                 = params.fasta ?: getGenomeAttribute('fasta')
     def ref_fasta_fai             = params.fasta_fai ?: getGenomeAttribute('fasta_fai')
     def ref_bwa                   = params.bwa ?: getGenomeAttribute('bwa')
@@ -52,7 +52,7 @@ workflow {
     // Initialise genome resources close to the workflow entrypoint.
     ch_fasta = ref_fasta ? channel.fromPath(ref_fasta).map { path -> [[id: path.baseName], path] }.collect() : channel.empty()
     ch_fasta_fai = ref_fasta_fai ? channel.fromPath(ref_fasta_fai).map { path -> [[id: path.name.replaceFirst(/\.(fa|fasta)\.fai$/, '')], path] }.collect() : channel.empty()
-    ch_dict = ref_dict ? channel.fromPath(ref_dict).collect() : channel.empty()
+    //ch_dict = ref_dict ? channel.fromPath(ref_dict).collect() : channel.empty()
     ch_chr_arm_boundaries = ref_chr_arm_boundaries ? channel.fromPath(ref_chr_arm_boundaries).collect() : channel.empty()
     if (params.step == 'mapping' && !ref_bwa) {
         error "No BWA index configured. genome=${params.genome}, igenomes_base=${params.igenomes_base}, genome_bwa=${getGenomeAttribute('bwa')}"
@@ -86,7 +86,6 @@ workflow {
     LP_WGS (
         PIPELINE_INITIALISATION.out.samplesheet,
         ch_fasta,
-        ch_dict,
         ch_fasta_fai,
         ch_chr_arm_boundaries,
         ch_bwa,
@@ -114,7 +113,6 @@ workflow {
         params.bin,
         params.ploidy,
         params.ascat_pcf_gamma,
-        params.outdir,
         params.multiqc_config,
         params.multiqc_logo,
         params.multiqc_methods_description,
@@ -131,7 +129,7 @@ workflow {
         params.outdir,
         params.monochrome_logs,
         params.hook_url,
-        LP_WGS.out.multiqc_report
+        LP_WGS.out
     )
 }
 
