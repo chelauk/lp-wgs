@@ -80,7 +80,6 @@ workflow PIPELINE_INITIALISATION {
 
     emit:
     samplesheet = SAMPLESHEET_TO_CHANNEL.out
-    versions
     }
 
 /*

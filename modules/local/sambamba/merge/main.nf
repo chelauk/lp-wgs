@@ -12,7 +12,11 @@ process SAMBAMBA_MERGE {
 
     output:
     tuple val(meta), path("${meta.id}.bam"), emit: bam
-    tuple val("${task.process}"), val('sambamba'), eval("sambamba --version 2>&1 | grep -oPm1 'sambamba \\\\K[0-9.]+'"), topic: versions, emit: versions_sambamba
+    tuple val("${task.process}"),
+      val('sambamba'),
+      eval("sambamba --version 2>&1 | head -n 1 | cut -d ' ' -f 2"),
+      topic: versions,
+      emit: versions_sambamba
 
     script:
     """

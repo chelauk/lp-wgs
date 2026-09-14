@@ -19,7 +19,6 @@ workflow CALLING_PREP {
     call_gc
 
     main:
-    versions = channel.empty()
 
     analysis_input = step == 'calling' ? ch_input_sample : ch_mapped_bam
 
@@ -28,14 +27,12 @@ workflow CALLING_PREP {
             ch_filter_input = analysis_input
             SAMTOOLS_VIEW(ch_filter_input, filter_bam_min, filter_bam_max)
             analysis_input = SAMTOOLS_VIEW.out.bam
-            versions = versions.mix(SAMTOOLS_VIEW.out.versions.first())
         }
     } else if (tech == 'nanopore') {
         if (step == 'calling' && filter_bam) {
             ch_filter_input = analysis_input
             SAMTOOLS_NVIEW(ch_filter_input, filter_bam_min, filter_bam_max)
             analysis_input = SAMTOOLS_NVIEW.out.bam
-            versions = versions.mix(SAMTOOLS_NVIEW.out.versions.first())
         }
     } else {
         exit 1, "Unsupported sequencing technology '${tech}'. Expected one of: illumina, nanopore."
@@ -48,18 +45,10 @@ workflow CALLING_PREP {
         ch_gc_wig = gc_wig
     }
     
-//    picard_input_bam = ch_analysis_input
-//                                .map{ meta, bam , _bai -> tuple(meta, bam)}
-//    
-//    picard_fasta = fasta.join(fasta_fai).first()
-//    PICARD_MARKDUPLICATES ( picard_input_bam, picard_fasta)
-//
-//    dups_marked = PICARD_MARKDUPLICATES.out.bam.join(PICARD_MARKDUPLICATES.out.bai)
     HMMCOPY_READCOUNTER( analysis_input, fasta )
 
     emit:
     analysis_input
     gc_wig = ch_gc_wig
     readcounter_wig = HMMCOPY_READCOUNTER.out.wig
-    versions
 }
