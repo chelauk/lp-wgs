@@ -1,5 +1,5 @@
 //
-// Subworkflow that uses the nf-validation plugin to render help text and parameter summary
+// Subworkflow that uses the nf-schema plugin to render help text and parameter summary
 //
 
 /*
@@ -8,9 +8,8 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { paramsHelp         } from 'plugin/nf-validation'
-include { paramsSummaryLog   } from 'plugin/nf-validation'
-include { validateParameters } from 'plugin/nf-validation'
+include { paramsSummaryLog   } from 'plugin/nf-schema'
+include { validateParameters } from 'plugin/nf-schema'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -18,10 +17,8 @@ include { validateParameters } from 'plugin/nf-validation'
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-workflow UTILS_NFVALIDATION_PLUGIN {
+workflow UTILS_NFSCHEMA_PLUGIN {
     take:
-    print_help       // boolean: print help
-    workflow_command //  string: default command used to run pipeline
     pre_help_text    //  string: string to be printed before help text and summary log
     post_help_text   //  string: string to be printed after help text and summary log
     validate_params  // boolean: validate parameters
@@ -34,15 +31,6 @@ workflow UTILS_NFVALIDATION_PLUGIN {
     // Default values for strings
     pre_help_text    = pre_help_text    ?: ''
     post_help_text   = post_help_text   ?: ''
-    workflow_command = workflow_command ?: ''
-
-    //
-    // Print help message if needed
-    //
-    if (print_help) {
-        log.info(pre_help_text + paramsHelp(workflow_command, parameters_schema: schema_filename) + post_help_text)
-        System.exit(0)
-    }
 
     //
     // Print parameter summary to stdout
@@ -57,5 +45,5 @@ workflow UTILS_NFVALIDATION_PLUGIN {
     }
 
     emit:
-    dummy_emit = true
+    true
 }

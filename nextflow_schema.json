@@ -1,10 +1,10 @@
 {
-    "$schema": "https://json-schema.org/draft-07/schema",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://raw.githubusercontent.com/chelauk/lp-wgs/main/nextflow_schema.json",
     "title": "fht/lp-wgs pipeline parameters",
     "description": "An open-source shallow whole genome sequence analysis",
     "type": "object",
-    "definitions": {
+    "$defs": {
         "input_output_options": {
             "title": "Input/output options",
             "type": "object",
@@ -63,10 +63,10 @@
     },
     "allOf": [
         {
-            "$ref": "#/definitions/input_output_options"
+            "$ref": "#/$defs/input_output_options"
         },
         {
-            "$ref": "#/definitions/generic_options"
+            "$ref": "#/$defs/generic_options"
         }
     ],
     "properties": {
@@ -87,7 +87,7 @@
         "tools": {
             "type": "string",
             "default": "ace,ichor,ascat,bayes_cna",
-            "pattern": "^[A-Za-z_,]+$",
+            "pattern": "^[A-Za-z0-9_,]+$",
             "description": "Comma-separated list of downstream calling tools to run."
         },
         "call_gc": {
@@ -108,6 +108,11 @@
         "filter_bam_max": {
             "type": "integer",
             "default": 150
+        },
+        "low_reads": {
+            "type": "boolean",
+            "default": false,
+            "description": "Enable settings for extremely low reads"
         },
         "ploidy": {
             "type": ["string", "integer"],
@@ -167,14 +172,6 @@
             "type": ["string", "null"],
             "enum": ["UCSC", "NCBI", null],
             "description": "Chromosome naming style passed to ichorCNA. If unset, the pipeline derives it from the selected genome configuration."
-        },
-        "validationShowHiddenParams": {
-            "type": "boolean",
-            "default": true
-        },
-        "validationSchemaIgnoreParams": {
-            "type": "boolean",
-            "default": true
         },
         "seq_center": {
             "type": "string",

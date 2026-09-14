@@ -8,11 +8,12 @@
 // MODULE: Installed directly from nf-core/modules
 //
 
+include { softwareVersionsToYAML      } from 'plugin/nf-core-utils'
 include { MAPPING_QC                  } from '../subworkflows/local/mapping_qc/main'
 include { CALLING_PREP                } from '../subworkflows/local/calling_prep/main'
-include { REPORTING_MULTIQC           } from '../subworkflows/local/reporting_multiqc/main'
-//include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
+include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { ICHORCNA_RUN                } from '../modules/local/ichorcna/run/main'
+include { ICHORCNA_VERSIONS           } from '../modules/local/ichorcna/versions/main'
 include { ACE                         } from '../modules/local/ace/main'
 include { RUN_QDNASEQ                 } from '../modules/local/prep_ascat/main'
 include { RUN_ASCAT                   } from '../modules/local/ascat_lp/main'
@@ -48,8 +49,8 @@ workflow LP_WGS {
     genome
     qdnaseq_genome
     qdnaseq_package
-    ichor_genome_build
-    ichor_genome_style
+    _ichor_genome_build
+    _ichor_genome_style
     step
     tech
     sort
@@ -65,9 +66,10 @@ workflow LP_WGS {
     multiqc_config
     multiqc_logo
     multiqc_methods_description
+    bin_dir
 
     main:
-    selected_tools = tools.tokenize(',').collect { it.trim() }.findAll { it }
+    selected_tools = tools.tokenize(',').collect { t -> t.trim() }.findAll { t -> t }    
     medicc_source = params.medicc_source ?: 'ace'
 
     if (qdnaseq_genome?.startsWith('mm')) {
@@ -81,18 +83,19 @@ workflow LP_WGS {
     filter_status = filter_bam ? "filter_${filter_bam_min}_${filter_bam_max}" : "filter_none"
 
     // To gather QC reports and software versions for reporting
-    reports  = Channel.empty()
-    versions = Channel.empty()
+    reports  = channel.empty()
+    versions = channel.empty()
 
     // bin_dir for Rscripts
-    bin_dir = Channel.fromPath("$projectDir/bin").collect()
-    ch_mapped_bam = Channel.empty()
+    bin_dir = channel.fromPath("$projectDir/bin").collect()
+    ch_mapped_bam = channel.empty()
 
     if (step == 'mapping') {
         MAPPING_QC(
             ch_input_sample,
             bwa,
             fasta,
+            fasta_fai,
             dict,
             chr_bed,
             sort,
@@ -103,14 +106,13 @@ workflow LP_WGS {
             filter_status
         )
         ch_mapped_bam = MAPPING_QC.out.bam
-        versions = versions.mix(MAPPING_QC.out.versions)
-        reports  = reports.mix(MAPPING_QC.out.reports)
     }
 
     CALLING_PREP(
         ch_input_sample,
         ch_mapped_bam,
         fasta,
+        //fasta_fai,
         gc_wig,
         step,
         tech,
@@ -118,7 +120,6 @@ workflow LP_WGS {
         filter_bam_min,
         filter_bam_max,
         call_gc,
-        bin_size
     )
     ch_analysis_input = CALLING_PREP.out.analysis_input
     ch_gc_wig = CALLING_PREP.out.gc_wig
@@ -136,25 +137,23 @@ workflow LP_WGS {
             [],
             []
         )
-        versions= versions.mix(ICHORCNA_RUN.out.versions)
     }
+
+    ICHORCNA_VERSIONS()
 
     // run QDNAseq once for ASCAT and/or ACE
 
     if (selected_tools.intersect(['ascat', 'ace'])) {
         RUN_QDNASEQ(ch_analysis_input, bin_size, qdnaseq_genome, qdnaseq_package)
-        versions = versions.mix(RUN_QDNASEQ.out.versions)
     }
 
     if (selected_tools.contains('ascat')) {
         RUN_ASCAT(RUN_QDNASEQ.out.for_ascat, ploidy, chr_arm_boundaries, qdnaseq_genome, ascat_pcf_gamma)
-        versions = versions.mix(RUN_ASCAT.out.versions)
     }
 
     // run ACE
     if (selected_tools.contains('ace')) {
         ACE(RUN_QDNASEQ.out.for_ace, filter_status, qdnaseq_genome, ploidy, bin_size)
-        versions = versions.mix(ACE.out.versions)
         ACE.out.ace
             .map { meta, ace ->
                 // If meta.predicted_ploidy is null, set it to 2
@@ -168,8 +167,14 @@ workflow LP_WGS {
 
     // run bayes_cna
     if (selected_tools.contains('bayes_cna')) {
-        RUN_BAYES(ch_analysis_input, bin_size, qdnaseq_genome)
-        versions = versions.mix(RUN_BAYES.out.versions)
+        ch_bayes_helpers = Channel.value([
+            file("${projectDir}/bin/segmentation.R", checkIfExists: true),
+            file("${projectDir}/bin/helper_functions.R", checkIfExists: true),
+            file("${projectDir}/bin/00_general_functions.R", checkIfExists: true),
+            file("${projectDir}/bin/runASCATlp.R", checkIfExists: true)
+        ])
+
+        RUN_BAYES(ch_analysis_input, bin_size, qdnaseq_genome, ch_bayes_helpers)
     }
 
     //run prep_medicc
@@ -179,7 +184,6 @@ workflow LP_WGS {
                 exit 1, "The 'medicc' workflow with medicc_source='ace' requires 'ace' so that ploidy-grouped inputs can be prepared."
             }
             PREP_MEDICC2(prep_medicc2_input, bin_dir, bin_size)
-            versions = versions.mix(PREP_MEDICC2.out.versions)
             ch_medicc_input = PREP_MEDICC2.out.for_medicc
         } else if (medicc_source == 'ichor') {
             if (!selected_tools.contains('ichor')) {
@@ -190,8 +194,7 @@ workflow LP_WGS {
                 .groupTuple()
                 .filter { tuple -> tuple[1].size() > 1 }
                 .set { prep_medicc2_ichor_input }
-            PREP_MEDICC2_ICHOR(prep_medicc2_ichor_input)
-            versions = versions.mix(PREP_MEDICC2_ICHOR.out.versions)
+            PREP_MEDICC2_ICHOR(prep_medicc2_ichor_input,bin_dir)
             ch_medicc_input = PREP_MEDICC2_ICHOR.out.for_medicc
         } else {
             exit 1, "Unsupported medicc_source '${medicc_source}'. Supported values: ace, ichor."
@@ -199,19 +202,51 @@ workflow LP_WGS {
 
         // run medicc2
         MEDICC2(ch_medicc_input, medicc_arms, medicc_genes)
-        versions = versions.mix(MEDICC2.out.versions)
     }
 
-    REPORTING_MULTIQC(
-        versions,
-        reports,
-        outdir,
-        multiqc_config,
-        multiqc_logo,
-        multiqc_methods_description
-    )
+//    REPORTING_MULTIQC
+
+      def ch_multiqc_files = channel.empty()
+
+      ch_multiqc_files = ch_multiqc_files
+            .mix(MAPPING_QC.out.multiqc_files)
+          //.mix(PROCESS_A.out.metrics.map { meta, file -> file })
+          //.mix(PROCESS_B.out.report.map  { meta, file -> file })
+      
+      def ch_collated_versions = softwareVersionsToYAML(
+          softwareVersions: channel.topic('versions'),
+          nextflowVersion: workflow.nextflow.version,
+      ).collectFile(
+          storeDir: "${params.outdir}/pipeline_info",
+          name: 'lp_wgs_software_mqc_versions.yml',
+          sort: true,
+          newLine: true,
+      )
+      
+      ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
+
+      MULTIQC(
+             ch_multiqc_files
+                 .flatten()
+                 .collect()
+                 .map { files ->
+                     [
+                         [id: 'lp_wgs'],
+                         files,
+                         multiqc_config
+                             ? file(multiqc_config, checkIfExists: true)
+                             : file(
+                                 "${projectDir}/assets/multiqc_config.yml",
+                                 checkIfExists: true
+                             ),
+                         [],
+                         [],
+                         [],
+                     ]
+                 }
+         ) 
+
 
     emit:
-    multiqc_report = REPORTING_MULTIQC.out.report // channel: /path/to/multiqc_report.html
-    versions
+    multiqc_report = MULTIQC.out.report
 }

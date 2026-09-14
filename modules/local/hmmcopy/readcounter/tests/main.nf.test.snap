@@ -1,0 +1,167 @@
+{
+    "homo_sapiens - cram": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.wig:md5,6d5588934beffcf32bc0e4d776a1e7bc"
+                    ]
+                ],
+                "1": [
+                    [
+                        "HMMCOPY_READCOUNTER",
+                        "hmmcopy",
+                        "0.1.1"
+                    ]
+                ],
+                "2": [
+                    [
+                        "HMMCOPY_READCOUNTER",
+                        "samtools",
+                        "1.22.1"
+                    ]
+                ],
+                "versions_hmmcopy": [
+                    [
+                        "HMMCOPY_READCOUNTER",
+                        "hmmcopy",
+                        "0.1.1"
+                    ]
+                ],
+                "versions_samtools": [
+                    [
+                        "HMMCOPY_READCOUNTER",
+                        "samtools",
+                        "1.22.1"
+                    ]
+                ],
+                "wig": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.wig:md5,6d5588934beffcf32bc0e4d776a1e7bc"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-05-21T10:06:34.724212",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
+        }
+    },
+    "homo_sapiens - bam": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.wig:md5,6d5588934beffcf32bc0e4d776a1e7bc"
+                    ]
+                ],
+                "1": [
+                    [
+                        "HMMCOPY_READCOUNTER",
+                        "hmmcopy",
+                        "0.1.1"
+                    ]
+                ],
+                "2": [
+                    [
+                        "HMMCOPY_READCOUNTER",
+                        "samtools",
+                        "1.22.1"
+                    ]
+                ],
+                "versions_hmmcopy": [
+                    [
+                        "HMMCOPY_READCOUNTER",
+                        "hmmcopy",
+                        "0.1.1"
+                    ]
+                ],
+                "versions_samtools": [
+                    [
+                        "HMMCOPY_READCOUNTER",
+                        "samtools",
+                        "1.22.1"
+                    ]
+                ],
+                "wig": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.wig:md5,6d5588934beffcf32bc0e4d776a1e7bc"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-05-21T10:06:23.170455",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
+        }
+    },
+    "homo_sapiens - bam - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.wig:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        "HMMCOPY_READCOUNTER",
+                        "hmmcopy",
+                        "0.1.1"
+                    ]
+                ],
+                "2": [
+                    [
+                        "HMMCOPY_READCOUNTER",
+                        "samtools",
+                        "1.22.1"
+                    ]
+                ],
+                "versions_hmmcopy": [
+                    [
+                        "HMMCOPY_READCOUNTER",
+                        "hmmcopy",
+                        "0.1.1"
+                    ]
+                ],
+                "versions_samtools": [
+                    [
+                        "HMMCOPY_READCOUNTER",
+                        "samtools",
+                        "1.22.1"
+                    ]
+                ],
+                "wig": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.wig:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-01-15T15:26:31.836738161",
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.2"
+        }
+    }
+}

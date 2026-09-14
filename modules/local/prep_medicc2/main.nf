@@ -17,32 +17,30 @@ process PREP_MEDICC2 {
     output:
     tuple val(patient), path("*tsv"), emit: for_medicc
     tuple val(patient), path("*txt"), emit: for_report
-    path "versions.yml"             , emit: versions, topic: versions
+    tuple val("${task.process}"),
+      val('prep-medicc'),
+      eval('prep_medicc.R --version'),
+      emit: versions_prep_medicc,
+      topic: versions
+    
+    tuple val("${task.process}"),
+      val('r-base'),
+      eval("Rscript --vanilla -e 'cat(as.character(getRversion()))'"),
+      emit: versions_r,
+      topic: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
     """
     prep_medicc.R $patient "${ploidy.join(' ')}" $bin_dir $bin
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        medicc2: 3.16
-    END_VERSIONS
     """
     stub:
-    def args = task.ext.args ?: ''
     """
     echo "prep_medicc.R $patient $ploidy $bin_dir $bin"
 
     touch ${patient}.tsv
     touch ${patient}.txt
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        medicc2: stub version
-    END_VERSIONS
     """
 }

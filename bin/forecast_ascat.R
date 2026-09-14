@@ -1,4 +1,13 @@
 #!/usr/bin/env Rscript
+
+script_version <- "0.1.0"
+args <- commandArgs(trailingOnly = TRUE)
+
+if (identical(args, "--version")) {
+    cat(script_version, "\n")
+    quit(save = "no", status = 0)
+}
+
 library(copynumber)
 library(ggplot2)
 library(cowplot)

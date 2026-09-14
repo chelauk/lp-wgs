@@ -1,11 +1,19 @@
 #!/usr/bin/env Rscript
+
+SCRIPT_VERSION <- "0.1.0"
+args <- commandArgs(trailingOnly = TRUE)
+
+if (length(args) == 1 && args[1] %in% c("--version", "-V")) {
+      cat(SCRIPT_VERSION, "\n", sep = "")
+  quit(status = 0)
+}
+
 library("dplyr")
 library("ACE")
 library("QDNAseq.hg38")
 library("tidyverse")
 options(scipen = 999) # prevent scientific notation
 
-args <- commandArgs(trailingOnly = TRUE)
 patient <- args[1]
 input_ploidys <- as.integer(unlist(strsplit(args[2]," ")))
 binsize <- if (length(args) >= 4) as.numeric(args[4]) else 1000
@@ -89,8 +97,13 @@ out_df <- out_df %>%
     values_to = "Copies"    # Name for the new value column
   )
 out_df$Diploid <- 2
-out_df <- mutate(out_df, chrom = as.integer(chrom))
-out_df <- out_df %>% arrange(chrom, start)
+
+out_df <- out_df %>%
+  mutate(chrom = sub("^chr", "", as.character(chrom))) %>%
+  filter(chrom %in% as.character(1:22)) %>%
+  mutate(chrom = as.integer(chrom)) %>%
+  arrange(chrom, start) %>%
+  mutate(chrom = paste0("chr", chrom))
 
 write.table(out_df, file = paste0(patient, ".tsv"), quote = FALSE,
             sep = "\t", row.names = FALSE)

@@ -15,14 +15,17 @@ process MEDICC2 {
 
     output:
     tuple val(patient), path("medicc2_output"),  emit: medicc2
-    path "versions.yml"                    ,  emit: versions, topic: versions
+    tuple val("${task.process}"),
+      val('medicc2'),
+      eval("medicc2 --version | awk 'NR == 1 { print \$NF }'"),
+      emit: versions_medicc2,
+      topic: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
     def plot_style = task.attempt == 1 ? 'both' : 'auto'
-    def args = task.ext.args ?: ''
     """
     if [ ! -d medicc2_output ]; then
         mkdir medicc2_output
@@ -41,21 +44,9 @@ process MEDICC2 {
     --input-allele-columns Copies \\
     --normal-name Diploid \\
     ${patient}_mod.tsv medicc2_output
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        medicc2: \$(medicc2 --version | sed -n 1p | cut -d ' ' -f 1,2)
-    END_VERSIONS
     """
     stub:
-    def plot_style = task.attempt == 1 ? 'heatmap' : 'auto'
-    def args = task.ext.args ?: ''
     """
     mkdir -p medicc2_output
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        medicc2: stub version
-    END_VERSIONS
     """
 }
