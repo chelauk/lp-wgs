@@ -104,7 +104,6 @@ patient1,sample2,/data/patient1_sample2.bam,/data/patient1_sample2.bam.bai
 | `--filter_bam_max` | `150` | Maximum insert size when `--filter_bam` is enabled. |
 | `--ichor_cfDNA` | `false` | Use low-fraction cfDNA ichorCNA defaults. |
 | `--ichor_purity_manual` | unset | Manually pass ichorCNA normal fractions, for example `"c(0.95,0.99,0.995,0.999)"`. |
-| `--qdnaseq_genome` | genome config | Genome label used by QDNAseq/ASCAT support code: `hg19`, `hg38`, or `mm10`. |
 
 See [docs/usage.md](docs/usage.md) for more complete run examples and reference configuration notes.
 
