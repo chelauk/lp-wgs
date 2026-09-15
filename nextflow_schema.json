@@ -2,7 +2,7 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://raw.githubusercontent.com/chelauk/lp-wgs/main/nextflow_schema.json",
     "title": "fht/lp-wgs pipeline parameters",
-    "description": "An open-source shallow whole genome sequence analysis",
+    "description": "An open-source shallow whole genome sequence analysis pipeline",
     "type": "object",
     "$defs": {
         "input_output_options": {
@@ -32,6 +32,347 @@
                 }
             }
         },
+	
+	"workflow_options": {
+        "title": "Workflow options",
+        "type": "object",
+        "description": "Control the overall pipeline route and analysis tools.",
+        "properties": {
+            "step": {
+                "type": "string",
+	        "description": "The pipeline can start from unaligned fastqs or from mapped bam file",
+		"help_text": "paths to fastqs or bam files are supplied in the input.csv file",
+                "default": "mapping",
+                "enum": ["mapping", "calling"]
+            },
+            "tech": {
+                "type": "string",
+                "default": "illumina",
+	        "description": "Both illumina short reads and nanopore long reads can be processed by this pipeline",
+                "enum": ["illumina", "nanopore"]
+            },
+            "tools": {
+                "type": "string",
+                "default": "ace,ichor,ascat,bayes_cna",
+                "pattern": "^[A-Za-z0-9_,]+$",
+                "description": "Comma-separated list of downstream calling tools to run."
+              }
+          }
+        },
+
+	"sequencing_options": {
+        "title": "Sequencing metadata options",
+        "type": "object",
+        "description": "Define metadata used when constructing read groups.",
+        "properties": {
+            "seq_center": {
+                "type": "string",
+		"description": "This is added to the bam metadata to give information about where the sequencing was performed",
+                "default": "FHT_GF"
+            },
+            "seq_platform": {
+                "type": "string",
+		"description": "The sequencing platform information is useful for upload to sequence archives",
+                "default": "ILLUMINA"
+            },
+            "library": {
+                "type": "string",
+		"description": "LB = {SM}.{library-specific identifier}(Important To identify PCR duplicates in MarkDuplicates step. Ignore in PCR free libraries)",
+                "default": "default"
+            }
+        }
+    },
+
+    "read_processing_options": {
+        "title": "Read processing and BAM options",
+        "type": "object",
+        "properties": {
+            "sort": {
+		"description": "option to sort bam files",
+                "type": "boolean",
+                "default": true
+            },
+            "fastp_adapter_fasta": {
+                "type": "string",
+                "format": "file-path",
+                "exists": true,
+                "description": "Optional adapter FASTA passed to fastp with --adapter_fasta."
+            },
+            "call_gc": {
+                "type": "string",
+		"description": "Optional call gc on reference fasta for input into hmm readcounter"
+            },
+            "filter_bam": {
+                "type": "boolean",
+		"description": "for cfDNA the theory is that cfDNA tends to be between 90 to 150 bp, this option allows fragments to be filtered to that size"
+            },
+            "filter_bam_min": {
+                "type": "integer",
+		"description": "the common minimum is 90bp",
+                "default": 90
+            },
+            "filter_bam_max": {
+                "type": "integer",
+		"description": "and the common maximum is 150bp",
+                "default": 150
+            }
+        }
+    },
+
+    "copy_number_options": {
+        "title": "Copy-number calling options",
+        "type": "object",
+        "properties": {
+            "bin": {
+                "type": "integer",
+		"description" : "supplied bins for ichor calling",
+		"enum": [10, 500, 1000],
+                "default": 1000
+            },
+            "ploidy": {
+                "type": ["string", "integer"],
+                "default": "2,3,4",
+                "description": "Comma-separated ploidy values passed to ACE and ASCAT, for example 2 or 2,3,4."
+            },
+            "normal": {
+                "type": ["string", "null"],
+                "format": "file-path",
+		"description" : "optional path to normal bam for ichor",
+                "exists": true
+            },
+            "low_reads": {
+                "type": "boolean",
+                "default": false,
+                "description": "Enable settings intended for extremely low read counts."
+            },
+            "ascat_pcf_gamma": {
+                "type": "number",
+                "default": 10,
+                "exclusiveMinimum": 0,
+                "description": "Penalty passed to copynumber::pcf for ASCAT low-pass segmentation."
+            },
+            "ichor_cfDNA": {
+                "type": "boolean",
+                "default": false,
+                "description": "Use low-fraction cfDNA ichorCNA defaults."
+            },
+            "ichor_purity_manual": {
+                "type": "string",
+		"description": "option to supply purity manually to ichor e.g. c(0.95,0.99,0.995,0.999)"
+            },
+            "ichor_genome_build": {
+                "type": ["string", "null"],
+                "description": "Genome-build label passed to ichorCNA. Derived from the genome configuration when unset."
+            },
+            "ichor_genome_style": {
+                "type": ["string", "null"],
+                "enum": ["UCSC", "NCBI", null],
+                "description": "Chromosome naming style passed to ichorCNA. Derived from the genome configuration when unset."
+            },
+            "medicc_source": {
+                "type": "string",
+                "default": "ace",
+                "enum": ["ace", "ichor"],
+                "description": "Copy-number caller output used to prepare MEDICC2 input."
+            }
+        }
+    },
+
+"reference_genome_options": {
+    "title": "Reference genome options",
+    "type": "object",
+    "description": "Select a configured genome or provide individual reference resources.",
+    "properties": {
+        "genome": {
+            "type": "string",
+            "default": "GATK.GRCh38",
+            "description": "Name of the reference genome configuration to use."
+        },
+        "igenomes_ignore": {
+            "type": "boolean",
+            "default": false,
+            "description": "Ignore reference paths supplied by the nf-core iGenomes configuration."
+        },
+        "igenomes_base": {
+            "type": "string",
+            "format": "directory-path",
+            "description": "Base directory containing iGenomes reference files."
+        },
+        "save_reference": {
+            "type": "boolean",
+            "default": false,
+            "description": "Save generated reference index files in the output directory."
+        },
+        "fasta": {
+            "type": ["string", "null"],
+            "format": "file-path",
+            "exists": true,
+            "description": "Reference genome FASTA file. Overrides the FASTA selected through --genome."
+        },
+        "fasta_fai": {
+            "type": ["string", "null"],
+            "format": "file-path",
+            "exists": true,
+            "description": "FASTA index file. Overrides the index selected through --genome."
+        },
+        "dict": {
+            "type": ["string", "null"],
+            "format": "file-path",
+            "exists": true,
+            "description": "Sequence dictionary for the reference genome."
+        },
+        "bwa": {
+            "type": ["string", "null"],
+            "format": "directory-path",
+            "exists": true,
+            "description": "Directory containing the BWA reference index."
+        },
+        "centromere": {
+            "type": ["string", "null"],
+            "format": "file-path",
+            "exists": true,
+            "description": "File containing centromere coordinates."
+        },
+        "map_wig": {
+            "type": ["string", "null"],
+            "format": "directory-path",
+            "exists": true,
+            "description": "Directory containing chromosome-specific mappability WIG files."
+        },
+        "map_wig_file": {
+            "type": ["string", "null"],
+            "format": "file-path",
+            "exists": true,
+            "description": "Genome-wide mappability WIG file."
+        },
+        "gc_wig": {
+            "type": ["string", "null"],
+            "format": "file-path",
+            "exists": true,
+            "description": "Genome-wide GC-content WIG file."
+        },
+        "mosdepth_bed": {
+            "type": ["string", "null"],
+            "format": "file-path",
+            "exists": true,
+            "description": "BED file defining regions used for mosdepth coverage calculation."
+        },
+        "chr_bed": {
+            "type": ["string", "null"],
+            "format": "file-path",
+            "exists": true,
+            "description": "BED file containing chromosome coordinates."
+        },
+        "chr_arm_boundaries": {
+            "type": ["string", "null"],
+            "format": "file-path",
+            "exists": true,
+            "description": "File defining chromosome-arm boundaries."
+        },
+        "qdnaseq_genome": {
+            "type": ["string", "null"],
+            "enum": ["hg19", "hg38", "mm10", null],
+            "description": "Genome identifier used by QDNAseq."
+        },
+        "qdnaseq_package": {
+            "type": ["string", "null"],
+            "description": "QDNAseq genome-bin package to load."
+        },
+        "hmmcopy_chromosomes": {
+            "type": ["string", "null"],
+            "description": "Comma-separated chromosomes processed by HMMcopy."
+        },
+        "medicc_arms": {
+            "type": ["string", "null"],
+            "format": "file-path",
+            "exists": true,
+            "description": "File defining chromosome arms for MEDICC2."
+        },
+        "medicc_genes": {
+            "type": ["string", "null"],
+            "format": "file-path",
+            "exists": true,
+            "description": "Gene annotation file used for MEDICC2 input preparation."
+        }
+    }
+},
+"reporting_options": {
+    "title": "Reporting options",
+    "type": "object",
+    "description": "Configure MultiQC and Nextflow execution reports.",
+    "properties": {
+        "multiqc_config": {
+            "type": ["string", "null"],
+            "format": "file-path",
+            "exists": true,
+            "description": "Custom configuration file passed to MultiQC."
+        },
+        "multiqc_title": {
+            "type": "string",
+            "description": "Custom title for the MultiQC report."
+        },
+        "multiqc_logo": {
+            "type": "string",
+            "format": "file-path",
+            "exists": true,
+            "description": "Custom logo displayed in the MultiQC report."
+        },
+        "multiqc_methods_description": {
+            "type": "string",
+            "format": "file-path",
+            "exists": true,
+            "description": "Custom methods-description template included in the MultiQC report."
+        },
+        "tracedir": {
+            "type": "string",
+            "format": "directory-path",
+            "default": "results/Reports/pipeline_info",
+            "description": "Directory in which Nextflow execution reports are written."
+        },
+        "publish_dir_mode": {
+            "type": "string",
+            "default": "copy",
+            "enum": ["copy", "copyNoFollow", "link", "move", "rellink", "symlink"],
+            "description": "Method used to publish pipeline results to the output directory."
+        },
+        "trace_timestamp": {
+            "type": "string",
+            "description": "Timestamp used to name Nextflow trace, report, timeline and DAG files.",
+            "hidden": true
+        }
+    }
+},
+"notification_options": {
+    "title": "Notification options",
+    "type": "object",
+    "description": "Configure completion and failure notifications.",
+    "properties": {
+        "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email address to receive the pipeline completion summary."
+        },
+        "email_on_fail": {
+            "type": "string",
+            "format": "email",
+            "description": "Email address to notify only when the pipeline fails."
+        },
+        "plaintext_email": {
+            "type": "boolean",
+            "default": false,
+            "description": "Send plain-text email rather than HTML email."
+        },
+        "hook_url": {
+            "type": "string",
+            "description": "Webhook URL to notify when the pipeline finishes."
+        },
+        "max_multiqc_email_size": {
+            "type": "string",
+            "default": "25.MB",
+            "description": "Maximum size of the MultiQC report that may be attached to a notification email."
+        }
+    }
+},
         "generic_options": {
             "title": "Generic options",
             "type": "object",
@@ -51,6 +392,12 @@
                     "fa_icon": "fas fa-question-circle",
                     "hidden": true
                 },
+	        "monochrome_logs": {
+                    "type": "boolean",
+                    "description": "Do not use coloured log outputs.",
+                    "fa_icon": "fas fa-palette",
+                    "hidden": true
+                },
                 "validate_params": {
                     "type": "boolean",
                     "description": "Boolean whether to validate parameters against the schema at runtime",
@@ -67,251 +414,30 @@
         },
         {
             "$ref": "#/$defs/generic_options"
+        },
+	{
+	    "$ref": "#/$defs/workflow_options"
+	},
+	{
+            "$ref": "#/$defs/sequencing_options"
+        },
+        {
+            "$ref": "#/$defs/read_processing_options"
+        },
+        {
+            "$ref": "#/$defs/copy_number_options"
+        },
+        {
+            "$ref": "#/$defs/reference_genome_options"
+        },
+        {
+            "$ref": "#/$defs/reporting_options"
+        },
+        {
+            "$ref": "#/$defs/notification_options"
+        },
+        {
+            "$ref": "#/$defs/generic_options"
         }
-    ],
-    "properties": {
-        "tech": {
-            "type": "string",
-            "default": "illumina",
-            "enum": ["illumina", "nanopore"]
-        },
-        "sort": {
-            "type": "boolean",
-            "default": true
-        },
-        "step": {
-            "type": "string",
-            "default": "mapping",
-            "enum": ["mapping", "calling"]
-        },
-        "tools": {
-            "type": "string",
-            "default": "ace,ichor,ascat,bayes_cna",
-            "pattern": "^[A-Za-z0-9_,]+$",
-            "description": "Comma-separated list of downstream calling tools to run."
-        },
-        "call_gc": {
-            "type": "string"
-        },
-        "fastp_adapter_fasta": {
-            "type": "string",
-            "format": "file-path",
-            "description": "Optional adapter FASTA passed to fastp --adapter_fasta."
-        },
-        "filter_bam": {
-            "type": "boolean"
-        },
-        "filter_bam_min": {
-            "type": "integer",
-            "default": 90
-        },
-        "filter_bam_max": {
-            "type": "integer",
-            "default": 150
-        },
-        "low_reads": {
-            "type": "boolean",
-            "default": false,
-            "description": "Enable settings for extremely low reads"
-        },
-        "ploidy": {
-            "type": ["string", "integer"],
-            "default": "2,3,4",
-            "description": "Comma-separated ploidy values passed to ACE and ASCATlp, e.g. 2 or 2,3,4."
-        },
-        "ascat_pcf_gamma": {
-            "type": "number",
-            "default": 10,
-            "exclusiveMinimum": 0,
-            "description": "Penalty parameter passed to copynumber::pcf for ASCAT low-pass segmentation."
-        },
-        "bin": {
-            "type": "integer",
-            "default": 1000
-        },
-        "medicc_source": {
-            "type": "string",
-            "default": "ace",
-            "enum": ["ace", "ichor"],
-            "description": "Copy-number caller output used to prepare MEDICC2 input."
-        },
-        "insertsizemetrics": {
-            "type": "string"
-        },
-        "genome": {
-            "type": "string",
-            "default": "GATK.GRCh38"
-        },
-        "igenomes_ignore": {
-            "type": "string"
-        },
-        "igenomes_base": {
-            "type": "string"
-        },
-        "save_reference": {
-            "type": "string"
-        },
-        "normal": {
-            "type": ["string", "null"],
-            "format": "file-path",
-            "exists": true
-        },
-        "ichor_cfDNA": {
-            "type": "boolean",
-            "default": false,
-            "description": "Use low-fraction cfDNA ichorCNA defaults."
-        },
-        "ichor_purity_manual": {
-            "type": "string"
-        },
-        "ichor_genome_build": {
-            "type": ["string", "null"],
-            "description": "Genome build label passed to ichorCNA. If unset, the pipeline derives it from the selected genome configuration."
-        },
-        "ichor_genome_style": {
-            "type": ["string", "null"],
-            "enum": ["UCSC", "NCBI", null],
-            "description": "Chromosome naming style passed to ichorCNA. If unset, the pipeline derives it from the selected genome configuration."
-        },
-        "seq_center": {
-            "type": "string",
-            "default": "FHT_GF"
-        },
-        "seq_platform": {
-            "type": "string",
-            "default": "ILLUMINA"
-        },
-        "library": {
-            "type": "string",
-            "default": "default"
-        },
-        "multiqc_config": {
-            "type": ["string", "null"],
-            "format": "file-path",
-            "exists": true
-        },
-        "multiqc_title": {
-            "type": "string"
-        },
-        "multiqc_logo": {
-            "type": "string"
-        },
-        "max_multiqc_email_size": {
-            "type": "string",
-            "default": "25.MB"
-        },
-        "multiqc_methods_description": {
-            "type": "string"
-        },
-        "tracedir": {
-            "type": "string",
-            "default": "results/Reports/pipeline_info"
-        },
-        "publish_dir_mode": {
-            "type": "string",
-            "default": "copy"
-        },
-        "email": {
-            "type": "string"
-        },
-        "email_on_fail": {
-            "type": "string"
-        },
-        "plaintext_email": {
-            "type": "boolean"
-        },
-        "monochrome_logs": {
-            "type": "boolean"
-        },
-        "hook_url": {
-            "type": "string"
-        },
-        "show_hidden_params": {
-            "type": "boolean"
-        },
-        "schema_ignore_params": {
-            "type": "string",
-            "default": "genomes,trace_timestamp"
-        },
-        "trace_timestamp": {
-            "type": "string",
-            "description": "Timestamp used to name Nextflow trace, report, timeline, and DAG files.",
-            "hidden": true
-        },
-        "dict": {
-            "type": ["string", "null"],
-            "format": "file-path",
-            "exists": true
-        },
-        "fasta": {
-            "type": ["string", "null"],
-            "format": "file-path",
-            "exists": true
-        },
-        "fasta_fai": {
-            "type": ["string", "null"],
-            "format": "file-path",
-            "exists": true
-        },
-        "bwa": {
-            "type": ["string", "null"],
-            "format": "directory-path",
-            "exists": true
-        },
-        "centromere": {
-            "type": ["string", "null"],
-            "format": "file-path",
-            "exists": true
-        },
-        "map_wig": {
-            "type": ["string", "null"],
-            "format": "directory-path",
-            "exists": true
-        },
-        "map_wig_file": {
-            "type": ["string", "null"],
-            "format": "file-path",
-            "exists": true
-        },
-        "gc_wig": {
-            "type": ["string", "null"],
-            "format": "file-path",
-            "exists": true
-        },
-        "mosdepth_bed": {
-            "type": ["string", "null"],
-            "format": "file-path",
-            "exists": true
-        },
-        "chr_bed": {
-            "type": ["string", "null"],
-            "format": "file-path",
-            "exists": true
-        },
-        "medicc_arms": {
-            "type": ["string", "null"],
-            "format": "file-path",
-            "exists": true
-        },
-        "medicc_genes": {
-            "type": ["string", "null"],
-            "format": "file-path",
-            "exists": true
-        },
-        "chr_arm_boundaries": {
-            "type": ["string", "null"],
-            "format": "file-path",
-            "exists": true
-        },
-        "qdnaseq_genome": {
-            "type": ["string", "null"],
-            "enum": ["hg19", "hg38", "mm10", null]
-        },
-        "qdnaseq_package": {
-            "type": ["string", "null"]
-        },
-        "hmmcopy_chromosomes": {
-            "type": ["string", "null"]
-        }
-    }
+    ]
 }
