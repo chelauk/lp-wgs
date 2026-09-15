@@ -29,6 +29,9 @@ workflow PIPELINE_INITIALISATION {
     version           // boolean: Display version and exit
     validate_params   // boolean: Boolean whether to validate parameters against the schema at runtime
     monochrome_logs   // boolean: Do not use coloured log outputs
+    help
+    help_full
+    show_hidden
     nextflow_cli_args //   array: List of positional nextflow CLI args
     outdir            //  string: The output directory where the results will be saved
     input             //  string: Path to input samplesheet
@@ -57,10 +60,14 @@ workflow PIPELINE_INITIALISATION {
     post_help_text = '\n' + workflowCitation() + '\n' + dashedLine(monochrome_logs)
     
     UTILS_NFSCHEMA_PLUGIN(
-        pre_help_text,
-        post_help_text,
-        validate_params,
-        "nextflow_schema.json"
+    workflow,
+    validate_params,
+    "nextflow_schema.json",
+    help,
+    help_full,
+    show_hidden,
+    pre_help_text,
+    post_help_text 
     )
 
     //

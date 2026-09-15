@@ -392,6 +392,16 @@
                     "fa_icon": "fas fa-question-circle",
                     "hidden": true
                 },
+                "help_full": {
+                    "type": "boolean",
+                    "description": "Display the complete help text and exit.",
+                    "hidden": true
+                },
+                "show_hidden": {
+                    "type": "boolean",
+                    "description": "Display hidden parameters in the help output.",
+                    "hidden": true
+                },
 	        "monochrome_logs": {
                     "type": "boolean",
                     "description": "Do not use coloured log outputs.",
