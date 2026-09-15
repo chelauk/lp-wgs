@@ -31,7 +31,7 @@
 - [IchorCNA](https://www.nature.com/articles/s41467-017-00965-y)
   > Viktor A. Adalsteinsson, Gavin Ha, Samuel S. Freeman, Atish D. Choudhury etal Scalable whole-exome sequencing of cell-free DNA reveals high concordance with metastatic tumors
 
-- [BayesCNA](https://academic.oup.com/bib/article/27/2/bbag111/8524997))
+- [BayesCNA](https://academic.oup.com/bib/article/27/2/bbag111/8524997)
   >  Lotta Eriksson, Eszter Lakatos Sensitive detection of copy number alterations in low-pass liquid biopsy sequencing data.
 
 - [MultiQC](https://pubmed.ncbi.nlm.nih.gov/27312411/)
