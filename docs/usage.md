@@ -128,7 +128,7 @@ To prepare MEDICC2 input from ichorCNA SEG output instead, include `ichor` and s
 --tools ichor,medicc --medicc_source ichor
 ```
 
-For mouse genomes (`qdnaseq_genome = mm10`), MEDICC is currently blocked by the workflow because it remains human-specific in this pipeline.
+For mouse genomes MEDICC is currently blocked by the workflow because it remains human-specific in this pipeline.
 
 The default caller set intentionally includes several tools that operate on similar low-pass WGS copy number signal. They are kept together because each caller encodes a different modelling strategy, which makes the pipeline useful for comparing concordance and caller-specific behaviour:
 
