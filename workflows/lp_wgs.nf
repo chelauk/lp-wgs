@@ -10,6 +10,7 @@
 
 include { softwareVersionsToYAML      } from 'plugin/nf-core-utils'
 include { MAPPING                     } from '../subworkflows/local/mapping/main'
+include { BWA_INDEX                   } from '../modules/nf-core/bwa/index/main'
 include { BAM_QC                      } from '../subworkflows/local/bam_qc/main'
 include { CALLING_PREP                } from '../subworkflows/local/calling_prep/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
@@ -38,6 +39,7 @@ workflow LP_WGS {
     fasta_fai
     chr_arm_boundaries
     bwa
+    build_bwa
     chr_bed
     centromere
     medicc_arms
@@ -88,7 +90,16 @@ workflow LP_WGS {
     ch_mapping_multiqc  = channel.empty()
     
     if (step == 'mapping') {
-        MAPPING(
+       
+       ch_bwa = bwa
+       
+      if (build_bwa) {
+        BWA_INDEX(fasta)
+        ch_bwa = BWA_INDEX.out.index
+      }
+ 
+
+       MAPPING(
             ch_input_sample,
             bwa,
             fasta,

@@ -33,6 +33,7 @@ workflow {
     def ref_fasta                 = params.fasta ?: getGenomeAttribute('fasta')
     def ref_fasta_fai             = params.fasta_fai ?: getGenomeAttribute('fasta_fai')
     def ref_bwa                   = params.bwa ?: getGenomeAttribute('bwa')
+    def build_bwa                 = !ref_bwa
     def ref_centromere            = params.centromere ?: getGenomeAttribute('centromere')
     def ref_map_wig               = params.map_wig ?: getGenomeAttribute('map_wig')
     def ref_gc_wig                = params.gc_wig ?: getGenomeAttribute('gc_wig')
@@ -91,6 +92,7 @@ workflow {
         ch_fasta_fai,
         ch_chr_arm_boundaries,
         ch_bwa,
+        build_bwa,
         ch_chr_bed,
         ch_centromere,
         ch_medicc_arms,
