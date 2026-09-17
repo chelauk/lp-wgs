@@ -126,7 +126,7 @@
             "bin": {
                 "type": "integer",
 		"description" : "supplied bins for ichor calling",
-		"enum": [10, 50, 500, 1000],
+		"enum": [10, 50, 100, 500, 1000],
                 "default": 1000
             },
             "ploidy": {

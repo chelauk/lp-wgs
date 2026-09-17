@@ -9,7 +9,8 @@
 //
 
 include { softwareVersionsToYAML      } from 'plugin/nf-core-utils'
-include { MAPPING_QC                  } from '../subworkflows/local/mapping_qc/main'
+include { MAPPING                     } from '../subworkflows/local/mapping/main'
+include { BAM_QC                      } from '../subworkflows/local/bam_qc/main'
 include { CALLING_PREP                } from '../subworkflows/local/calling_prep/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { ICHORCNA_RUN                } from '../modules/local/ichorcna/run/main'
@@ -82,15 +83,16 @@ workflow LP_WGS {
 
     // bin_dir for Rscripts
     bin_dir = channel.fromPath("$projectDir/bin").collect()
-    ch_mapped_bam = channel.empty()
-
+    
+    ch_mapped_bam       = channel.empty()
+    ch_mapping_multiqc  = channel.empty()
+    
     if (step == 'mapping') {
-        MAPPING_QC(
+        MAPPING(
             ch_input_sample,
             bwa,
             fasta,
             fasta_fai,
-        //    dict,
             chr_bed,
             sort,
             fastp_adapter_fasta,
@@ -99,14 +101,32 @@ workflow LP_WGS {
             filter_bam_max,
             filter_status
         )
-        ch_mapped_bam = MAPPING_QC.out.bam
+    
+        ch_mapped_bam      = MAPPING.out.bam
+        ch_mapping_multiqc = MAPPING.out.multiqc_files
+    
+    } else if (step == 'calling') {
+    
+        ch_mapped_bam = ch_input_sample
+    
+    } else {
+        exit 1, "Unsupported step '${step}'. Supported values: mapping, calling."
     }
+
+    BAM_QC(
+         ch_mapped_bam,
+         fasta,
+         fasta_fai,
+         chr_bed,
+         filter_status
+     )
+     
+     ch_bam_qc_multiqc = BAM_QC.out.multiqc_files 
 
     CALLING_PREP(
         ch_input_sample,
         ch_mapped_bam,
         fasta,
-        //fasta_fai,
         gc_wig,
         step,
         tech,
@@ -117,6 +137,13 @@ workflow LP_WGS {
     )
     ch_analysis_input = CALLING_PREP.out.analysis_input
     ch_gc_wig = CALLING_PREP.out.gc_wig
+
+    
+    CALLING_PREP.out.readcounter_wig.view { "ICHOR readcounter_wig: ${it}" }
+    ch_gc_wig.view                         { "ICHOR gc_wig: ${it}" }
+    map_wig.view                           { "ICHOR map_wig: ${it}" }
+    normal_wig.view                        { "ICHOR normal_wig: ${it}" }
+    centromere.view                        { "ICHOR centromere: ${it}" }
 
     // run ichorcna
     if (selected_tools.contains('ichor')) {
@@ -156,10 +183,10 @@ workflow LP_WGS {
             .groupTuple()
             .filter { tuple -> tuple[1].size() > 1 }
             .set { prep_medicc2_input }
-    }
+     }
 
-    // run bayes_cna
-    if (selected_tools.contains('bayes_cna')) {
+     // run bayes_cna
+     if (selected_tools.contains('bayes_cna')) {
         ch_bayes_helpers = channel.value([
             file("${projectDir}/bin/segmentation.R", checkIfExists: true),
             file("${projectDir}/bin/helper_functions.R", checkIfExists: true),
@@ -168,10 +195,10 @@ workflow LP_WGS {
         ])
 
         RUN_BAYES(ch_analysis_input, bin_size, qdnaseq_genome, ch_bayes_helpers)
-    }
+     }
 
-    //run prep_medicc
-    if (selected_tools.contains('medicc')) {
+     //run prep_medicc
+     if (selected_tools.contains('medicc')) {
         if (medicc_source == 'ace') {
             if (!selected_tools.contains('ace')) {
                 exit 1, "The 'medicc' workflow with medicc_source='ace' requires 'ace' so that ploidy-grouped inputs can be prepared."
@@ -190,21 +217,19 @@ workflow LP_WGS {
             PREP_MEDICC2_ICHOR(prep_medicc2_ichor_input,bin_dir)
             ch_medicc_input = PREP_MEDICC2_ICHOR.out.for_medicc
         } else {
-            exit 1, "Unsupported medicc_source '${medicc_source}'. Supported values: ace, ichor."
-        }
+                exit 1, "Unsupported medicc_source '${medicc_source}'. Supported values: ace, ichor."
+               }
 
-        // run medicc2
-        MEDICC2(ch_medicc_input, medicc_arms, medicc_genes)
-    }
+      // run medicc2
+      MEDICC2(ch_medicc_input, medicc_arms, medicc_genes)
+      }
 
-//    REPORTING_MULTIQC
-
+      //    REPORTING_MULTIQC
       def ch_multiqc_files = channel.empty()
 
       ch_multiqc_files = ch_multiqc_files
-            .mix(MAPPING_QC.out.multiqc_files)
-          //.mix(PROCESS_A.out.metrics.map { meta, file -> file })
-          //.mix(PROCESS_B.out.report.map  { meta, file -> file })
+         .mix(ch_mapping_multiqc)
+         .mix(BAM_QC.out.multiqc_files) 
       
       def ch_collated_versions = softwareVersionsToYAML(
           softwareVersions: channel.topic('versions'),
