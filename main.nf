@@ -34,8 +34,7 @@ workflow {
     def ref_fasta_fai             = params.fasta_fai ?: getGenomeAttribute('fasta_fai')
     def ref_bwa                   = params.bwa ?: getGenomeAttribute('bwa')
     def ref_centromere            = params.centromere ?: getGenomeAttribute('centromere')
-    //def ref_map_wig               = params.map_wig ?: getGenomeAttribute('map_wig')
-    def ref_map_wig_file          = params.map_wig_file ?: getGenomeAttribute('map_wig_file')
+    def ref_map_wig               = params.map_wig ?: getGenomeAttribute('map_wig')
     def ref_gc_wig                = params.gc_wig ?: getGenomeAttribute('gc_wig')
     def ref_ichor_genome_build    = params.ichor_genome_build ?: getGenomeAttribute('ichor_genome_build')
     def ref_ichor_genome_style    = params.ichor_genome_style ?: getGenomeAttribute('ichor_genome_style')
@@ -63,7 +62,7 @@ workflow {
     ch_medicc_arms = ref_medicc_arms ? channel.fromPath(ref_medicc_arms).collect() : channel.empty()
     ch_medicc_genes = ref_medicc_genes ? channel.fromPath(ref_medicc_genes).collect() : channel.empty()
     ch_gc_wig = ref_gc_wig ? channel.fromPath(ref_gc_wig).collect() : channel.empty()
-    ch_map_wig = ref_map_wig_file ? channel.fromPath(ref_map_wig_file).collect() : channel.empty()
+    ch_map_wig = ref_map_wig ? channel.fromPath(ref_map_wig).collect() : channel.empty()
     ch_normal_wig = params.normal ? channel.fromPath(params.normal).collect() : channel.value([])
     //
     // SUBWORKFLOW: Run initialisation tasks

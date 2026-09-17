@@ -235,12 +235,6 @@
         },
         "map_wig": {
             "type": ["string", "null"],
-            "format": "directory-path",
-            "exists": true,
-            "description": "Directory containing chromosome-specific mappability WIG files."
-        },
-        "map_wig_file": {
-            "type": ["string", "null"],
             "format": "file-path",
             "exists": true,
             "description": "Genome-wide mappability WIG file."
