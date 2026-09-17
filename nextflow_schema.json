@@ -142,7 +142,6 @@
             },
             "low_reads": {
                 "type": "boolean",
-                "default": false,
                 "description": "Enable settings intended for extremely low read counts."
             },
             "ascat_pcf_gamma": {
@@ -153,7 +152,6 @@
             },
             "ichor_cfDNA": {
                 "type": "boolean",
-                "default": false,
                 "description": "Use low-fraction cfDNA ichorCNA defaults."
             },
             "ichor_purity_manual": {
@@ -190,7 +188,6 @@
         },
         "igenomes_ignore": {
             "type": "boolean",
-            "default": false,
             "description": "Ignore reference paths supplied by the nf-core iGenomes configuration."
         },
         "igenomes_base": {
@@ -200,7 +197,6 @@
         },
         "save_reference": {
             "type": "boolean",
-            "default": false,
             "description": "Save generated reference index files in the output directory."
         },
         "fasta": {
@@ -353,7 +349,6 @@
         },
         "plaintext_email": {
             "type": "boolean",
-            "default": false,
             "description": "Send plain-text email rather than HTML email."
         },
         "hook_url": {
