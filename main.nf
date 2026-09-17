@@ -54,10 +54,18 @@ workflow {
     ch_fasta_fai = ref_fasta_fai ? channel.fromPath(ref_fasta_fai).map { path -> [[id: path.name.replaceFirst(/\.(fa|fasta)\.fai$/, '')], path] }.collect() : channel.empty()
     //ch_dict = ref_dict ? channel.fromPath(ref_dict).collect() : channel.empty()
     ch_chr_arm_boundaries = ref_chr_arm_boundaries ? channel.fromPath(ref_chr_arm_boundaries).collect() : channel.empty()
+   
+
     if (params.step == 'mapping' && !ref_bwa) {
-        error "No BWA index configured. genome=${params.genome}, igenomes_base=${params.igenomes_base}, genome_bwa=${getGenomeAttribute('bwa')}"
+        log.info "No BWA index configured; generating one from the supplied FASTA."
     }
-    ch_bwa = ref_bwa ? channel.fromPath(ref_bwa, checkIfExists: true).map { path -> [[id: 'bwa'], path] }.collect() : channel.empty()
+
+    ch_bwa = ref_bwa \
+        ? channel.fromPath(ref_bwa, checkIfExists: true)
+            .map { path -> [[id: 'bwa'], path] }
+            .collect()
+        : channel.value([])
+
     ch_chr_bed = ref_chr_bed ? channel.fromPath(ref_chr_bed).collect() : channel.empty()
     ch_centromere = ref_centromere ? channel.fromPath(ref_centromere).collect() : channel.value([])
     ch_medicc_arms = ref_medicc_arms ? channel.fromPath(ref_medicc_arms).collect() : channel.empty()

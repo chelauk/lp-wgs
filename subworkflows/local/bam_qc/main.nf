@@ -34,7 +34,7 @@ workflow BAM_QC {
 
     PICARD_COLLECTINSERTSIZEMETRICS(PICARD_MARKDUPLICATES.out.bam)
 
-    ch_mosdepth_input = ch_mapped_bam
+    ch_mosdepth_input = dups_marked
         .combine(chr_bed)
         .map { meta, bam, bai, bed ->
             def interval_bed = bed instanceof List ? bed[0] : bed
@@ -56,7 +56,7 @@ workflow BAM_QC {
                        MOSDEPTH.out.regions_txt.collect { _meta, report -> report })
 
     emit:
-    dups_marked = ch_mapped_bam
+    dups_marked
     multiqc_files = reports
 
 }

@@ -1,17 +1,13 @@
 include { BWA_MEM             } from '../../../modules/local/bwa/mem/main'
-include { BAM_QC              } from '../../../subworkflows/local/bam_qc/main'
 include { QC_TRIM             } from '../../../subworkflows/local/qc_trim/main'
 include { MERGE_LANES         } from '../../../subworkflows/local/merge_lanes/main'
 include { SAMTOOLS_VIEW       } from '../../../modules/local/samtools/view/main'
-include { PUBLISH_MAPPED_BAM  } from '../../../modules/local/publish_mapped_bam/main'
 
 workflow MAPPING {
     take:
     ch_input_sample
     bwa
     fasta
-    fasta_fai
-    chr_bed
     sort
     fastp_adapter_fasta
     filter_bam
@@ -38,19 +34,9 @@ workflow MAPPING {
         ch_mapped_bam = SAMTOOLS_VIEW.out.bam
     }
     
-    BAM_QC(
-        ch_mapped_bam,
-        fasta,
-        fasta_fai,
-        chr_bed,
-        filter_status
-        )
-
-    PUBLISH_MAPPED_BAM(BAM_QC.out.dups_marked)
-    
     reports = QC_TRIM.out.multiqc_files
     
     emit:
-    bam = BAM_QC.out.dups_marked
+    bam = ch_mapped_bam
     multiqc_files = reports
 }

@@ -1,0 +1,2 @@
+patient,sample,lane,fastq_1,fastq_2
+chr21,cnv,1,https://raw.githubusercontent.com/chelauk/test/main/test_datasets/lp_wgs/fastqs/chr21_cnv_R1.fastq.gz,https://raw.githubusercontent.com/chelauk/test/main/test_datasets/lp_wgs/fastqs/chr21_cnv_R2.fastq.gz

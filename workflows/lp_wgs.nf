@@ -90,21 +90,19 @@ workflow LP_WGS {
     ch_mapping_multiqc  = channel.empty()
     
     if (step == 'mapping') {
-       
-       ch_bwa = bwa
-       
-      if (build_bwa) {
-        BWA_INDEX(fasta)
-        ch_bwa = BWA_INDEX.out.index
-      }
- 
-
-       MAPPING(
+    
+        ch_bwa = bwa
+    
+        // Optionally build the BWA index
+        if (build_bwa) {
+            BWA_INDEX(fasta)
+            ch_bwa = BWA_INDEX.out.index
+        }
+    
+        MAPPING(
             ch_input_sample,
-            bwa,
+            ch_bwa,
             fasta,
-            fasta_fai,
-            chr_bed,
             sort,
             fastp_adapter_fasta,
             filter_bam,
@@ -121,9 +119,10 @@ workflow LP_WGS {
         ch_mapped_bam = ch_input_sample
     
     } else {
+    
         exit 1, "Unsupported step '${step}'. Supported values: mapping, calling."
     }
-
+ 
     BAM_QC(
          ch_mapped_bam,
          fasta,
@@ -134,9 +133,11 @@ workflow LP_WGS {
      
      ch_bam_qc_multiqc = BAM_QC.out.multiqc_files 
 
-    CALLING_PREP(
+     ch_qc_bam = BAM_QC.out.dups_marked
+
+     CALLING_PREP(
         ch_input_sample,
-        ch_mapped_bam,
+        ch_qc_bam,
         fasta,
         gc_wig,
         step,
