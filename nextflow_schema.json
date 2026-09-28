@@ -134,12 +134,6 @@
                 "default": "2,3,4",
                 "description": "Comma-separated ploidy values passed to ACE and ASCAT, for example 2 or 2,3,4."
             },
-            "normal": {
-                "type": ["string", "null"],
-                "format": "file-path",
-		"description" : "optional path to normal bam for ichor",
-                "exists": true
-            },
             "low_reads": {
                 "type": "boolean",
                 "description": "Enable settings intended for extremely low read counts."

@@ -107,14 +107,25 @@ class WorkflowWgs {
             return []
         }
         def header = splitCsvLine(lines[0])
-        return lines.drop(1).collect { line ->
+        def rows = lines.drop(1).collect { line ->
             def values = splitCsvLine(line)
             def row = [:]
             header.eachWithIndex { name, index ->
                 row[name] = index < values.size() ? values[index] : ''
             }
+            def status = row.status ?: '1'
+            if (!(status in ['0', '1'])) {
+                throw new IllegalArgumentException("Invalid status '${status}' for ${row.patient}_${row.sample}: use 1 for tumour or 0 for control.")
+            }
+            row.status = status.toInteger()
             row
         }
+        rows.groupBy { [it.patient, it.sample] }.each { key, records ->
+            if (records.collect { it.status }.unique().size() > 1) {
+                throw new IllegalArgumentException("Inconsistent status across rows for ${key.join('_')}.")
+            }
+        }
+        return rows
     }
 
     private static List splitCsvLine(String line) {

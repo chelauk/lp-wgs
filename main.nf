@@ -72,7 +72,6 @@ workflow {
     ch_medicc_genes = ref_medicc_genes ? channel.fromPath(ref_medicc_genes).collect() : channel.empty()
     ch_gc_wig = ref_gc_wig ? channel.fromPath(ref_gc_wig).collect() : channel.empty()
     ch_map_wig = ref_map_wig ? channel.fromPath(ref_map_wig).collect() : channel.empty()
-    ch_normal_wig = params.normal ? channel.fromPath(params.normal).collect() : channel.value([])
     //
     // SUBWORKFLOW: Run initialisation tasks
     //
@@ -107,7 +106,6 @@ workflow {
         ch_medicc_genes,
         ch_gc_wig,
         ch_map_wig,
-        ch_normal_wig,
         params.tools,
         params.genome,
         ref_qdnaseq_genome,

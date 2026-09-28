@@ -15,6 +15,7 @@ include { BAM_QC                      } from '../subworkflows/local/bam_qc/main'
 include { CALLING_PREP                } from '../subworkflows/local/calling_prep/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { ICHORCNA_RUN                } from '../modules/local/ichorcna/run/main'
+include { ICHOR_INPUTS                } from '../subworkflows/local/ichor_inputs/main'
 include { ICHORCNA_VERSIONS           } from '../modules/local/ichorcna/versions/main'
 include { ACE                         } from '../modules/local/ace/main'
 include { RUN_QDNASEQ                 } from '../modules/local/prep_ascat/main'
@@ -46,7 +47,6 @@ workflow LP_WGS {
     medicc_genes
     gc_wig
     map_wig
-    normal_wig
     tools
     genome
     qdnaseq_genome
@@ -154,16 +154,15 @@ workflow LP_WGS {
     CALLING_PREP.out.readcounter_wig.view { "ICHOR readcounter_wig: ${it}" }
     ch_gc_wig.view                         { "ICHOR gc_wig: ${it}" }
     map_wig.view                           { "ICHOR map_wig: ${it}" }
-    normal_wig.view                        { "ICHOR normal_wig: ${it}" }
     centromere.view                        { "ICHOR centromere: ${it}" }
 
     // run ichorcna
     if (selected_tools.contains('ichor')) {
+        ICHOR_INPUTS(CALLING_PREP.out.readcounter_wig)
         ICHORCNA_RUN(
-            CALLING_PREP.out.readcounter_wig,
+            ICHOR_INPUTS.out.inputs,
             ch_gc_wig,
             map_wig,
-            normal_wig,
             [],
             centromere,
             [],

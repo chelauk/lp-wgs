@@ -50,6 +50,24 @@ nextflow run /path/to/lp_wgs \
 
 The samplesheet is a CSV file. `patient` and `sample` are always required. File paths must not contain spaces.
 
+The optional `status` column accepts `1` for tumour and `0` for control. Missing
+or blank values default to `1`. All lanes of a sample must have the same status.
+For ICHOR, a control is processed through readCounter to generate a normal WIG
+using the same settings as the tumours. It is used for all tumours with the same
+`patient` value; supply at most one control sample per patient (multiple lanes are
+allowed). Controls are excluded from ICHOR tumour calls. Other selected tools
+continue to process all samples as before.
+
+Patients without a control run without a normal WIG. Normal WIGs are generated
+only from samplesheet controls. This works with both FASTQ and BAM inputs.
+
+```csv
+patient,sample,status,bam,bai
+patient1,tumour,1,/data/tumour.bam,/data/tumour.bam.bai
+patient1,control,0,/data/control.bam,/data/control.bam.bai
+patient2,tumour,1,/data/patient2.bam,/data/patient2.bam.bai
+```
+
 ### FASTQ Input
 
 Use FASTQ input with `--step mapping`.

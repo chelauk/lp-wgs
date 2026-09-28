@@ -19,6 +19,13 @@
                 "errorMessage": "Sample name must be provided and cannot contain spaces",
                 "meta" : ["sample"]
             },
+            "status": {
+                "type": "integer",
+                "enum": [0, 1],
+                "default": 1,
+                "description": "Sample status: 1 for tumour, 0 for control. Defaults to tumour when omitted.",
+                "meta": ["status"]
+            },
             "lane":{
                 "anyOf": [
                     {

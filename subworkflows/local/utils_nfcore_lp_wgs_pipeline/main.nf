@@ -177,6 +177,7 @@ def samplesheetToList(samplesheet) {
         def meta = [
             patient         : row.patient,
             sample          : row.sample,
+            status          : row.status,
             predicted_ploidy: row.predicted_ploidy ? row.predicted_ploidy.toInteger() : 2
         ]
         if (row.lane) {

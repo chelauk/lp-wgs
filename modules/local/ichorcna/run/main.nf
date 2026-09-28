@@ -8,10 +8,9 @@ process ICHORCNA_RUN {
         'community.wave.seqera.io/library/r-ichorcna:0.5.1--eed4be826f05c9d4' }"
 
     input:
-    tuple val(meta), path(wig)
+    tuple val(meta), path(wig), path(normal_wig)
     path gc_wig
     path map_wig
-    path normal_wig
     path normal_background
     path centromere
     path rep_time_wig
