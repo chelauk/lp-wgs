@@ -150,17 +150,11 @@ workflow LP_WGS {
     ch_analysis_input = CALLING_PREP.out.analysis_input
     ch_gc_wig = CALLING_PREP.out.gc_wig
 
-    
-    CALLING_PREP.out.readcounter_wig.view { "ICHOR readcounter_wig: ${it}" }
-    ch_gc_wig.view                         { "ICHOR gc_wig: ${it}" }
-    map_wig.view                           { "ICHOR map_wig: ${it}" }
-    centromere.view                        { "ICHOR centromere: ${it}" }
-
     // run ichorcna
     if (selected_tools.contains('ichor')) {
         ICHOR_INPUTS(CALLING_PREP.out.readcounter_wig)
         ICHORCNA_RUN(
-            ICHOR_INPUTS.out.inputs,
+            ICHOR_INPUTS.out,
             ch_gc_wig,
             map_wig,
             [],

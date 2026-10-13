@@ -12,38 +12,23 @@ workflow MERGE_LANES {
     ch_bam_bwa
 
     main:
-
-    ch_bam_bwa
+    ch_bam_grouped = ch_bam_bwa
         .map { meta, bam ->
-            def mergedMeta = meta + [id: "${meta.patient}_${meta.sample}"]
-            [mergedMeta, bam]
+            def sampleMeta = meta.subMap(['patient', 'sample', 'status']) + [id: "${meta.patient}_${meta.sample}"]
+            [sampleMeta, bam]
         }
-        .map { meta, bam -> [[meta.patient, meta.sample], [meta, bam]] }
         .groupTuple()
-        .branch { _sample_key, grouped_records ->
-            single: grouped_records.size() == 1
-            multiple: grouped_records.size() > 1
-        }
-        .set { ch_bam_grouped }
-
-    ch_bam_single = ch_bam_grouped.single
-        .map { _sample_key, grouped_records -> grouped_records[0] }
-
-    ch_bam_multiple = ch_bam_grouped.multiple
-        .map { _sample_key, grouped_records ->
-            def meta = grouped_records[0][0]
-            def bams = grouped_records.collect { record -> record[1] }
-            [meta, bams]
+        .branch { _meta, bams ->
+            single: bams.size() == 1
+            multiple: true
         }
 
+    ch_bam_single = ch_bam_grouped.single.map { meta, bams -> [meta, bams[0]] }
     // STEP 1.5: MERGING AND INDEXING BAM
-    SAMBAMBA_MERGE(ch_bam_multiple)
+    SAMBAMBA_MERGE(ch_bam_grouped.multiple) // already [meta, [bam1, bam2, ...]]
     ch_bam_unindexed = ch_bam_single.mix(SAMBAMBA_MERGE.out.bam)
     SAMTOOLS_INDEX(ch_bam_unindexed)
-
-    ch_bam_indexed = ch_bam_unindexed
-        .join(SAMTOOLS_INDEX.out.index)
-
+    
     emit:
-    bam = ch_bam_indexed
+    ch_bam_unindexed.join(SAMTOOLS_INDEX.out.index)
 }

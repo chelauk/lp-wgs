@@ -23,11 +23,11 @@ workflow MAPPING {
     MERGE_LANES(BWA_MEM.out.bam)
 
     if (!filter_bam) {
-        ch_mapped_bam = MERGE_LANES.out.bam.map { meta, bam, bai ->
+        ch_mapped_bam = MERGE_LANES.out.map { meta, bam, bai ->
             [meta + [filter_status: filter_status], bam, bai]
         }
     } else {
-        ch_filter_input = MERGE_LANES.out.bam.map { meta, bam, bai ->
+        ch_filter_input = MERGE_LANES.out.map { meta, bam, bai ->
             [meta + [filter_status: filter_status], bam, bai]
         }
         SAMTOOLS_VIEW(ch_filter_input, filter_bam_min, filter_bam_max)

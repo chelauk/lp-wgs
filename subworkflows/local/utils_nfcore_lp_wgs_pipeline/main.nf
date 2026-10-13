@@ -86,7 +86,7 @@ workflow PIPELINE_INITIALISATION {
     )
 
     emit:
-    samplesheet = SAMPLESHEET_TO_CHANNEL.out
+    SAMPLESHEET_TO_CHANNEL.out
     }
 
 /*

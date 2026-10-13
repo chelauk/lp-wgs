@@ -94,7 +94,7 @@ workflow {
     )
 
     LP_WGS (
-        PIPELINE_INITIALISATION.out.samplesheet,
+        PIPELINE_INITIALISATION.out,
         ch_fasta,
         ch_fasta_fai,
         ch_chr_arm_boundaries,

@@ -15,7 +15,7 @@ workflow {
         records << [[id: 'p1_n2', patient: 'p1', status: 0], 'n2.wig']
     }
     ICHOR_INPUTS(channel.fromList(records))
-    ICHOR_INPUTS.out.inputs.toList().view { results ->
+    ICHOR_INPUTS.out.toList().view { results ->
         assert results.size() == 3
         results.each { meta, tumour, normal ->
             assert meta.status == 1

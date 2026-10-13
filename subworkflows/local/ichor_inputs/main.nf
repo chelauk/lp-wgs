@@ -6,7 +6,7 @@ workflow ICHOR_INPUTS {
 
     main:
     controls = wigs
-        .filter { meta, wig -> meta.status == 0 }
+        .filter { meta, _wig -> meta.status == 0 }
         .map { meta, wig -> [meta.patient, wig] }
         .toList()
         .map { records ->
@@ -20,13 +20,11 @@ workflow ICHOR_INPUTS {
             normals
         }
 
-    inputs = wigs
-        .filter { meta, wig -> meta.status != 0 }
+    emit:
+    wigs
+        .filter { meta, _wig -> meta.status != 0 }
         .combine(controls)
         .map { meta, wig, normals ->
             tuple(meta, wig, normals.containsKey(meta.patient) ? normals[meta.patient] : [])
         }
-
-    emit:
-    inputs
 }
