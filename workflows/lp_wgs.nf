@@ -24,6 +24,7 @@ include { RUN_BAYES                   } from '../modules/local/bayes_cn/main'
 include { PREP_MEDICC2                } from '../modules/local/prep_medicc2/main'
 include { PREP_MEDICC2_ICHOR          } from '../modules/local/prep_medicc2_ichor/main'
 include { MEDICC2                     } from '../modules/local/medicc2/main'
+include { ANEUFINDER                  } from '../modules/local/aneufinder/main'
 
 
 /*
@@ -149,6 +150,10 @@ workflow LP_WGS {
     )
     ch_analysis_input = CALLING_PREP.out.analysis_input
     ch_gc_wig = CALLING_PREP.out.gc_wig
+
+    if (selected_tools.contains('aneufinder')) {
+        ANEUFINDER(ch_analysis_input, bin_size, tech == 'illumina')
+    }
 
     // run ichorcna
     if (selected_tools.contains('ichor')) {

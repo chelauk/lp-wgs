@@ -156,6 +156,9 @@ The default caller set intentionally includes several tools that operate on simi
 | `ace` / ACE | Circular binary segmentation | Estimates absolute copy number using segmented low-pass profiles. |
 | `ascat` / ASCATlp | Piecewise constant fitting | Fits low-pass purity, ploidy, and copy number using PCF-segmented profiles. |
 | `bayes_cna` / BayesCNA | Bayesian inference | Models copy number using a Bayesian framework. |
+| `aneufinder` / AneuFinder | Per-sample copy number calling | Uses the default e-divisive method on the prepared BAM, with `--bin` in kilobases. |
+
+Use `--tools aneufinder -profile docker` to run AneuFinder by itself. Nextflow pulls the Linux x86-64 BioContainers image from Quay. AneuFinder reads chromosome lengths from the BAM header and runs without GC correction.
 
 For a minimal run, choose one caller with `--tools`. For method comparison, keep multiple callers enabled and compare their segment-level and sample-level outputs.
 

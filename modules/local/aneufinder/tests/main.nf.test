@@ -1,0 +1,69 @@
+nextflow_process {
+    name "Test Process ANEUFINDER"
+    script "../main.nf"
+    process "ANEUFINDER"
+    config "./nextflow.config"
+    tag "modules"
+    tag "aneufinder"
+
+    test("Calls copy number on a paired-end BAM") {
+        when {
+            process {
+                """
+                input[0] = [
+                    [id: 'synthetic'],
+                    file("${moduleTestDir}/fixtures/synthetic.bam", checkIfExists: true),
+                    file("${moduleTestDir}/fixtures/synthetic.bam.bai", checkIfExists: true)
+                ]
+                input[1] = 500
+                input[2] = true
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.results.size() == 1
+            def (meta, directory) = process.out.results[0]
+            assert meta == [id: 'synthetic']
+            def results = new File(directory as String)
+            def models = new File(results, 'MODELS/method-edivisive').listFiles()
+            def browserFiles = new File(results, 'BROWSERFILES/method-edivisive').listFiles()
+            def plots = new File(results, 'PLOTS/method-edivisive').listFiles()
+
+            assertAll(
+                { assert models?.any { it.name.endsWith('.RData') && it.length() > 0 } },
+                { assert browserFiles?.any { it.name.endsWith('_CNV.bed.gz') && it.length() > 0 } },
+                { assert plots?.any { it.name.startsWith('profiles_') && it.name.endsWith('.pdf') && it.length() > 0 } },
+                { assert process.out.versions_aneufinder == [['ANEUFINDER', 'aneufinder', '1.34.0']] }
+            )
+        }
+    }
+
+    test("Emits the results directory in stub mode") {
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [id: 'synthetic'],
+                    file("${moduleTestDir}/fixtures/synthetic.bam", checkIfExists: true),
+                    file("${moduleTestDir}/fixtures/synthetic.bam.bai", checkIfExists: true)
+                ]
+                input[1] = 500
+                input[2] = true
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.results.size() == 1
+            def (meta, directory) = process.out.results[0]
+            assert meta == [id: 'synthetic']
+            assert new File(directory as String).isDirectory()
+            assert process.out.versions_aneufinder == [['ANEUFINDER', 'aneufinder', '1.34.0']]
+        }
+    }
+}
